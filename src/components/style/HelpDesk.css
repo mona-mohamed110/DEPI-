@@ -1,0 +1,119 @@
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  direction: rtl;
+}
+
+.helpdesk {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 50px 20px 60px;
+  text-align: center;
+}
+
+.helpdesk-title {
+  margin: 0 0 14px;
+  font-size: 48px;
+  font-weight: 700;
+  color: #3a3a3a;
+}
+
+.helpdesk-subtitle {
+  max-width: 350px;
+  margin: 0 auto 36px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #9a9a9a;
+}
+
+.helpdesk-form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.gradient-text{
+  background: linear-gradient(98.64deg, #69ccfe 35.04%, #0179B4 93.41%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 235px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid #38b6fb;
+  border-radius: 8px;
+  background: #fff;
+  transition: box-shadow 0.2s ease;
+}
+
+.field:focus-within {
+  box-shadow: 0 0 0 3px rgba(56, 182, 251, 0.25);
+}
+
+.field-icon {
+  flex-shrink: 0;
+  color: #0a95e0;
+  font-size: 14px;
+}
+
+.field input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 18px;
+  color: #333;
+  padding: 10px 2px;
+}
+
+.field input::placeholder {
+  color: #9a9a9a;
+}
+
+.btn-contact {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 10px 25px;
+  border: none;
+  border-radius: 8px;
+  background: #0aa0f5;
+  color: #fff;
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(10, 160, 245, 0.35);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.btn-contact:hover {
+  background: #0889d0;
+  transform: translateY(-2px);
+}
+
+.btn-contact:focus-visible {
+  outline: 3px solid #7fd0fb;
+  outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  .field,
+  .btn-contact {
+    width: 100%;
+    justify-content: center;
+  }
+  .field {
+    justify-content: flex-start;
+  }
+}

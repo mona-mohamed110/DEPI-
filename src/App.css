@@ -3,6 +3,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  
 }
 
 body {
@@ -107,12 +108,7 @@ button {
   line-height: 1.8;
 }
 
-.footer {
-  padding: 24px;
-  text-align: center;
-  background: #eff8f5;
-  color: #647570;
-}
+
 
 @media (max-width: 650px) {
   .navbar {
@@ -131,3 +127,5 @@ button {
     padding: 60px 7%;
   }
 }
+
+
