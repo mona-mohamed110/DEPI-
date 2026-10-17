@@ -1,7 +1,7 @@
 
 import { useState } from "react";
-import "./Nav.css";
-import logo from "../assets/logo.jpg";
+import "./style/Nav.css";
+import logo from "../assets/Smart-Healthcare-Ledger-Logo.png";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);

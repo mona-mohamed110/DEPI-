@@ -36,7 +36,7 @@
   min-height: 190px;
   margin-right: 20px;
   border-radius: 14px;
-  background: linear-gradient(200deg, #2bb3fb 0%, #0a8fdb 100%);
+  background: linear-gradient(200deg, #0069ab 0%, #0a77b7 100%);
   box-shadow: 0 8px 22px rgba(10, 143, 219, 0.28);
   text-align: right;
 }
@@ -80,7 +80,7 @@
   border-radius: 10px;
 
   background: #fff;
-  color: #0a8fdb;
+  color: #0069ab;
   font-size: 17px;
   font-weight: 600;
   cursor: pointer;

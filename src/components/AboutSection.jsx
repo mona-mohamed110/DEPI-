@@ -1,6 +1,6 @@
 
 import aboutImage from "../assets/about-team.png";
-import "./AboutSection.css";
+import "./style/AboutSection.css";
 
 function AboutSection() {
   return (

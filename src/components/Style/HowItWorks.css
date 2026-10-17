@@ -1,7 +1,7 @@
   :root {
-    --blue: #0798d0;
+    --blue: #0069ab;
     --blue-dark: #0078b7;
-    --blue-light: #73d2ff;
+    --blue-light: #4cbbef;
     --ink: #3d4146;
     --muted: #777d83;
     --pale: #eefaff;
@@ -21,12 +21,11 @@
     margin: 0;
     color: var(--ink);
     background: #f3f6f8;
-    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
     line-height: 1.6;
   }
 
   .page {
-    max-width: 1600px;
+    max-width: 1200px;
     margin: 0 auto;
     background: #fff;
     overflow: hidden;
@@ -43,14 +42,13 @@
     margin: 0 auto 54px;
   }
 
-  .section-heading h1,
-  .section-heading h2 {
-    margin: 0 0 22px;
-    font-weight: 750;
-    line-height: 1.2;
-    letter-spacing: -.035em;
-    font-size: clamp(2rem, 3.2vw, 3rem);
-  }
+.section-heading h1,
+.section-heading h2 {
+  margin: 0 0 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  font-size: 32px;
+}
 
   .gradient-text {
     background: linear-gradient(100deg, #79d5ff 0%, #0085c7 75%);
@@ -59,13 +57,13 @@
     color: transparent;
   }
 
-  .section-heading p {
-    margin: 0 auto;
-    max-width: 850px;
-    color: #a0a4a8;
-    font-size: clamp(.98rem, 1.25vw, 1.15rem);
-    line-height: 1.65;
-  }
+.section-heading p {
+  margin: 0 auto;
+  max-width: 650px;
+  color: #9ca3af;
+  font-size: 15px;
+  line-height: 1.8;
+}
 
   /* Section 1: How it works */
   .how-grid {
@@ -115,19 +113,19 @@
     box-shadow: 0 5px 12px rgba(0, 145, 210, .12);
   }
 
-  .step h3 {
-    margin: 5px 0 10px;
-    font-size: clamp(1.35rem, 2.2vw, 2.1rem);
-    line-height: 1.25;
-    letter-spacing: -.025em;
-  }
+.step h3 {
+  margin: 5px 0 10px;
+  font-size: 20px;
+  line-height: 1.25;
+}
 
-  .step p {
-    margin: 0;
-    color: #686e73;
-    max-width: 440px;
-    font-size: 1.02rem;
-  }
+.step p {
+  margin: 0;
+  color: #4b5563;
+  max-width: 440px;
+  font-size: 14px;
+  line-height: 1.8;
+}
 
   .doctor-area {
     min-height: 440px;
@@ -381,10 +379,10 @@
       margin-bottom: 38px;
     }
 
-    .section-heading h1,
-    .section-heading h2 {
-      font-size: 2rem;
-    }
+.section-heading h1,
+.section-heading h2 {
+  font-size: 26px;
+}
 
     .step {
       grid-template-columns: 48px 1fr;
@@ -403,15 +401,14 @@
       top: 30px;
       bottom: 65px;
     }
+.step h3 {
+  margin-top: 2px;
+  font-size: 18px;
+}
 
-    .step h3 {
-      margin-top: 2px;
-      font-size: 1.35rem;
-    }
-
-    .step p {
-      font-size: .95rem;
-    }
+.step p {
+  font-size: 14px;
+}
 
     .doctor-area {
       min-height: 330px;
@@ -599,3 +596,4 @@
       left: -35px;
     }
   }
+
