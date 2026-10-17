@@ -1,4 +1,4 @@
-import "./Hero.css";
+import "./style/Hero.css";
 import Group1 from "../assets/Group 1.png";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStethoscope, faLocationDot } from '@fortawesome/free-solid-svg-icons';

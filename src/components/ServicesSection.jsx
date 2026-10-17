@@ -1,6 +1,6 @@
 
 import { Bot, MapPin, FileText, FlaskConical, ShieldCheck } from "lucide-react";
-import "./ServicesSection.css";
+import "./style/ServicesSection.css";
 
 function ServicesSection() {
   return (
