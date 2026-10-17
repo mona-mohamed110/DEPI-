@@ -6,9 +6,7 @@ import { faStethoscope, faLocationDot } from '@fortawesome/free-solid-svg-icons'
 function HeroSection() {
   return (
     <section className="hero-section-wrapper" dir="rtl">
-      {/* القسم العلوي: يحتوي على الكلام والصورة */}
       <div className="hero-container">
-        {/* النصوص والأزرار */}
         <div className="hero-content">
           <h1 className="hero-title">
             شريكك <span className="highlight-blue">الخبير والمسؤول</span> <br />
@@ -35,7 +33,6 @@ function HeroSection() {
           </div>
         </div>
 
-        {/* صورة الطبيب والبطاقات */}
         <div className="hero-image-wrapper">
           <div className="doctor-bg-circle"></div>
 
@@ -81,10 +78,8 @@ function HeroSection() {
         </div>
       </div>
 
-      {/* شريط البحث منفصل بأسفل الهيرو وفي المنتصف */}
       <div className="search-section-center">
         <div className="hero-search-bar">
-          {/* حقل التخصص */}
           <div className="search-field">
             <span className="field-icon">
               <FontAwesomeIcon icon={faStethoscope} style={{ color: "rgb(13, 13, 13)" }} />
@@ -100,7 +95,6 @@ function HeroSection() {
 
           <div className="search-divider"></div>
 
-          {/* حقل المدينة/المنطقة */}
           <div className="search-field">
             <span className="field-icon">
               <FontAwesomeIcon icon={faLocationDot} style={{ color: "rgb(13, 13, 13)" }} />
@@ -108,7 +102,6 @@ function HeroSection() {
             <input type="text" placeholder="المدينة أو المنطقة" />
           </div>
 
-          {/* زر البحث في النهاية */}
           <button className="search-submit-btn">
             <span>ابحث</span>
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">

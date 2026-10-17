@@ -99,9 +99,7 @@
   opacity: 0.85;
 }
 
-/* ====================
-   قسم الصورة والبطاقات
-==================== */
+
 .hero-image-wrapper {
   flex: 1;
   position: relative;
@@ -243,9 +241,7 @@
   font-weight: 500;
 }
 
-/* ====================
-   شريط البحث المتركز بالأسفل
-==================== */
+
 .search-section-center {
   display: flex;
   justify-content: center;
@@ -313,7 +309,7 @@
   gap: 8px;
   cursor: pointer;
   transition: opacity 0.2s ease, transform 0.2s ease;
-  margin-right: auto; /* يدفع الزر ليكون في آخر الشريط */
+  margin-right: auto;
 }
 
 .search-submit-btn:hover {
@@ -321,9 +317,7 @@
   transform: translateY(-1px);
 }
 
-/* ====================
-   التجاوب مع الشاشات المختلفة
-==================== */
+
 @media (max-width: 992px) {
   .hero-container {
     flex-direction: column;
