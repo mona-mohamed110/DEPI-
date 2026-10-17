@@ -1,0 +1,601 @@
+  :root {
+    --blue: #0798d0;
+    --blue-dark: #0078b7;
+    --blue-light: #73d2ff;
+    --ink: #3d4146;
+    --muted: #777d83;
+    --pale: #eefaff;
+    --line: #a9e5ff;
+    --shadow: 0 14px 32px rgba(30, 75, 100, .08);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    color: var(--ink);
+    background: #f3f6f8;
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    line-height: 1.6;
+  }
+
+  .page {
+    max-width: 1600px;
+    margin: 0 auto;
+    background: #fff;
+    overflow: hidden;
+  }
+
+  .section {
+    padding: 72px clamp(22px, 7vw, 110px);
+    position: relative;
+  }
+
+  .section-heading {
+    text-align: center;
+    max-width: 900px;
+    margin: 0 auto 54px;
+  }
+
+  .section-heading h1,
+  .section-heading h2 {
+    margin: 0 0 22px;
+    font-weight: 750;
+    line-height: 1.2;
+    letter-spacing: -.035em;
+    font-size: clamp(2rem, 3.2vw, 3rem);
+  }
+
+  .gradient-text {
+    background: linear-gradient(100deg, #79d5ff 0%, #0085c7 75%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .section-heading p {
+    margin: 0 auto;
+    max-width: 850px;
+    color: #a0a4a8;
+    font-size: clamp(.98rem, 1.25vw, 1.15rem);
+    line-height: 1.65;
+  }
+
+  /* Section 1: How it works */
+  .how-grid {
+    display: grid;
+    grid-template-columns: 1.1fr .9fr;
+    gap: clamp(35px, 6vw, 95px);
+    align-items: center;
+  }
+
+  .steps {
+    position: relative;
+    padding: 0 0 0 0;
+  }
+
+  .steps::before {
+    content: "";
+    position: absolute;
+    left: 29px;
+    top: 34px;
+    bottom: 76px;
+    border-left: 2px dashed #9fe2ff;
+  }
+
+  .step {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 24px;
+    position: relative;
+    margin: 0 0 38px;
+  }
+
+  .step:last-child {
+    margin-bottom: 0;
+  }
+
+  .step-number {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-size: 2rem;
+    font-weight: 700;
+    z-index: 1;
+    background: linear-gradient(135deg, #8be0ff, #0096d5);
+    box-shadow: 0 5px 12px rgba(0, 145, 210, .12);
+  }
+
+  .step h3 {
+    margin: 5px 0 10px;
+    font-size: clamp(1.35rem, 2.2vw, 2.1rem);
+    line-height: 1.25;
+    letter-spacing: -.025em;
+  }
+
+  .step p {
+    margin: 0;
+    color: #686e73;
+    max-width: 440px;
+    font-size: 1.02rem;
+  }
+
+  .doctor-area {
+    min-height: 440px;
+    display: grid;
+    place-items: center;
+    position: relative;
+  }
+
+  .doctor-frame {
+    position: absolute;
+    width: 78%;
+    height: 72%;
+    left: 10%;
+    bottom: 8%;
+    border: 2px solid #a9e8ff;
+    border-radius: 34px;
+    background: radial-gradient(circle at 75% 40%, #dff7ff, #fff 65%);
+  }
+
+  .doctor-photo {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 470px);
+    height: 460px;
+    object-fit: contain;
+    object-position: center bottom;
+    align-self: end;
+    filter: drop-shadow(0 15px 16px rgba(0, 0, 0, .07));
+    -webkit-mask-image: linear-gradient(to bottom, #000 82%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 82%, transparent 100%);
+    clip-path: inset(0% 0% 8% 0%); 
+  }
+
+  .medical-cross {
+    position: absolute;
+    z-index: 2;
+    right: 6%;
+    top: 12%;
+    color: #078dc8;
+    font-size: 6.5rem;
+    font-weight: 800;
+    line-height: 1;
+    text-shadow: 8px 7px 0 #a6dff4;
+    transform: rotate(0deg);
+  }
+
+  .certified {
+    position: absolute;
+    z-index: 3;
+    bottom: 12%;
+    right: -1%;
+    background: #fff;
+    border-radius: 14px;
+    padding: 13px 22px;
+    box-shadow: var(--shadow);
+    color: var(--blue-dark);
+    font-weight: 700;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    white-space: nowrap;
+  }
+
+  .certified .star {
+    display: grid;
+    place-items: center;
+    background: #effaff;
+    border-radius: 7px;
+    width: 34px;
+    height: 34px;
+    font-size: 1.2rem;
+  }
+
+  /* Section 2: Testimonials */
+  .testimonials {
+    padding-top: 66px;
+  }
+
+  .testimonials .section-heading {
+    margin-bottom: 54px;
+  }
+
+  .testimonial-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px clamp(28px, 5.5vw, 85px);
+    position: relative;
+  }
+
+  .testimonial-card {
+    display: flex;
+    align-items: center;
+    gap: 23px;
+    min-height: 168px;
+    padding: 24px 30px;
+    border: 2px solid var(--line);
+    border-radius: 23px;
+    background: linear-gradient(115deg, #fff, #f0fbff);
+    box-shadow: var(--shadow);
+    position: relative;
+    z-index: 1;
+  }
+
+  .testimonial-card:nth-child(2),
+  .testimonial-card:nth-child(3) {
+    border-color: #9fe4ff;
+  }
+
+  .avatar {
+    width: 86px;
+    height: 86px;
+    flex: 0 0 86px;
+    border-radius: 13px;
+    object-fit: cover;
+    background: #e7f6fc;
+  }
+
+  .quote {
+    margin: 0;
+    color: #6b7075;
+    font-size: 1.02rem;
+    line-height: 1.55;
+  }
+
+  .quote strong {
+    color: #50555a;
+    font-weight: 700;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+    text-align: center;
+    margin: 72px auto 78px;
+    max-width: 1120px;
+  }
+
+  .stat-number {
+    font-size: clamp(2rem, 3.6vw, 3.35rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -.035em;
+    background: linear-gradient(100deg, #007ab5, #72d3ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .stat-label {
+    color: #656b70;
+    font-size: .98rem;
+    line-height: 1.4;
+    margin-top: 5px;
+  }
+
+  .dots {
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    opacity: .72;
+    pointer-events: none;
+    background-image: radial-gradient(circle, #45b8e8 4px, transparent 5px);
+    background-size: 20px 20px;
+    border-radius: 50%;
+  }
+
+  .dots-left {
+    top: 205px;
+    left: 5.5%;
+    clip-path: circle(48% at 50% 50%);
+  }
+
+  .dots-right {
+    right: 5.5%;
+    bottom: 20px;
+    clip-path: circle(48% at 50% 50%);
+  }
+
+  footer {
+    padding: 25px 20px;
+    text-align: center;
+    color: #929ba1;
+    font-size: .9rem;
+    border-top: 1px solid #eef2f4;
+  }
+
+  footer span {
+    color: var(--blue-dark);
+    font-weight: 700;
+  }
+
+  @media (max-width: 900px) {
+    .section {
+      padding: 58px 28px;
+    }
+
+    .how-grid {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .steps {
+      max-width: 690px;
+      margin: auto;
+      width: 100%;
+    }
+
+    .doctor-area {
+      max-width: 570px;
+      width: 100%;
+      margin: 0 auto;
+      min-height: 400px;
+    }
+
+    .doctor-photo {
+      height: 420px;
+    }
+
+    .certified {
+      right: 0;
+      bottom: 8%;
+    }
+
+    .testimonial-grid {
+      gap: 22px;
+    }
+
+    .testimonial-card {
+      padding: 22px;
+      gap: 17px;
+    }
+
+    .avatar {
+      width: 72px;
+      height: 72px;
+      flex-basis: 72px;
+    }
+
+    .dots {
+      opacity: .35;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .section {
+      padding: 46px 20px;
+    }
+
+    .section-heading {
+      margin-bottom: 38px;
+    }
+
+    .section-heading h1,
+    .section-heading h2 {
+      font-size: 2rem;
+    }
+
+    .step {
+      grid-template-columns: 48px 1fr;
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .step-number {
+      width: 48px;
+      height: 48px;
+      font-size: 1.6rem;
+    }
+
+    .steps::before {
+      left: 23px;
+      top: 30px;
+      bottom: 65px;
+    }
+
+    .step h3 {
+      margin-top: 2px;
+      font-size: 1.35rem;
+    }
+
+    .step p {
+      font-size: .95rem;
+    }
+
+    .doctor-area {
+      min-height: 330px;
+    }
+
+    .doctor-photo {
+      height: 350px;
+      width: 100%;
+    }
+
+    .medical-cross {
+      font-size: 4.7rem;
+      right: 4%;
+      top: 12%;
+    }
+
+    .certified {
+      font-size: .78rem;
+      padding: 9px 12px;
+      bottom: 5%;
+    }
+
+    .certified .star {
+      width: 28px;
+      height: 28px;
+    }
+
+    .testimonial-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .testimonial-card {
+      min-height: 140px;
+      padding: 20px;
+      border-radius: 18px;
+    }
+
+    .quote {
+      font-size: .93rem;
+    }
+
+    .avatar {
+      width: 66px;
+      height: 66px;
+      flex-basis: 66px;
+    }
+
+    .stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin: 48px auto;
+      row-gap: 28px;
+    }
+
+    .stat-number {
+      font-size: 2.3rem;
+    }
+
+    .stat-label {
+      font-size: .88rem;
+    }
+
+    .dots-left {
+      left: -35px;
+      top: 210px;
+    }
+
+    .dots-right {
+      right: -35px;
+      bottom: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+
+    .step,
+    .testimonial-card {
+      animation: rise-in .65s ease both;
+    }
+
+    .step:nth-child(2) {
+      animation-delay: .08s;
+    }
+
+    .step:nth-child(3) {
+      animation-delay: .16s;
+    }
+
+    @keyframes rise-in {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
+
+  body {
+    direction: rtl;
+  }
+
+  .section-heading,
+  .step,
+  .testimonial-card,
+  .stats {
+    text-align: right;
+  }
+
+  .section-heading {
+    text-align: center;
+  }
+
+  .steps::before {
+    left: auto;
+    right: 29px;
+  }
+
+  .step {
+    grid-template-columns: 60px 1fr;
+  }
+
+  .certified {
+    right: auto;
+    left: -1%;
+  }
+
+  .medical-cross {
+    right: auto;
+    left: 6%;
+  }
+
+  .dots-left {
+    left: auto;
+    right: 5.5%;
+  }
+
+  .dots-right {
+    right: auto;
+    left: 5.5%;
+  }
+
+  .stat-number,
+  .stat-label {
+    text-align: center;
+  }
+
+  @media (max-width: 900px) {
+    .steps::before {
+      left: auto;
+      right: 29px;
+    }
+
+    .certified {
+      right: auto;
+      left: 0;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .steps::before {
+      left: auto;
+      right: 23px;
+    }
+
+    .certified {
+      right: auto;
+      left: 0;
+    }
+
+    .medical-cross {
+      right: auto;
+      left: 4%;
+    }
+
+    .dots-left {
+      left: auto;
+      right: -35px;
+    }
+
+    .dots-right {
+      right: auto;
+      left: -35px;
+    }
+  }
