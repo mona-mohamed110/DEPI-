@@ -36,14 +36,16 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 36px;
-  align-items: start;
+  align-items: center;
+  
 }
 
+
 .about-text p {
-  font-size: 15px;
+  font-size: 16px;
   line-height: 2;
   color: #374151;
-  margin: 0 0 24px;
+  margin: 0 0 32px;
 }
 
 .about-button {
