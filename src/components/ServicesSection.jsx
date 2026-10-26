@@ -4,7 +4,7 @@ import "./style/ServicesSection.css";
 
 function ServicesSection() {
   return (
-    <section className="services-section" dir="rtl">
+    <section id="services" className="services-section" dir="rtl">
       <div className="services-container">
         
         <h2 className="services-title">
