@@ -3,6 +3,7 @@ import Group1 from "../assets/Group 1.png";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStethoscope, faLocationDot } from '@fortawesome/free-solid-svg-icons';
 
+
 function HeroSection() {
   return (
     <section className="hero-section-wrapper" dir="rtl">
