@@ -1,8 +1,17 @@
-
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
+import LearnMore from "./pages/LearnMore";
 
 function App() {
-  return <Home />;
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        
+        <Route path="/learn-more" element={<LearnMore />} />
+      </Routes>
+    </Router>
+  );
 }
 
 export default App;
