@@ -4,7 +4,7 @@ import "./style/AboutSection.css";
 
 function AboutSection() {
   return (
-    <section className="about-section" dir="rtl">
+    <section id="about" className="about-section" dir="rtl">
       <div className="about-box">
         <h2 className="about-title">
           عن <span>شفاء:</span> تعرّف على منصتنا
