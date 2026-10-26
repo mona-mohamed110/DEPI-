@@ -1,5 +1,6 @@
 import aboutImage from "../assets/about-team.png";
 import "./style/AboutSection.css";
+import { Link } from "react-router-dom";
 
 function AboutSection() {
   return (
@@ -17,15 +18,14 @@ function AboutSection() {
               وحفظ بياناتك الطبية بأمان، مع إبقاء التحكم في مشاركتها بين يديك.
             </p>
 
-            <a href="/learn-more">
-              <button type="button" className="about-button">
-                اعرف المزيد عن شفاء
-              </button>
-            </a>
+            <Link to="/learn-more" className="about-button">
+  اعرف المزيد عن شفاء
+</Link>
           </div>
 
           <div className="about-image-wrapper">
             <img
+
               className="about-image"
               src={aboutImage}
               alt="فريق طبي من الأطباء والممرضين"
