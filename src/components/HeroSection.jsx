@@ -6,7 +6,7 @@ import { faStethoscope, faLocationDot } from '@fortawesome/free-solid-svg-icons'
 
 function HeroSection() {
   return (
-    <section className="hero-section-wrapper" dir="rtl">
+    <section id="home" className="hero-section-wrapper" dir="rtl">
       <div className="hero-container">
         <div className="hero-content">
           <h1 className="hero-title">

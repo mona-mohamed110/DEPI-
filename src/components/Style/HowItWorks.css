@@ -20,13 +20,13 @@
   body {
     margin: 0;
     color: var(--ink);
-    background: #f3f6f8;
+    background: #fff;
     line-height: 1.6;
   }
 
   .page {
-    max-width: 1200px;
-    margin: 0 auto;
+    max-width: none;
+    margin: 0 ;
     background: #fff;
     overflow: hidden;
   }

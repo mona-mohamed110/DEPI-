@@ -80,6 +80,11 @@
   object-fit: cover;
 }
 
+a.about-button {
+  display: inline-block;
+  text-decoration: none;
+}
+
 @media (max-width: 800px) {
   .about-box {
     padding: 24px 18px;

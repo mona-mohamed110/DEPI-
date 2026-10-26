@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import "./style/Nav.css";
+import "./Style/Nav.css";
 import logo from "../assets/Smart-Healthcare-Ledger-Logo.png";
 
 function Navbar() {
@@ -12,7 +11,11 @@ function Navbar() {
         <img className="logo" src={logo} alt="الشعار" />
       </div>
 
-      <button className="menu-toggle" onClick={() => setIsOpen(!isOpen)} aria-label="القائمة">
+      <button
+        className="menu-toggle"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label="القائمة"
+      >
         <span className={`hamburger ${isOpen ? "open" : ""}`}></span>
       </button>
 
@@ -24,8 +27,8 @@ function Navbar() {
           <li><a href="#about" onClick={() => setIsOpen(false)}>من نحن</a></li>
         </ul>
 
-       <div className="nav-actions">
-          <button className="btn btn-primary ">دخول</button> 
+        <div className="nav-actions">
+          <button className="btn btn-primary">دخول</button>
           <button className="btn btn-ghost">تسجيل جديد</button>
         </div>
       </div>
@@ -34,14 +37,3 @@ function Navbar() {
 }
 
 export default Navbar;
-
-
-
-
-
-
-
-
-
-
-

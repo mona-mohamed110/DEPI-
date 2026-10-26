@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FaUser, FaEnvelope, FaArrowCircleRight } from "react-icons/fa";
 import "./style/HelpDesk.css";
+import ContactModal from "./ContactModal";
 
 
 
@@ -15,7 +16,7 @@ export default function HelpDesk() {
     console.log(form); // هنا تبعت البيانات للـ API
     setForm({ firstName: "", email: "" });
   };
-
+const [isOpen, setIsOpen] = useState(false);
   return (
     <section className="helpdesk">
       <h2 className="helpdesk-title">
@@ -48,10 +49,15 @@ export default function HelpDesk() {
           />
         </label>
 
-        <button type="submit" className="btn-contact">
-          تواصل معنا <FaArrowCircleRight />
-        </button>
+        <button
+  type="button"
+  className="btn-contact"
+  onClick={function () { setIsOpen(true); }}
+>
+  تواصل معنا <FaArrowCircleRight />
+</button>
       </form>
+      <ContactModal isOpen={isOpen} onClose={function () { setIsOpen(false); }} />
     </section>
   );
 }
