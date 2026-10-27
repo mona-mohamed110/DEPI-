@@ -67,6 +67,7 @@ export default function Register() {
     setLoading(true);
     setError("");
     try {
+      // eslint-disable-next-line no-unused-vars
       const { confirm, ...data } = form;
       await register({ role, ...data });
       navigate("/login", { state: { registered: true } });
