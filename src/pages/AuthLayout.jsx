@@ -1,7 +1,7 @@
 // import Logo from "./Logo";
-import ShieldIllustration from "./ShieldIllustration";
+// import ShieldIllustration from "./ShieldIllustration";
 import logo from "../assets/logo.png";
-import "../components/style/AuthLayout.css";
+import "../components/Style/AuthLayout.css";
 import Navbar from "../components/Navbar";
 // import Footer from "../components/Footer";
 

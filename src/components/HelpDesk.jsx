@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FaArrowCircleRight } from "react-icons/fa";
-import "./style/HelpDesk.css";
+import "./Style/HelpDesk.css";
 import ContactModal from "./ContactModal";
 
 export default function HelpDesk() {

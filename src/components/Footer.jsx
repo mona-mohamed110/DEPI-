@@ -1,5 +1,5 @@
 import { FaFacebook, FaInstagram, FaLinkedin, FaYoutube } from "react-icons/fa";
-import "./style/Footer.css";
+import "./Style/Footer.css";
 import logo from "../assets/logo.png"
 
 const columns = [

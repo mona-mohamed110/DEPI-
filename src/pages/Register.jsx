@@ -4,7 +4,7 @@ import { FaMicroscope, FaUserMd, FaUsers } from "react-icons/fa";
 import AuthLayout from "./AuthLayout";
 import Field from "./Field";
 import { register } from "./authApi";
-import "../components/style/Register.css";
+import "../components/Style/Register.css";
 
 const ROLES = [
   { id: "lab", title: "مختبر", sub: "حساب مختبر", icon: <FaMicroscope /> },
