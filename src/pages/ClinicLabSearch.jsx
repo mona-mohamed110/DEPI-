@@ -2,6 +2,7 @@ import React, { useMemo, useRef, useState } from "react";
 import "../components/Style/ClinicLabSearch.css";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { Link } from "react-router-dom";
 
 const C = {
   primary: "#1aa3f0",
@@ -178,10 +179,14 @@ function MapView({ places, selectedId, onSelect }) {
           </div>
           <div style={{ fontSize: 13, color: C.muted, margin: "8px 0" }}>📍 {selected.address} &nbsp;•&nbsp; 🕒 {selected.hours}</div>
           <div style={{ display: "flex", gap: 10 }}>
+            <Link to="/Login" className="hs-btn">
             <button className="hs-btn" style={{ flex: 1, padding: "10px 12px", fontSize: 13 }}>
               {selected.type === "lab" ? "عرض الفحوصات" : "احجز موعد"}
             </button>
+            </Link>
+            <Link to="/Login" className="hs-chip">
             <button className="hs-chip" style={{ padding: "10px 16px" }}>الملف الشخصي</button>
+            </Link>
           </div>
         </div>
       )}
