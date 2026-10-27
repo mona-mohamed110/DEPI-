@@ -1,5 +1,5 @@
 :root {
-  font-family: "Tajawal", sans-serif;
+  font-family: "Tajawal", sans-serif !important;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;

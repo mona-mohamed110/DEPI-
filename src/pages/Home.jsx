@@ -7,7 +7,7 @@ import HowItWorks from "../components/HowItWorks";
 
 import Footer from "../components/Footer";  
 import HelpDesk from "../components/HelpDesk";
-import Specialists from "../components/Specialists"
+
 
 
 
@@ -22,7 +22,7 @@ function Home() {
         <AboutSection />
         <HowItWorks />
         
-        <Specialists/>
+      
         <HelpDesk/>
       </main>
 

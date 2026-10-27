@@ -25,29 +25,6 @@ const [isOpen, setIsOpen] = useState(false);
       <p className="helpdesk-subtitle">أسئلة ؟ بحاجة الى مساعدة ؟<br></br> فريق الدعم المخصص لدينا هنا لمساعدتك في كل خطوة</p>
 
       <form className="helpdesk-form" onSubmit={handleSubmit}>
-        <label className="field">
-          <FaUser className="field-icon" />
-          <input
-            type="text"
-            name="firstName"
-            placeholder="الاسم"
-            value={form.firstName}
-            onChange={handleChange}
-            required
-          />
-        </label>
-
-        <label className="field">
-          <FaEnvelope className="field-icon" />
-          <input
-            type="email"
-            name="email"
-            placeholder="البريد الالكتروني"
-            value={form.email}
-            onChange={handleChange}
-            required
-          />
-        </label>
 
         <button
   type="button"
@@ -56,6 +33,7 @@ const [isOpen, setIsOpen] = useState(false);
 >
   تواصل معنا <FaArrowCircleRight />
 </button>
+
       </form>
       <ContactModal isOpen={isOpen} onClose={function () { setIsOpen(false); }} />
     </section>

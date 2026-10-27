@@ -1,0 +1,79 @@
+.otp-boxes {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.otp-box {
+  width: 100%;
+  max-width: 52px;
+  height: 56px;
+  padding: 0;
+  border: 1.5px solid var(--fp-border);
+  border-radius: 12px;
+  background: #fff;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--fp-text);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.otp-box:focus {
+  outline: none;
+  border-color: var(--fp-primary);
+  box-shadow: 0 0 0 4px rgba(10, 143, 219, 0.14);
+}
+
+.otp-box--error {
+  border-color: var(--fp-error);
+  animation: otp-shake 0.35s ease;
+}
+
+@keyframes otp-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.otp-msg {
+  margin: 4px 0 8px;
+  font-size: 12.5px;
+}
+
+.otp-notice {
+  color: var(--fp-success);
+}
+
+.otp-resend {
+  margin: 20px 0 0;
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--fp-muted);
+}
+
+.otp-timer {
+  color: var(--fp-primary);
+  font-weight: 600;
+}
+
+.otp-resend-btn {
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: inherit;
+  font-weight: 700;
+  color: var(--fp-navy);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.otp-resend-btn:hover,
+.otp-resend-btn:focus-visible {
+  color: var(--fp-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .otp-box--error { animation: none; }
+}
