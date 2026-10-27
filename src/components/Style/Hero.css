@@ -259,10 +259,12 @@
   padding: 8px 12px;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
   border: 1px solid #e2e8f0;
-  max-width: 750px;
+  max-width: 350px;
   width: 100%;
 }
-
+link {
+  text-decoration: none;
+}
 .search-field {
   flex: 1;
   display: flex;

@@ -1,0 +1,190 @@
+/* ------------------------------------------------------------------ */
+/*  ClinicLabSearch.css — ستايل صفحة البحث عن عيادة أو معمل           */
+/*  Smart Healthcare Ledger (بنفس ستايل HealNet)                      */
+/* ------------------------------------------------------------------ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap');
+
+/* ----------------------------- المتغيرات ----------------------------- */
+.hs-root {
+  --hs-primary: #1aa3f0;
+  --hs-primary-dark: #0b84d6;
+  --hs-primary-light: #e8f5ff;
+  --hs-bg: #f4faff;
+  --hs-border: #bfe3fb;
+  --hs-text: #1b2a3a;
+  --hs-muted: #7b8794;
+  --hs-green: #22c55e;
+  --hs-red: #ef4444;
+  --hs-gold: #fbbf24;
+  --hs-gradient: linear-gradient(135deg, #43bdfa, #0b84d6);
+}
+
+/* ------------------------------- الأساس ------------------------------- */
+.hs-root {
+  font-family: "Tajawal", sans-serif;
+  color: var(--hs-text);
+  background: linear-gradient(180deg, #e6f4ff 0%, #ffffff 420px);
+  min-height: 100vh;
+  direction: rtl;
+}
+.hs-root * {
+  box-sizing: border-box;
+}
+
+/* ------------------------------ التنقل ------------------------------ */
+.hs-nav a {
+  color: var(--hs-text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.hs-nav a:hover,
+.hs-nav a.active {
+  color: var(--hs-primary);
+}
+
+/* ------------------------------ الأزرار ------------------------------ */
+.hs-btn {
+  border: 0;
+  cursor: pointer;
+  font-family: "Tajawal", sans-serif;
+  font-weight: 700;
+  color: #fff;
+  background: var(--hs-gradient);
+  border-radius: 10px;
+  padding: 12px 24px;
+  box-shadow: 0 8px 20px rgba(26, 163, 240, 0.35);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.hs-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(26, 163, 240, 0.45);
+}
+
+.hs-chip {
+  border: 1.5px solid var(--hs-border);
+  background: #fff;
+  color: var(--hs-text);
+  font-family: "Tajawal", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.hs-chip.on {
+  background: var(--hs-gradient);
+  color: #fff;
+  border-color: transparent;
+}
+
+/* ------------------------------ البطاقات ------------------------------ */
+.hs-card {
+  background: #fff;
+  border: 1.5px solid var(--hs-border);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(26, 163, 240, 0.1);
+}
+
+/* ------------------------------ الحقول ------------------------------ */
+.hs-input {
+  width: 100%;
+  border: 1.5px solid var(--hs-border);
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-family: "Tajawal", sans-serif;
+  font-size: 14px;
+  background: #fff;
+  outline: none;
+  color: var(--hs-text);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.hs-input:focus {
+  border-color: var(--hs-primary);
+  box-shadow: 0 0 0 3px rgba(26, 163, 240, 0.15);
+}
+
+/* ---------------------------- قائمة النتائج ---------------------------- */
+.hs-item {
+  border: 1.5px solid var(--hs-border);
+  border-radius: 16px;
+  padding: 14px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  gap: 12px;
+}
+.hs-item:hover {
+  box-shadow: 0 8px 22px rgba(26, 163, 240, 0.18);
+  transform: translateY(-2px);
+}
+.hs-item.sel {
+  background: var(--hs-primary-light);
+  border-color: var(--hs-primary);
+}
+
+.hs-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.hs-scroll::-webkit-scrollbar-thumb {
+  background: var(--hs-border);
+  border-radius: 6px;
+}
+
+/* ------------------------------ الخريطة ------------------------------ */
+.hs-pin {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  cursor: pointer;
+  transition: filter 0.2s;
+  border: 0;
+  background: none;
+  padding: 0;
+}
+.hs-pin:hover {
+  filter: drop-shadow(0 6px 8px rgba(11, 132, 214, 0.5));
+}
+
+.hs-zoom {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1.5px solid var(--hs-border);
+  background: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--hs-primary-dark);
+  cursor: pointer;
+  font-family: "Tajawal", sans-serif;
+}
+.hs-zoom:hover {
+  background: var(--hs-primary-light);
+}
+
+@keyframes hsPulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+/* ------------------------------ الجوال ------------------------------ */
+@media (max-width: 900px) {
+  .hs-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .hs-nav {
+    display: none !important;
+  }
+  .hs-filters {
+    grid-template-columns: 1fr !important;
+  }
+}

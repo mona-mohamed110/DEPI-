@@ -2,6 +2,7 @@ import "./style/Hero.css";
 import Group1 from "../assets/Group 1.png";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStethoscope, faLocationDot } from '@fortawesome/free-solid-svg-icons';
+import { Link } from "react-router-dom";
 
 function HeroSection() {
   return (
@@ -84,31 +85,32 @@ function HeroSection() {
             <span className="field-icon">
               <FontAwesomeIcon icon={faStethoscope} style={{ color: "rgb(13, 13, 13)" }} />
             </span>
-            <select defaultValue="">
+            {/* <select defaultValue="">
               <option value="" disabled>التخصص</option>
               <option value="cardio">أمراض القلب</option>
               <option value="dental">أسنان</option>
               <option value="pediatrics">أطفال</option>
               <option value="derma">جلدية</option>
-            </select>
+            </select> */}
           </div>
 
           <div className="search-divider"></div>
 
-          <div className="search-field">
+          {/* <div className="search-field">
             <span className="field-icon">
               <FontAwesomeIcon icon={faLocationDot} style={{ color: "rgb(13, 13, 13)" }} />
             </span>
             <input type="text" placeholder="المدينة أو المنطقة" />
-          </div>
-
+          </div> */}
+<Link to="/ClinicLabSearch" className="asearch-submit-btn">
           <button className="search-submit-btn">
-            <span>ابحث</span>
+                     <span>ابحث عن طبيب او معمل</span>
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.35-4.35" />
             </svg>
           </button>
+        </Link>
         </div>
       </div>
     </section>
