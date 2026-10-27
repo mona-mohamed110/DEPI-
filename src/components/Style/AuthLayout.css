@@ -22,11 +22,6 @@
   box-sizing: border-box;
 }
 
-/* ---------- Logo ---------- */
-.logo-side {
-  width: 100%;
-  height: 100%;
-}
 
 /* ---------- Layout ---------- */
 .auth-main {
@@ -36,7 +31,7 @@
   align-items: center;
   justify-content: center;
   gap: clamp(40px, 9vw, 150px);
-  padding: 80px 40px 40px;
+  padding: 24px 20px 40px;
 }
 
 .auth-form-col {
