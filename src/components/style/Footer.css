@@ -1,7 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap");
-
 .footer {
-  font-family: "Cairo", system-ui, sans-serif;
   background: #f0f8ff;
   padding: 40px 70px 24px;
   color: #555;
@@ -120,14 +117,38 @@
 @media (max-width: 900px) {
   .footer {
     padding: 32px 24px 20px;
+    text-align: center; /* لمحاذاة النصوص في المنتصف */
   }
+
   .footer-top {
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
+
+  .footer-brand {
+    max-width: 100%;
+    align-items: center; /* محاذاة عناصر العلامة التجارية في المنتصف */
+  }
+
+  .footer-logo {
+    margin-bottom: 20px;
+  }
+
   .footer-columns {
-    gap: 40px;
+    gap: 30px;
     flex-wrap: wrap;
-    margin-right: 40px;
+    width: 100%;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-left: 0; /* إلغاء الهامش الأيسر الكبير الذي كان يمنع التمركز */
+  }
+
+  .footer-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* محاذاة العناوين والقوائم بالمنتصف */
   }
 }
 
@@ -135,5 +156,10 @@
   .footer-bottom {
     flex-direction: column;
     gap: 14px;
+    text-align: center;
+  }
+
+  .footer-socials a {
+    margin-top: 0; /* ضبط المسافة العلوية للأيقونات على الشاشات الصغيرة */
   }
 }

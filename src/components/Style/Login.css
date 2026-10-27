@@ -1,0 +1,6 @@
+/* خاص بصفحة الدخول — الستايل الأساسي في Auth/AuthLayout.css */
+.login-forgot {
+  display: inline-block;
+  margin: 2px 4px 22px;
+  font-size: 14.5px;
+}

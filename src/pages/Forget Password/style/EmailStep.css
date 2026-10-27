@@ -1,0 +1,4 @@
+/* خاص بخطوة الإيميل — معظم الستايل مشترك في ForgetPassword.css */
+.fp-step .fp-field #fp-email {
+  letter-spacing: 0.1px;
+}

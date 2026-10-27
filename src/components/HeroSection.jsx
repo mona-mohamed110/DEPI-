@@ -1,7 +1,7 @@
 import "./style/Hero.css";
 import Group1 from "../assets/Group 1.png";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStethoscope, faLocationDot } from '@fortawesome/free-solid-svg-icons';
+import { faStethoscope } from '@fortawesome/free-solid-svg-icons';
 import { Link } from "react-router-dom";
 
 function HeroSection() {

@@ -3,6 +3,7 @@
   padding: 0;
   margin: 0;
   box-sizing: border-box;
+  text-decoration: none;
 }
 
 body {
@@ -23,9 +24,8 @@ body {
 }
 
 .logo {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
+  width: 60px;
+  height: 60px;
   object-fit: cover;
 }
 
