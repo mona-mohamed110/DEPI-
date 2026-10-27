@@ -82,9 +82,11 @@
 .btn-contact {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  width: 40%;
   gap: 8px;
   height: 38px;
-  padding: 25px 90px;
+  padding: 25px 30px;
   border: none;
   border-radius: 8px;
   background: #0aa0f5;
@@ -110,7 +112,7 @@
 @media (max-width: 600px) {
   .field,
   .btn-contact {
-    width: 100%;
+    width: 70%;
     justify-content: center;
   }
   .field {

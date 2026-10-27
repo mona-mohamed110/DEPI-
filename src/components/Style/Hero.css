@@ -260,6 +260,7 @@
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
   border: 1px solid #e2e8f0;
   max-width: 350px;
+  min-width: fit-content;
   width: 100%;
 }
 link {
@@ -292,11 +293,6 @@ link {
   color: #94a3b8;
 }
 
-.search-divider {
-  width: 1px;
-  height: 32px;
-  background-color: #e2e8f0;
-}
 
 .search-submit-btn {
   background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
@@ -348,7 +344,6 @@ link {
 
 @media (max-width: 650px) {
   .hero-search-bar {
-    flex-direction: column;
     border-radius: 20px;
     padding: 16px;
     gap: 12px;
@@ -360,9 +355,6 @@ link {
     margin-right: 0;
   }
 
-  .search-divider {
-    display: none;
-  }
 
   .search-field {
     width: 100%;

@@ -15,7 +15,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 48px;
+  padding: 10px 48px;
   background-color: #fafcfe;
   border-bottom: 1px solid #e2e8f0;
   position: sticky;
@@ -186,7 +186,7 @@ body {
   .nav-actions {
     flex-direction: column;
     width: 100%;
-    gap: 10px;
+    gap: 15px;
     border-top: 1px solid #f1f5f9;
     padding-top: 16px;
   }

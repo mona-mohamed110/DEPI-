@@ -1,8 +1,9 @@
 // import Logo from "./Logo";
 import ShieldIllustration from "./ShieldIllustration";
+import logo from "../assets/logo.png";
 import "../components/style/AuthLayout.css";
 import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+// import Footer from "../components/Footer";
 
 export default function AuthLayout({ children, wide = false }) {
   return (
@@ -18,11 +19,12 @@ export default function AuthLayout({ children, wide = false }) {
           {children}
         </section>
         <div className="auth-illustration" aria-hidden="true">
-          <ShieldIllustration />
+          {/* <ShieldIllustration /> */}
+          <img className="logo-side" src={logo} alt="الشعار" />
         </div>
       </main>
 
-      <Footer/>
+      {/* <Footer/> */}
     </div>
   );
 }

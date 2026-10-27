@@ -94,23 +94,23 @@ function HeroSection() {
             </select> */}
           </div>
 
-          <div className="search-divider"></div>
-
           {/* <div className="search-field">
             <span className="field-icon">
               <FontAwesomeIcon icon={faLocationDot} style={{ color: "rgb(13, 13, 13)" }} />
             </span>
             <input type="text" placeholder="المدينة أو المنطقة" />
           </div> */}
-<Link to="/ClinicLabSearch" className="asearch-submit-btn">
-          <button className="search-submit-btn">
-                     <span>ابحث عن طبيب او معمل</span>
-            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" />
-            </svg>
-          </button>
-        </Link>
+
+          <Link to="/ClinicLabSearch" className="asearch-submit-btn">
+            <button className="search-submit-btn">
+              <span>ابحث عن طبيب او معمل</span>
+              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+            </button>
+          </Link>
+
         </div>
       </div>
     </section>
