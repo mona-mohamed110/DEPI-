@@ -18,9 +18,12 @@ function HeroSection() {
             <strong>نعزز صحتك في كل خطوة.</strong> استمتع برعاية طبية مخصصة من راحة بيتك. تواصل مع <span className="bold-blue">أطباء معتمدين</span>، وقم بإدارة وصفاتك الطبية، وحجز مواعيدك بسهولة. هل أنت مستعد للتحكم في صحتك؟ <span className="bold-blue">ابدأ الآن</span> أو احجز موعداً اليوم.
           </p>
 
-          <button className="cta-button">
-            احجز موعداً الآن <span className="arrow">←</span>
-          </button>
+          <Link to="/login">
+            <button className="cta-button">
+              احجز موعداً الآن <span className="arrow">←</span>
+            </button>
+          </Link>
+          
 
           <div className="trusted-by">
             <div className="brand-logos">
