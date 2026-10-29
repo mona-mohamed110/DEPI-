@@ -3,7 +3,6 @@ import { LuUpload, LuTrash2, LuFileText, LuEye, LuX } from 'react-icons/lu';
 import '../../components/Style/Patient/MedicalFile.css';
 
 const MedicalFile = () => {
-  // استرجاع التقارير المحفوظة من localStorage
   const [reports, setReports] = useState(() => {
     const savedReports = localStorage.getItem('medical_reports');
     if (savedReports) {
@@ -21,12 +20,10 @@ const MedicalFile = () => {
 
   const [activeModalReport, setActiveModalReport] = useState(null);
 
-  // حفظ التقارير (مع الـ url) في localStorage
   useEffect(() => {
     localStorage.setItem('medical_reports', JSON.stringify(reports));
   }, [reports]);
 
-  // استخدام FileReader لتحويل الملف إلى Base64 لكي يتم حفظه واسترجاعه بعد الـ Reload
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -39,7 +36,7 @@ const MedicalFile = () => {
           date: new Date().toLocaleDateString('ar-EG'),
           size: (file.size / (1024 * 1024)).toFixed(1) + ' MB',
           type: isPdf ? 'pdf' : 'image',
-          url: reader.result, // تخزين الـ Base64 ليبقى محفوظاً حتى بعد الـ Reload
+          url: reader.result, 
         };
         setReports((prev) => [newReport, ...prev]);
       };

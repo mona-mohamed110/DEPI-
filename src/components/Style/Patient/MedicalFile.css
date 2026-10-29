@@ -169,7 +169,6 @@
   font-weight: 600;
 }
 
-/* تنسيقات التقارير والأزرار */
 .file-name-cell {
   display: flex;
   align-items: center;
@@ -242,7 +241,6 @@
   font-weight: 600;
 }
 
-/* تنسيقات نافذة المعاينة (Modal) فوق الشاشة */
 .file-modal-overlay {
   position: fixed;
   top: 0;
