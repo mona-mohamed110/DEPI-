@@ -3,7 +3,7 @@ import { LuUpload, LuTrash2, LuFileText, LuEye, LuX } from 'react-icons/lu';
 import '../../components/Style/Patient/MedicalFile.css';
 
 const MedicalFile = () => {
-  // استرجاع التقارير المحفوظة من localStorage أو استخدام القيم الافتراضية
+  // استرجاع التقارير المحفوظة من localStorage
   const [reports, setReports] = useState(() => {
     const savedReports = localStorage.getItem('medical_reports');
     if (savedReports) {
@@ -19,58 +19,44 @@ const MedicalFile = () => {
     ];
   });
 
-  // حالة الـ Modal لعرض الملف فوق الشاشة
   const [activeModalReport, setActiveModalReport] = useState(null);
 
-  // حفظ التقارير في localStorage كلما حدث تغيير
+  // حفظ التقارير (مع الـ url) في localStorage
   useEffect(() => {
-    // نتأكد ألا نخزن روابط مؤقتة قديمة قد تنتهي صلاحيتها، نخزن البيانات الأساسية
-    const reportsToSave = reports.map(r => ({
-      id: r.id,
-      name: r.name,
-      date: r.date,
-      size: r.size,
-      type: r.type,
-      url: r.url && !r.url.startsWith('blob:') ? r.url : '' // حفظ الرابط لو كان حقيقي، أو فارغ للملفات المرفوعة حديثاً بجلسة جديدة
-    }));
-    localStorage.setItem('medical_reports', JSON.stringify(reportsToSave));
+    localStorage.setItem('medical_reports', JSON.stringify(reports));
   }, [reports]);
 
+  // استخدام FileReader لتحويل الملف إلى Base64 لكي يتم حفظه واسترجاعه بعد الـ Reload
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const fileUrl = URL.createObjectURL(file);
-      const isPdf = file.type === 'application/pdf' || file.name.endsWith('.pdf');
-      
-      const newReport = {
-        id: Date.now(),
-        name: file.name,
-        date: new Date().toLocaleDateString('ar-EG'),
-        size: (file.size / (1024 * 1024)).toFixed(1) + ' MB',
-        type: isPdf ? 'pdf' : 'image',
-        url: fileUrl,
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const isPdf = file.type === 'application/pdf' || file.name.endsWith('.pdf');
+        const newReport = {
+          id: Date.now(),
+          name: file.name,
+          date: new Date().toLocaleDateString('ar-EG'),
+          size: (file.size / (1024 * 1024)).toFixed(1) + ' MB',
+          type: isPdf ? 'pdf' : 'image',
+          url: reader.result, // تخزين الـ Base64 ليبقى محفوظاً حتى بعد الـ Reload
+        };
+        setReports((prev) => [newReport, ...prev]);
       };
-      setReports((prev) => [newReport, ...prev]);
+      reader.readAsDataURL(file);
       e.target.value = null;
     }
   };
 
   const handleDeleteReport = (id) => {
-    setReports((prev) => {
-      const target = prev.find((r) => r.id === id);
-      if (target && target.url && target.url.startsWith('blob:')) {
-        URL.revokeObjectURL(target.url);
-      }
-      return prev.filter((report) => report.id !== id);
-    });
-    // لو الملف المحذوف مفتوح حالياً في الـ Modal، نقفل الـ Modal
+    setReports((prev) => prev.filter((report) => report.id !== id));
     if (activeModalReport && activeModalReport.id === id) {
       setActiveModalReport(null);
     }
   };
 
   const handleViewReport = (report) => {
-    if (report.url) {
+    if (report.url && report.url.trim() !== '') {
       setActiveModalReport(report);
     } else {
       alert('هذا ملف تجريبي افتراضي، جرب رفع ملف حقيقي لفتحه ومعاينته.');
@@ -214,7 +200,6 @@ const MedicalFile = () => {
         )}
       </div>
 
-      {/* نافذة العرض المنبثقة (Modal) فوق الشاشة */}
       {activeModalReport && (
         <div className="file-modal-overlay" onClick={closeModal}>
           <div className="file-modal-content" onClick={(e) => e.stopPropagation()}>
