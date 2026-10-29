@@ -1,4 +1,4 @@
-import "./LearnMore.css";
+import "../components/Style/LearnMore.css";
 import { Link } from "react-router";
 
 function LearnMore() {
