@@ -3,7 +3,7 @@
 // import logo from "../assets/logo.png";
 
 import "../components/Style/AuthLayout.css";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/home/Navbar";
 
 
 export default function AuthLayout({ children, wide = false }) {

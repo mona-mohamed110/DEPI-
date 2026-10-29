@@ -1,8 +1,9 @@
+body{
+    background: linear-gradient(180deg, #ffffff 0%, #f5fafe 100%);
+}
 .learn-more-page {
-  padding: 60px 20px;
-  background: linear-gradient(180deg, #ffffff 0%, #f5fafe 100%);
+  padding: 95px 20px;
   min-height: 80vh;
-  font-family: 'Cairo', sans-serif;
 }
 
 .learn-more-container {
@@ -76,10 +77,12 @@
   background-color: #0069ab;
   color: white;
   padding: 14px 32px;
+  border: none;
   border-radius: 10px;
-  text-decoration: none;
+  font-size: 16px;
   font-weight: 700;
   box-shadow: 0 6px 14px rgba(0, 105, 171, 0.35);
+  cursor: pointer;
   transition: background 0.2s ease;
 }
 

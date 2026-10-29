@@ -1,8 +1,8 @@
 import React, { useMemo, useRef, useState } from "react";
 import "../components/Style/ClinicLabSearch.css";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
-import { Link } from "react-router-dom";
+import Navbar from "../components/home/Navbar";
+import Footer from "../components/home/Footer";
+import { Link, useNavigate } from "react-router-dom";
 
 const C = {
   primary: "#1aa3f0",
@@ -65,6 +65,7 @@ const Logo = () => (
 
 /* ------------------------------ الخريطة ------------------------------ */
 function MapView({ places, selectedId, onSelect }) {
+  const navigate = useNavigate();
   const [view, setView] = useState({ scale: 1, x: 0, y: 0 });
   const drag = useRef(null);
   const box = useRef(null);
@@ -169,34 +170,111 @@ function MapView({ places, selectedId, onSelect }) {
 
       {/* بطاقة المكان المختار */}
       {selected && (
-        <div className="hs-popup hs-card" style={{ position: "absolute", bottom: 16, right: 16, left: 16, maxWidth: 420, margin: "0 auto", padding: 16, cursor: "default" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: 16 }}>{selected.name}</div>
-              <div style={{ color: C.primaryDark, fontSize: 13, fontWeight: 600 }}>{selected.specialty}</div>
-            </div>
-            <button onClick={() => onSelect(null)} style={{ border: 0, background: "none", fontSize: 18, cursor: "pointer", color: C.muted }}>✕</button>
-          </div>
-          <div style={{ fontSize: 13, color: C.muted, margin: "8px 0" }}>📍 {selected.address} &nbsp;•&nbsp; 🕒 {selected.hours}</div>
-          <div style={{ display: "flex", gap: 10 }}>
-            <Link to="/Login">
 
-            <button className="hs-btn" style={{ flex: 1, padding: "10px 12px", fontSize: 13 }}>
-              {selected.type === "lab" ? "عرض الفحوصات" : "احجز موعد"}
-            </button>
-            </Link>
-            <Link to="/Login">
-            <button className="hs-chip" style={{ padding: "10px 16px" }}>الملف الشخصي</button>
-=======
-              <button className="hs-btn" style={{ flex: 1, padding: "10px 12px", fontSize: 13 }}>
-                {selected.type === "lab" ? "عرض الفحوصات" : "احجز موعد"}
-              </button>
-            </Link>
-            <Link to="/Login">
-              <button className="hs-chip" style={{ padding: "10px 16px" }}>الملف الشخصي</button>
-            </Link>
-          </div>
-        </div>
+<div
+  className="hs-popup hs-card"
+  style={{
+    position: "absolute",
+    bottom: 16,
+    right: 16,
+    left: 16,
+    maxWidth: 420,
+    margin: "0 auto",
+    padding: 16,
+    cursor: "default",
+  }}
+>
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      gap: 10,
+    }}
+  >
+    <div>
+      <div style={{ fontWeight: 800, fontSize: 16 }}>
+        {selected.name}
+      </div>
+
+      <div
+        style={{
+          color: C.primaryDark,
+          fontSize: 13,
+          fontWeight: 600,
+        }}
+      >
+        {selected.specialty}
+      </div>
+    </div>
+
+    <button
+      onClick={() => onSelect(null)}
+      style={{
+        border: 0,
+        background: "none",
+        fontSize: 18,
+        cursor: "pointer",
+        color: C.muted,
+      }}
+    >
+      ✕
+    </button>
+  </div>
+
+  <div
+    style={{
+      fontSize: 13,
+      color: C.muted,
+      margin: "8px 0",
+    }}
+  >
+    📍 {selected.address} &nbsp;•&nbsp; 🕒 {selected.hours}
+  </div>
+
+  <div style={{ display: "flex", gap: 10 }}>
+    {selected.type === "clinic" && (
+      <button
+        className="hs-btn"
+        style={{
+          flex: 1,
+          padding: "10px 12px",
+          fontSize: 13,
+        }}
+        onClick={() =>
+          navigate("/patient/book", {
+            state: {
+              selectedDoctor: selected,
+              fromSearch: true,
+            },
+          })
+        }
+      >
+        احجز موعد
+      </button>
+    )}
+
+    {selected.type === "lab" && (
+      <button
+        className="hs-btn"
+        style={{
+          flex: 1,
+          padding: "10px 12px",
+          fontSize: 13,
+        }}
+        onClick={() => {
+          // هنربط صفحة المعامل بعدين
+        }}
+      >
+        عرض الفحوصات
+      </button>
+    )}
+
+    <Link to="/Login" className="hs-chip">
+      الملف الشخصي
+    </Link>
+  </div>
+</div>
+
       )}
     </div>
   );

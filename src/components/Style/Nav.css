@@ -76,6 +76,7 @@ body {
   background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
   color: #ffffff;
   box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);
+
 }
 
 .btn-primary:hover {

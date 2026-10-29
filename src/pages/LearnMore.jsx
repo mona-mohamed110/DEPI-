@@ -1,4 +1,5 @@
-import "./LearnMore.css";
+import "../components/Style/LearnMore.css";
+import { Link } from "react-router";
 
 function LearnMore() {
   return (
@@ -35,10 +36,12 @@ function LearnMore() {
           </div>
         </div>
 
-        <div className="back-home-wrapper">
-          <a href="/" className="back-home-btn">
-            العودة إلى الرئيسية
-          </a>
+        <div className="back-home-wrapper">       
+          <Link to="/">
+            <button className="back-home-btn">
+              العودة إلى الرئيسية
+            </button>
+          </Link>
         </div>
       </div>
     </div>

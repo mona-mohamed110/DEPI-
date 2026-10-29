@@ -1,13 +1,12 @@
 
-import Navbar from "../components/Navbar";
-import HeroSection from "../components/HeroSection";
-import AboutSection from "../components/AboutSection";
-import ServicesSection from "../components/ServicesSection";
-import HowItWorks from "../components/HowItWorks";
+import Navbar from "../components/home/Navbar";
+import HeroSection from "../components/home/HeroSection";
+import AboutSection from "../components/home/AboutSection";
+import ServicesSection from "../components/home/ServicesSection";
+import HowItWorks from "../components/home/HowItWorks";
 
-import Footer from "../components/Footer";  
-import HelpDesk from "../components/HelpDesk";
-
+import Footer from "../components/home/Footer";  
+import HelpDesk from "../components/home/HelpDesk";
 
 
 

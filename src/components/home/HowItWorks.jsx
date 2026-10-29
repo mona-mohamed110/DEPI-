@@ -1,10 +1,10 @@
 
-import doc1 from "../assets/274ee88b4ba090887500f714810fb576dab7b349.png"
-import doc2 from "../assets/e2a5b7fb191c4fe5f86a038fa314f7425339cd7d.png"
-import doc3 from "../assets/998812e9dc462bbde9dab5699a17e50fd8f50dda.png"
-import doc4 from "../assets/4eaea67a8370b78ad225c6d11ccacd4e1b7de8f5.png"
-import doc5 from "../assets/fa0c789d121f218650c955cb43aa5eb4666ffa9d.png"
-import "./Style/HowItWorks.css";
+import doc1 from "../../assets/274ee88b4ba090887500f714810fb576dab7b349.png";
+import doc2 from "../../assets/e2a5b7fb191c4fe5f86a038fa314f7425339cd7d.png";
+import doc3 from "../../assets/998812e9dc462bbde9dab5699a17e50fd8f50dda.png";
+import doc4 from "../../assets/4eaea67a8370b78ad225c6d11ccacd4e1b7de8f5.png";
+import doc5 from "../../assets/fa0c789d121f218650c955cb43aa5eb4666ffa9d.png";
+import "../Style/HowItWorks.css";
 import { useEffect, useRef, useState } from "react";
 
 

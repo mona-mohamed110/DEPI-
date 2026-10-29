@@ -1,6 +1,6 @@
-/* ألوان الوضع الفاتح والداكن — محصورة داخل .patient فقط */
-.patient,
-.patient[data-theme='light'] {
+/* ألوان الوضع الفاتح والداكن — على أي عنصر فيه data-theme */
+[data-theme='light'],
+.patient {
   color-scheme: light;
   --bg: #f7f9fc;
   --card: #ffffff;
@@ -12,7 +12,7 @@
   --dg: #dc2626;
   --shadow: 0 8px 28px rgba(15, 27, 45, 0.14);
 }
-.patient[data-theme='dark'] {
+[data-theme='dark'] {
   color-scheme: dark;
   --bg: #0b1220;
   --card: #131c2e;
