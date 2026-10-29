@@ -1,0 +1,135 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');
+
+.prescriptions-wrapper {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  font-family: 'Cairo', sans-serif;
+  box-sizing: border-box;
+  text-align: right;
+  background-color: #f7f9fc;
+}
+
+.prescriptions-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.header-text {
+  width: 100%;
+  text-align: right;
+}
+
+.main-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #0b132a;
+  margin: 0 0 4px 0;
+}
+
+.sub-title {
+  font-size: 15px;
+  color: #8a94a6;
+  font-weight: 500;
+  margin: 0;
+}
+
+.tab-buttons-group {
+  display: flex;
+  align-self: flex-start;
+  background-color: #ffffff;
+  border: 1px solid #eef2f8;
+  border-radius: 30px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.tab-btn {
+  background: transparent;
+  color: #475569;
+  border: none;
+  padding: 8px 28px;
+  border-radius: 20px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.tab-btn.active {
+  background-color: #2b70f0;
+  color: #ffffff;
+}
+
+.prescriptions-card {
+  background-color: #ffffff;
+  border-radius: 18px;
+  border: 1px solid #eef2f8;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
+  overflow: hidden;
+  padding: 8px 12px;
+}
+
+.prescriptions-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: right;
+}
+
+.prescriptions-table th {
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.prescriptions-table td {
+  padding: 22px 24px;
+  font-size: 14px;
+  color: #334155;
+  font-weight: 600;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.prescriptions-table tr:last-child td {
+  border-bottom: none;
+}
+
+.drug-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0b132a;
+}
+
+.status-tag {
+  display: inline-block;
+  padding: 4px 18px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status-green {
+  background-color: #f0fdf4;
+  color: #16a34a;
+}
+
+.status-blue {
+  background-color: #eff6ff;
+  color: #3b82f6;
+}
+
+@media (max-width: 768px) {
+  .prescriptions-card {
+    overflow-x: auto;
+  }
+  .prescriptions-table {
+    min-width: 650px;
+  }
+}

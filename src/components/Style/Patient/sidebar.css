@@ -1,0 +1,45 @@
+/* السايدبار */
+.patient .sidebar {
+  width: 260px; flex-shrink: 0; background: var(--card);
+  border-inline-end: 1px solid var(--bd);
+  padding: 18px 12px; position: sticky; top: 0; height: 100vh;
+  display: flex; flex-direction: column;
+}
+
+.patient .patient-logo {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 4px 12px 20px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--bd);
+}
+
+.patient .patient-logo-img {
+  display: block;
+  margin: 0 auto;
+  width: 70px;      /* تحكمي في الحجم من هنا */
+  height: auto;
+  max-width: 100%;
+}
+
+.patient .nav { flex: 1; overflow-y: auto; }
+.patient .nav a {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  border-radius: 10px; color: var(--tx); text-decoration: none; font-size: 15px; margin-bottom: 2px;
+}
+.patient .nav a:hover { background: var(--pr2); }
+.patient .nav a.on { background: var(--pr2); color: var(--pr); font-weight: 700; }
+
+@media (max-width: 820px) {
+  .patient .sidebar {
+    width: 100%; height: auto; flex-direction: row; align-items: center; gap: 6px;
+    position: sticky; top: 0; z-index: 20; padding: 8px;
+    border-inline-end: 0; border-bottom: 1px solid var(--bd);
+  }
+  .patient .logo { display: none; }
+  .patient .nav { display: flex; gap: 4px; overflow-x: auto; flex: 1; }
+  .patient .nav a { white-space: nowrap; margin: 0; padding: 8px 12px; }
+  .patient .nav a span { display: none; }
+  .patient .nav a.on span { display: inline; }
+}
