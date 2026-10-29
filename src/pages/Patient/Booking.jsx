@@ -1,4 +1,3 @@
-
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useApp } from "../../context/AppContext.jsx";
@@ -150,6 +149,21 @@ function Booking() {
 
   const handleConfirm = () => {
     if (!doctor || !selectedDay || !selectedTime) return;
+
+    // حفظ الموعد عشان يظهر في صفحة مواعيدي
+    const old = JSON.parse(localStorage.getItem("appointments") || "[]");
+
+    const newAppointment = {
+      id: Date.now(),
+      doctor: { name: doctor.name, specialty: doctor.specialty },
+      date: selectedDay,
+      time: selectedTime,
+    };
+
+    localStorage.setItem(
+      "appointments",
+      JSON.stringify([...old, newAppointment])
+    );
 
     setConfirmed(true);
   };

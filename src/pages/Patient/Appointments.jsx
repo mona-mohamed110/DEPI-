@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect, useMemo, useState } from "react";
 import "../../components/Style/Patient/Appointments.css";
 
@@ -44,35 +43,30 @@ const realApi = {
   cancel: (id) => request(`/${id}`, { method: "DELETE" }),
 };
 
-/* ---- بيانات تجريبية لحد ما تربط الـ API (بتتشال لما USE_MOCK = false) ---- */
+/* ---- بيانات تجريبية بتتخزن في localStorage (بتتشال لما USE_MOCK = false) ---- */
 const pad = (n) => String(n).padStart(2, "0");
 const toDateInput = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const toTimeInput = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
-const addDays = (n) => {
-  const d = new Date();
-  d.setDate(d.getDate() + n);
-  return toDateInput(d);
-};
 
-let mockDb = [
-  { id: 1, doctor: { name: "د. أحمد سمير", specialty: "باطنة" }, date: addDays(1), time: "10:30" },
-  { id: 2, doctor: { name: "د. سارة علي", specialty: "قلب" }, date: addDays(3), time: "16:00" },
-];
+const readDb = () => JSON.parse(localStorage.getItem("appointments") || "[]");
+const writeDb = (list) => localStorage.setItem("appointments", JSON.stringify(list));
+
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const mockApi = {
   getAll: async () => {
     await wait(600);
-    return [...mockDb];
+    return readDb();
   },
   update: async (id, { date, time }) => {
     await wait(500);
-    mockDb = mockDb.map((a) => (a.id === id ? { ...a, date, time } : a));
-    return mockDb.find((a) => a.id === id);
+    const list = readDb().map((a) => (a.id === id ? { ...a, date, time } : a));
+    writeDb(list);
+    return list.find((a) => a.id === id);
   },
   cancel: async (id) => {
     await wait(500);
-    mockDb = mockDb.filter((a) => a.id !== id);
+    writeDb(readDb().filter((a) => a.id !== id));
     return null;
   },
 };
