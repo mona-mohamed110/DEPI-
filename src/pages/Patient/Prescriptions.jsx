@@ -1,5 +1,5 @@
 import  { useState } from 'react';
-import './prescriptions.css';
+import '../../components/Style/Patient/prescriptions.css';
 
 const Prescriptions = () => {
   const [activeTab, setActiveTab] = useState('current');

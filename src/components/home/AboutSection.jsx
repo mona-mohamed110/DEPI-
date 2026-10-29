@@ -1,5 +1,5 @@
-import aboutImage from "../assets/about-team.png";
-import "./Style/AboutSection.css";
+import aboutImage from "../../assets/about-team.png";
+import "../Style/AboutSection.css";
 import { Link } from "react-router-dom";
 
 function AboutSection() {

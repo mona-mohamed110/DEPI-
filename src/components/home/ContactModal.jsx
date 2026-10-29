@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import "./Style/ContactModal.css";
+import "../Style/ContactModal.css";
 
 export default function ContactModal({ isOpen, onClose }) {
   useEffect(
