@@ -52,7 +52,6 @@ export const router = createBrowserRouter([
     ],
   },
 
-  { path: "/", element: <Layout />, children: [ /* كما هي */ ] },
 
   {
     path: "/patient",

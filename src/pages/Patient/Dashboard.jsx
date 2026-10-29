@@ -4,7 +4,7 @@ import {
   LuLock, 
   LuTestTube 
 } from 'react-icons/lu';
-import './dashboard.css';
+import '../../components/Style/Patient/dashboard.css';
 
 const MainDashboard = () => {
   return (

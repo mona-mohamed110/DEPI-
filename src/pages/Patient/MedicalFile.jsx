@@ -1,6 +1,6 @@
 import  { useState } from 'react';
 import { LuUpload } from 'react-icons/lu';
-import './MedicalFile.css';
+import '../../components/Style/Patient/MedicalFile.css';
 
 const MedicalFile = () => {
   const [uploadedFile, setUploadedFile] = useState(null);
