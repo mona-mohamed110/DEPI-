@@ -1,0 +1,182 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');
+
+.medical-file-wrapper {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  font-family: 'Cairo', sans-serif;
+  box-sizing: border-box;
+  text-align: right;
+  background-color: #f7f9fc;
+}
+
+.page-header {
+  margin-bottom: 24px;
+  text-align: right;
+}
+
+.main-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #0b132a;
+  margin: 0 0 4px 0;
+}
+
+.sub-title {
+  font-size: 15px;
+  color: #8a94a6;
+  font-weight: 500;
+  margin: 0;
+}
+
+.medical-card {
+  background-color: #ffffff;
+  border-radius: 18px;
+  border: 1px solid #eef2f8;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.card-section-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0b132a;
+  margin: 0 0 20px 0;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.info-item {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.info-label {
+  font-size: 14px;
+  color: #8a94a6;
+  font-weight: 600;
+}
+
+.info-value {
+  font-size: 15px;
+  color: #0b132a;
+  font-weight: 700;
+}
+
+.chronic-diseases-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chips-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chronic-chip {
+  background-color: #fefce8;
+  color: #ca8a04;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.table-card {
+  overflow: hidden;
+  padding: 24px 0;
+}
+
+.table-card .card-section-title {
+  padding: 0 24px;
+}
+
+.medical-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: right;
+}
+
+.medical-table th {
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 16px 24px;
+  border-bottom: 1px solid #f1f5f9;
+  background-color: #fafbfc;
+}
+
+.medical-table td {
+  padding: 18px 24px;
+  font-size: 14px;
+  color: #334155;
+  font-weight: 600;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.medical-table tr:last-child td {
+  border-bottom: none;
+}
+
+.condition-name {
+  font-weight: 800;
+  color: #0b132a;
+}
+
+.upload-dropzone {
+  display: block;
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+  padding: 30px;
+  text-align: center;
+  background-color: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.upload-dropzone:hover {
+  border-color: #2b70f0;
+  background-color: #f0f6ff;
+}
+
+.upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.upload-icon {
+  font-size: 32px;
+  color: #2b70f0;
+}
+
+.upload-text {
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  .table-card {
+    overflow-x: auto;
+  }
+  .medical-table {
+    min-width: 500px;
+  }
+}
