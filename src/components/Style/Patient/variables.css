@@ -1,0 +1,26 @@
+/* ألوان الوضع الفاتح والداكن — محصورة داخل .patient فقط */
+.patient,
+.patient[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f7f9fc;
+  --card: #ffffff;
+  --tx: #0f1b2d;
+  --mu: #64748b;
+  --bd: #e5eaf2;
+  --pr: #2563eb;
+  --pr2: #eff4ff;
+  --dg: #dc2626;
+  --shadow: 0 8px 28px rgba(15, 27, 45, 0.14);
+}
+.patient[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0b1220;
+  --card: #131c2e;
+  --tx: #e6edf7;
+  --mu: #93a1b8;
+  --bd: #25314a;
+  --pr: #5b8def;
+  --pr2: #1b2a4a;
+  --dg: #f87171;
+  --shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+}

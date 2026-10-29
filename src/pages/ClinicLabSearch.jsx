@@ -180,7 +180,7 @@ function MapView({ places, selectedId, onSelect }) {
           <div style={{ fontSize: 13, color: C.muted, margin: "8px 0" }}>📍 {selected.address} &nbsp;•&nbsp; 🕒 {selected.hours}</div>
           <div style={{ display: "flex", gap: 10 }}>
             <Link to="/Login">
-<<<<<<< HEAD
+
             <button className="hs-btn" style={{ flex: 1, padding: "10px 12px", fontSize: 13 }}>
               {selected.type === "lab" ? "عرض الفحوصات" : "احجز موعد"}
             </button>
@@ -194,7 +194,6 @@ function MapView({ places, selectedId, onSelect }) {
             </Link>
             <Link to="/Login">
               <button className="hs-chip" style={{ padding: "10px 16px" }}>الملف الشخصي</button>
->>>>>>> 5e9ef411a2b5ce219dbb5befce7472c0f0600587
             </Link>
           </div>
         </div>

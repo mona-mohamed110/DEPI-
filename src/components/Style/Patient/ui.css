@@ -1,0 +1,44 @@
+/* عناصر الواجهة المشتركة: كروت، أزرار، حقول، مفتاح، توست */
+.patient .grid { display: grid; gap: 14px; }
+.patient .g2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.patient .card { background: var(--card); border: 1px solid var(--bd); border-radius: 12px; padding: 20px; }
+.patient .row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--bd); }
+.patient .row:last-child { border: 0; }
+.patient .row .m { flex: 1; min-width: 0; }
+
+.patient .av {
+  width: 44px; height: 44px; border-radius: 50%; background: var(--pr2); color: var(--pr);
+  display: grid; place-items: center; font-weight: 700; flex-shrink: 0;
+}
+.patient .av.big { width: 64px; height: 64px; font-size: 24px; }
+.patient .profile-head { display: flex; align-items: center; gap: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--bd); font-size: 18px; }
+
+.patient label { font-size: 14px; color: var(--mu); }
+.patient input {
+  font: inherit; width: 100%; border: 1px solid var(--bd); background: var(--bg);
+  color: var(--tx); border-radius: 10px; padding: 10px; margin-top: 4px;
+}
+
+.patient .btn { border: 0; border-radius: 8px; padding: 9px 18px; background: var(--pr); color: #fff; font-weight: 500; }
+.patient .btn:hover { filter: brightness(0.93); }
+.patient .btn.o { background: transparent; border: 1px solid var(--bd); color: var(--tx); }
+.patient .btn.s { padding: 5px 11px; font-size: 13px; }
+
+.patient .switch {
+  position: relative; width: 42px; height: 24px; border: 0; padding: 0;
+  background: var(--bd); border-radius: 20px; flex-shrink: 0; transition: background 0.2s;
+}
+.patient .switch::after {
+  content: ''; position: absolute; top: 3px; inset-inline-start: 3px;
+  width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: inset-inline-start 0.2s;
+}
+.patient .switch.on { background: var(--pr); }
+.patient .switch.on::after { inset-inline-start: 21px; }
+
+.patient .toast {
+  position: fixed; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); inset-inline: 0; margin: auto;
+  width: max-content; max-width: 90%; background: var(--tx); color: var(--bg);
+  padding: 10px 18px; border-radius: 10px; opacity: 0; transition: 0.3s; pointer-events: none;
+}
+.patient .toast.show { opacity: 1; }
+

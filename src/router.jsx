@@ -7,6 +7,18 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPasswordPage from "./pages/Forget Password/ForgotPasswordPage";
 
+import PatientLayout from "./components/Patient/PatientLayout";
+import Dashboard from "./pages/Patient/Dashboard";
+import MedicalFile from "./pages/Patient/MedicalFile";
+import Prescriptions from "./pages/Patient/Prescriptions";
+import Results from "./pages/Patient/Results";
+import SymptomTriage from "./pages/Patient/SymptomTriage";
+import Booking from "./pages/Patient/Booking";
+import Appointments from "./pages/Patient/Appointments";
+import Permissions from "./pages/Patient/Permissions";
+import Profile from "./pages/Patient/Profile";
+import AccountSettings from "./pages/Patient/AccountSettings";
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -36,6 +48,27 @@ export const router = createBrowserRouter([
         path: "forgot-password",
         element: <ForgotPasswordPage />,
       },
+
+    ],
+  },
+
+  { path: "/", element: <Layout />, children: [ /* كما هي */ ] },
+
+  {
+    path: "/patient",
+    element: <PatientLayout />,
+    children: [
+      { index: true, element: <Dashboard /> },
+      { path: "medical-file", element: <MedicalFile /> },
+      { path: "prescriptions", element: <Prescriptions /> },
+      { path: "results", element: <Results /> },
+      { path: "symptom-triage", element: <SymptomTriage /> },
+      { path: "book", element: <Booking /> },
+      { path: "appointments", element: <Appointments /> },
+      { path: "permissions", element: <Permissions /> },
+      { path: "profile", element: <Profile /> },
+      { path: "account-settings", element: <AccountSettings /> },
     ],
   },
 ]);
+
