@@ -122,8 +122,6 @@
 
 /* ---------- Buttons ---------- */
 .btn {
-  height: 40px;
-  padding: 0 20px;
   border: 1px solid transparent;
   border-radius: 10px;
   font-size: 14.5px;
