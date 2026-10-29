@@ -1,0 +1,448 @@
+
+.booking-page {
+  --bk-bg: var(--bg, #f7f9fc);
+  --bk-card: var(--card-bg, #ffffff);
+  --bk-text: var(--text, #172033);
+  --bk-muted: var(--text-muted, #778196);
+  --bk-border: var(--border, #e5e9f0);
+  --bk-primary: var(--primary, #2563eb);
+  --bk-primary-soft: var(--primary-soft, #eff4ff);
+
+  min-height: 100vh;
+  padding: 30px 24px 48px;
+  background: var(--bk-bg);
+  color: var(--bk-text);
+  box-sizing: border-box;
+}
+
+[data-theme="dark"] .booking-page {
+  --bk-bg: var(--bg, #0b1220);
+  --bk-card: var(--card-bg, #111a2e);
+  --bk-text: var(--text, #e5e7eb);
+  --bk-muted: var(--text-muted, #94a3b8);
+  --bk-border: var(--border, #29354b);
+  --bk-primary-soft: var(--primary-soft, #192746);
+}
+
+.booking-page *,
+.booking-page *::before,
+.booking-page *::after {
+  box-sizing: border-box;
+}
+
+.booking-container {
+  max-width: 1050px;
+  margin: 0 auto;
+}
+
+/* Top bar */
+
+.booking-topbar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 34px;
+}
+
+.booking-title {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.5;
+  font-weight: 750;
+}
+
+.booking-search-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 10px 15px;
+  color: var(--bk-primary);
+  background: var(--bk-card);
+  border: 1px solid var(--bk-border);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.booking-search-btn span {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.booking-search-btn:hover {
+  background: var(--bk-primary-soft);
+  border-color: var(--bk-primary);
+}
+
+/* Doctor section */
+
+.booking-doctor-section {
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--bk-border);
+}
+
+.booking-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.booking-section-heading h2 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.6;
+  font-weight: 700;
+}
+
+.booking-change-btn {
+  padding: 6px 10px;
+  color: var(--bk-primary);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.booking-change-btn:hover {
+  background: var(--bk-primary-soft);
+}
+
+.booking-doctor-info {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+}
+
+.booking-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  color: var(--bk-primary);
+  background: var(--bk-primary-soft);
+  border-radius: 50%;
+  font-size: 21px;
+  font-weight: 700;
+}
+
+.booking-doctor-details {
+  min-width: 0;
+  flex: 1;
+}
+
+.booking-doctor-details h3 {
+  margin: 0 0 5px;
+  font-size: 16px;
+  line-height: 1.5;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.booking-doctor-details p {
+  margin: 0;
+  color: var(--bk-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.booking-rating {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.booking-rating span {
+  color: #e8a323;
+}
+
+/* Day and time sections */
+
+.booking-selection-section {
+  padding: 26px 0;
+  border-bottom: 1px solid var(--bk-border);
+}
+
+.booking-selection-section .booking-section-heading {
+  margin-bottom: 18px;
+}
+
+.booking-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.booking-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 0;
+  min-height: 112px;
+  padding: 12px 5px;
+  color: var(--bk-text);
+  background: var(--bk-card);
+  border: 1px solid var(--bk-border);
+  border-radius: 9px;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.booking-day:hover {
+  border-color: var(--bk-primary);
+}
+
+.booking-day-name {
+  color: var(--bk-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.booking-day-number {
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.booking-day-month {
+  color: var(--bk-muted);
+  font-size: 11px;
+}
+
+.booking-day-active,
+.booking-day-active:hover {
+  color: var(--bk-primary);
+  background: var(--bk-primary-soft);
+  border-color: var(--bk-primary);
+  box-shadow: inset 0 0 0 1px var(--bk-primary);
+}
+
+.booking-day-active .booking-day-name,
+.booking-day-active .booking-day-month {
+  color: var(--bk-primary);
+}
+
+.booking-times {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  max-width: 650px;
+}
+
+.booking-time {
+  min-height: 44px;
+  padding: 10px 12px;
+  color: var(--bk-text);
+  background: var(--bk-card);
+  border: 1px solid var(--bk-border);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.booking-time:hover {
+  border-color: var(--bk-primary);
+}
+
+.booking-time-active,
+.booking-time-active:hover {
+  color: #ffffff;
+  background: var(--bk-primary);
+  border-color: var(--bk-primary);
+  font-weight: 600;
+}
+
+.booking-empty-message {
+  margin: 0;
+  color: var(--bk-muted);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+/* Confirmation */
+
+.booking-footer {
+  display: flex;
+  justify-content: flex-start;
+  padding-top: 24px;
+}
+
+.booking-primary-btn {
+  min-height: 44px;
+  padding: 11px 24px;
+  color: #ffffff;
+  background: var(--bk-primary);
+  border: 1px solid var(--bk-primary);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: opacity 0.2s ease, background 0.2s ease;
+}
+
+.booking-primary-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.booking-primary-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.booking-confirm-btn {
+  min-width: 180px;
+}
+
+.booking-success {
+  margin: 18px 0 0;
+  padding: 13px 15px;
+  color: #166534;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+[data-theme="dark"] .booking-success {
+  color: #bbf7d0;
+  background: #14532d;
+  border-color: #166534;
+}
+
+/* No doctor selected */
+
+.booking-empty-state {
+  padding: 55px 20px;
+  text-align: center;
+  background: var(--bk-card);
+  border: 1px solid var(--bk-border);
+  border-radius: 12px;
+}
+
+.booking-empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 16px;
+  color: var(--bk-primary);
+  background: var(--bk-primary-soft);
+  border-radius: 50%;
+  font-size: 26px;
+}
+
+.booking-empty-state h2 {
+  margin: 0 0 8px;
+  font-size: 19px;
+}
+
+.booking-empty-state p {
+  margin: 0 auto 20px;
+  color: var(--bk-muted);
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.booking-empty-state .booking-primary-btn {
+  margin-top: 2px;
+}
+
+/* Responsive */
+
+@media (max-width: 760px) {
+  .booking-page {
+    padding: 22px 16px 35px;
+  }
+
+  .booking-topbar {
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 26px;
+  }
+
+  .booking-title {
+    font-size: 23px;
+  }
+
+  .booking-search-btn {
+    max-width: 58%;
+    padding: 9px 10px;
+    font-size: 12px;
+  }
+
+  .booking-days {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .booking-times {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  .booking-page {
+    padding: 18px 12px 28px;
+  }
+
+  .booking-topbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .booking-search-btn {
+    max-width: 100%;
+  }
+
+  .booking-doctor-info {
+    gap: 10px;
+  }
+
+  .booking-avatar {
+    width: 44px;
+    height: 44px;
+  }
+
+  .booking-section-heading h2 {
+    font-size: 16px;
+  }
+
+  .booking-days {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .booking-day {
+    min-height: 100px;
+  }
+
+  .booking-times {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .booking-confirm-btn {
+    width: 100%;
+  }
+}
