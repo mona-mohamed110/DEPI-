@@ -1,0 +1,198 @@
+/* ملف الستايل الوحيد للوحة المعمل — كل الكلاسات بادئة بـ lb- ومحصورة داخل .lab-app */
+@import url("https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap");
+
+.lab-app{
+  --bg:#f6f8fd;--card:#fff;--side:#fff;--tx:#0f1b2d;--mu:#6b7a90;--bd:#e6ebf3;--input:#fff;
+  --pr:#2563eb;--pr2:#eef3ff;--ok:#15803d;--ok2:#ecfdf3;--wn:#b45309;--wn2:#fff6dd;--dg:#dc2626;--shadow:0 1px 2px rgba(15,27,45,.04);
+  position:fixed;inset:0;display:flex;overflow:hidden;background:var(--bg);color:var(--tx);
+  font-family:Tajawal,Cairo,Tahoma,sans-serif;line-height:1.6;
+}
+.lab-app[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0b1220;--card:#121b2e;--side:#0f1729;--tx:#e7edf7;--mu:#93a1b8;--bd:#222e45;--input:#0f1729;
+  --pr:#5b93ff;--pr2:#16254a;--ok:#4ade80;--ok2:#10291c;--wn:#fbbf24;--wn2:#2e2410;--dg:#f87171;--shadow:none;
+}
+.lab-app *{box-sizing:border-box}
+.lab-app h1{font-size:26px;margin:0 0 4px}
+.lab-app h2{font-size:17px;margin:0 0 12px}
+.lab-app .lb-ic{flex-shrink:0}
+.lab-app :focus-visible{outline:2px solid var(--pr);outline-offset:2px}
+
+/* ---------- Sidebar ---------- */
+.lb-side{width:260px;flex-shrink:0;background:var(--side);border-inline-end:1px solid var(--bd);padding:0 12px 16px;
+  height:100%;display:flex;flex-direction:column}
+.lb-logo{padding:22px 8px 16px;border-bottom:1px solid var(--bd);margin-bottom:16px;text-align:center}
+.lb-logo img{max-width:100%;height:84px;object-fit:contain}
+.lb-nav{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.lb-nav a{display:flex;align-items:center;gap:12px;height:46px;padding:0 14px;border-radius:12px;color:var(--tx);text-decoration:none;font-size:15px;transition:background .15s}
+.lb-nav a:hover{background:var(--pr2)}
+.lb-nav a.on{background:var(--pr2);color:var(--pr);font-weight:700}
+.lb-tag{margin-inline-start:auto;background:var(--pr);color:#fff;font-size:11px;border-radius:20px;padding:0 8px;min-width:22px;text-align:center}
+.lb-side-foot{margin-top:auto;border-top:1px solid var(--bd);padding-top:14px}
+.lb-set{position:relative}
+.lb-set-btn{width:100%;display:flex;align-items:center;gap:12px;height:50px;padding:0 14px;border-radius:12px;border:1px solid var(--bd);
+  background:var(--pr2);color:var(--pr);font:inherit;font-size:14px;cursor:pointer}
+.lb-set-btn .lb-chev{margin-inline-start:auto;display:flex}
+.lb-menu{position:absolute;bottom:calc(100% + 8px);inset-inline:0;background:var(--card);border:1px solid var(--bd);border-radius:14px;
+  padding:6px;box-shadow:0 12px 32px rgba(15,27,45,.18);z-index:30}
+.lb-menu-h{font-size:12px;color:var(--mu);padding:8px 12px 6px}
+.lb-mi{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border-radius:10px;color:var(--tx);text-decoration:none;
+  background:none;border:0;font:inherit;font-size:14px;cursor:pointer;text-align:start}
+.lb-mi:hover{background:var(--pr2)}
+.lb-mi em{font-style:normal;color:var(--mu);font-size:12px;margin-inline-start:auto}
+.lb-mi em + .lb-ic{color:var(--mu)}
+.lb-mi .lb-sw{margin-inline-start:auto}
+.lb-mi.danger{color:var(--dg)}
+.lb-hr{border:0;border-top:1px solid var(--bd);margin:6px 0}
+
+
+/* قائمة اللغة داخل القائمة */
+.lb-mi.active{background:var(--pr2)}
+.lb-lchev{display:flex;color:var(--mu);transition:transform .2s}
+.lb-lchev.open{transform:rotate(-90deg)}
+.lab-app[dir="ltr"] .lb-lchev.open{transform:rotate(90deg)}
+.lb-langs{padding:4px 0}
+.lb-lang{display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 14px 10px 44px;border:0;background:none;
+  color:var(--tx);font:inherit;font-size:14px;cursor:pointer;border-radius:10px;text-align:start}
+.lab-app[dir="rtl"] .lb-lang{padding:10px 44px 10px 14px}
+.lb-lang:hover{background:var(--pr2)}
+.lb-lang.on{color:var(--pr);font-weight:700}
+
+
+/* منتقي التاريخ (تقويم) */
+.lb-dp{position:relative}
+.lb-dp-btn{display:flex;align-items:center;gap:10px;min-width:210px;height:100%;padding:10px 14px;border:1px solid var(--bd);border-radius:10px;
+  background:var(--input);color:var(--tx);font:inherit;cursor:pointer}
+.lb-dp-btn .lb-x{margin-inline-start:auto;color:var(--mu);font-size:18px;line-height:1;padding:0 2px}
+.lb-cal{position:absolute;top:calc(100% + 8px);inset-inline-end:0;width:330px;max-width:92vw;background:var(--card);border:1px solid var(--bd);
+  border-radius:16px;box-shadow:0 16px 40px rgba(15,27,45,.22);z-index:40;overflow:hidden}
+.lb-cal-top{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--bd);font-weight:500}
+.lb-cal-top button{font:inherit;font-size:13px;border:0;background:none;color:var(--pr);cursor:pointer}
+.lb-cal-nav{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 6px}
+.lb-cal-nav b{font-size:16px}
+.lb-cal-nav div{display:flex;gap:6px}
+.lb-cal-nav button{width:32px;height:32px;border:0;border-radius:8px;background:none;color:var(--mu);cursor:pointer;display:grid;place-items:center}
+.lb-cal-nav button:hover{background:var(--pr2);color:var(--pr)}
+.lb-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:6px 14px 16px;text-align:center}
+.lb-cal-wd{font-size:13px;color:var(--mu);padding:8px 0}
+.lb-cal-d{height:38px;border:0;border-radius:50%;background:none;color:var(--tx);font:inherit;font-size:14px;cursor:pointer;position:relative;aspect-ratio:1;width:100%;max-width:38px;margin:auto}
+.lb-cal-d:disabled{color:var(--mu);opacity:.35;cursor:default}
+.lb-cal-d.out:not(:disabled){opacity:.7}
+.lb-cal-d.has::after{content:"";position:absolute;bottom:4px;inset-inline:0;margin:auto;width:4px;height:4px;border-radius:50%;background:var(--pr)}
+.lb-cal-d:not(:disabled):hover{background:var(--pr2)}
+.lb-cal-d.sel{background:var(--pr);color:#fff;font-weight:700}
+.lb-cal-d.sel::after{background:#fff}
+.lab-app[data-theme="dark"] .lb-cal-d.sel{color:#06101f}
+.lb-cal-d.sel:hover{background:var(--pr)}
+
+/* ---------- Main ---------- */
+.lb-main{flex:1;min-width:0;height:100%;overflow-y:auto;overflow-x:hidden;padding:36px 44px;scrollbar-gutter:stable}
+.lb-main > *{max-width:1160px}
+/* شريط التمرير يكون ناحية الـ sidebar (بين الـ sidebar والمحتوى) */
+.lab-app[dir="rtl"] .lb-main{direction:ltr}
+.lab-app[dir="rtl"] .lb-main > *{direction:rtl;margin-left:auto;margin-right:0}
+.lab-app[dir="ltr"] .lb-main{direction:rtl}
+.lab-app[dir="ltr"] .lb-main > *{direction:ltr;margin-right:auto;margin-left:0}
+.lb-sub{color:var(--mu);margin:0 0 22px}
+.lb-grid{display:grid;gap:16px}
+.lb-g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.lb-g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.lb-narrow{max-width:640px}
+.lb-card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:22px;box-shadow:var(--shadow)}
+
+/* stats */
+.lb-stat{display:flex;flex-direction:column;gap:4px}
+.lb-stat span{color:var(--mu);font-size:13px}
+.lb-stat b{font-size:26px;line-height:1.2}
+.lb-tile{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;margin-bottom:10px;background:var(--pr2);color:var(--pr)}
+.lb-tile.wn{background:var(--wn2);color:var(--wn)}.lb-tile.ok{background:var(--ok2);color:var(--ok)}.lb-tile.mu{background:var(--bg);color:var(--mu)}
+
+/* rows & badges */
+.lb-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--bd);flex-wrap:wrap}
+.lb-row:last-child{border-bottom:0}
+.lb-m{flex:1;min-width:140px}
+.lb-m b{display:block}
+.lb-row small{color:var(--mu);display:block}
+.lb-ty{width:44px;height:44px;border-radius:12px;background:var(--pr2);display:grid;place-items:center;font-size:20px;flex-shrink:0}
+.lb-badge{font-size:12px;padding:2px 12px;border-radius:20px;background:var(--pr2);color:var(--pr);white-space:nowrap}
+.lb-badge.ok{background:var(--ok2);color:var(--ok)}.lb-badge.wn{background:var(--wn2);color:var(--wn)}
+
+/* buttons */
+.lb-btn{font:inherit;border:0;border-radius:10px;padding:10px 20px;background:var(--pr);color:#fff;cursor:pointer;font-weight:500;transition:filter .15s}
+.lb-btn:hover{filter:brightness(.93)}
+.lb-btn:disabled{opacity:.6;cursor:not-allowed}
+.lb-btn.lb-o{background:transparent;border:1px solid var(--bd);color:var(--tx)}
+.lb-btn.lb-s{padding:6px 14px;font-size:13px}
+.lab-app[data-theme="dark"] .lb-btn:not(.lb-o){color:#06101f}
+
+/* tabs & chips */
+.lb-tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.lb-tabs button,.lb-chip{font:inherit;border:1px solid var(--bd);background:var(--card);color:var(--tx);cursor:pointer}
+.lb-tabs button{padding:6px 16px;border-radius:20px}
+.lb-chip{padding:7px 16px;border-radius:10px}
+.lb-tabs button.on,.lb-chip.on{background:var(--pr);color:#fff;border-color:var(--pr)}
+.lab-app[data-theme="dark"] .lb-tabs button.on,.lab-app[data-theme="dark"] .lb-chip.on{color:#06101f}
+.lb-chips{display:flex;flex-wrap:wrap;gap:8px}
+
+/* forms */
+.lab-app label{display:block;font-size:13px;color:var(--mu);margin:14px 0 5px}
+.lab-app label.lb-first{margin-top:0}
+.lab-app input:not([type=file]),.lab-app select,.lab-app textarea{font:inherit;width:100%;border:1px solid var(--bd);background:var(--input);color:var(--tx);border-radius:10px;padding:10px 12px}
+.lab-app input:focus,.lab-app select:focus,.lab-app textarea:focus{outline:2px solid var(--pr2);border-color:var(--pr)}
+.lab-app input:disabled{opacity:.5}
+.lb-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px;max-width:760px}
+.lb-form label{margin-top:12px}
+.lb-full{grid-column:1/-1}
+.lb-err{color:var(--dg);font-size:12px;margin-top:4px}
+.lb-note{background:var(--pr2);color:var(--pr);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:14px}
+.lb-drop{display:block;border:2px dashed var(--pr);border-radius:14px;background:var(--pr2);text-align:center;padding:28px 10px;cursor:pointer;color:var(--pr);margin:0!important}
+.lb-drop input{display:none}.lb-drop b{display:block;font-size:16px}.lb-drop small{color:var(--mu)}
+
+/* switch */
+.lb-sw{position:relative;display:inline-block;width:40px;height:22px;border-radius:20px;background:var(--bd);flex-shrink:0;border:0;padding:0;cursor:pointer;transition:background .2s}
+.lb-sw::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:inset-inline-start .2s;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.lb-sw.on{background:var(--pr)}.lb-sw.on::after{inset-inline-start:21px}
+
+/* log */
+.lb-filters{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.lb-filters select{width:auto;min-width:200px}
+.lb-search{flex:1;min-width:220px;display:flex;align-items:center;gap:8px;border:1px solid var(--bd);background:var(--input);border-radius:10px;padding:0 12px;color:var(--mu)}
+.lb-search input{border:0!important;outline:0!important;padding:10px 0!important;background:transparent!important}
+.lb-scroll{overflow-x:auto}
+.lab-app table{width:100%;border-collapse:collapse;min-width:620px}
+.lab-app th,.lab-app td{text-align:start;padding:12px 10px;border-bottom:1px solid var(--bd);font-size:14px}
+.lab-app th{color:var(--mu);font-weight:500}
+
+/* lab profile */
+.lb-map{height:170px;border-radius:14px;background:#eaf1fb;overflow:hidden;border:1px solid var(--bd);margin-top:14px}
+.lab-app[data-theme="dark"] .lb-map{opacity:.85}
+.lb-day{width:76px}
+.lab-app input.lb-time{width:auto}
+
+/* option cards / avatar */
+.lb-opt{display:flex;align-items:center;gap:14px;padding:18px;border-radius:16px;border:2px solid var(--bd);background:var(--card);color:var(--tx);font:inherit;font-size:16px;cursor:pointer;text-align:start}
+.lb-opt.on{border-color:var(--pr);background:var(--pr2)}
+.lb-opt-ic{width:46px;height:46px;border-radius:12px;background:var(--pr2);color:var(--pr);display:grid;place-items:center;font-weight:700}
+.lb-opt.on .lb-opt-ic{background:var(--pr);color:#fff}
+.lb-avatar{width:64px;height:64px;border-radius:50%;background:var(--pr2);color:var(--pr);display:grid;place-items:center;font-size:26px;font-weight:700;margin-bottom:4px}
+
+/* toast */
+.lb-toast{position:fixed;bottom:24px;inset-inline:0;margin:auto;width:max-content;max-width:90%;background:var(--tx);color:var(--bg);padding:10px 20px;border-radius:12px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:50}
+.lb-toast.show{opacity:1}
+
+/* ---------- Mobile ---------- */
+@media (max-width:860px){
+  .lab-app{flex-direction:column}
+  .lb-side{width:100%;height:auto;flex-direction:row;align-items:center;gap:8px;padding:8px 12px;z-index:20;border-inline-end:0;border-bottom:1px solid var(--bd)}
+  .lb-logo{padding:0;border:0;margin:0}.lb-logo img{height:38px}
+  .lb-nav{flex-direction:row;flex:1;overflow-x:auto}
+  .lb-nav a{white-space:nowrap;height:40px;padding:0 12px}
+  .lb-tag{display:none}
+  .lb-side-foot{margin:0;border:0;padding:0}
+  .lb-set-btn{width:44px;padding:0;justify-content:center}
+  .lb-set-btn span{display:none}
+  .lb-menu{position:fixed;top:62px;bottom:auto;inset-inline:auto 12px;width:min(300px,92vw)}
+  .lb-main{padding:20px 16px;height:auto;min-height:0}
+  .lb-form{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){.lab-app *{transition:none!important}}

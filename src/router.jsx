@@ -19,39 +19,50 @@ import Permissions from "./pages/Patient/Permissions";
 import Profile from "./pages/Patient/Profile";
 import AccountSettings from "./pages/Patient/AccountSettings";
 
+import LabLayout from "./components/Lab/LabLayout";
+import LabDashboard from "./pages/Lab/LabDashboard";
+import AddRequest from "./pages/Lab/AddRequest";
+import RequestDetails from "./pages/Lab/RequestDetails";
+import UploadResult from "./pages/Lab/UploadResult";
+import ResultsLog from "./pages/Lab/ResultsLog";
+import LabProfile from "./pages/Lab/LabProfile";
+import LabLanguage from "./pages/Lab/LabLanguage";
+import LabAppearance from "./pages/Lab/LabAppearance";
+import LabPersonal from "./pages/Lab/LabPersonal";
+import LabAccount from "./pages/Lab/LabAccount";
+
+const labRoutes = {
+  path: "/lab",
+  element: <LabLayout />,
+  children: [
+    { index: true, element: <LabDashboard /> },
+    { path: "add", element: <AddRequest /> },
+    { path: "details", element: <RequestDetails /> },
+    { path: "details/:id", element: <RequestDetails /> },
+    { path: "upload", element: <UploadResult /> },
+    { path: "upload/:id", element: <UploadResult /> },
+    { path: "results", element: <ResultsLog /> },
+    { path: "settings/profile", element: <LabProfile /> },
+    { path: "settings/language", element: <LabLanguage /> },
+    { path: "settings/appearance", element: <LabAppearance /> },
+    { path: "settings/personal", element: <LabPersonal /> },
+    { path: "settings/account", element: <LabAccount /> },
+  ],
+};
+
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
     children: [
-      {
-        index: true,
-        element: <Home />,
-      },
-      {
-        path: "learn-more",
-        element: <LearnMore />,
-      },
-      {
-        path: "ClinicLabSearch",
-        element: <ClinicLabSearch />,
-      },
-      {
-        path: "login",
-        element: <Login />,
-      },
-      {
-        path: "register",
-        element: <Register />,
-      },
-      {
-        path: "forgot-password",
-        element: <ForgotPasswordPage />,
-      },
-
+      { index: true, element: <Home /> },
+      { path: "learn-more", element: <LearnMore /> },
+      { path: "ClinicLabSearch", element: <ClinicLabSearch /> },
+      { path: "login", element: <Login /> },
+      { path: "register", element: <Register /> },
+      { path: "forgot-password", element: <ForgotPasswordPage /> },
     ],
   },
-
 
   {
     path: "/patient",
@@ -69,5 +80,6 @@ export const router = createBrowserRouter([
       { path: "account-settings", element: <AccountSettings /> },
     ],
   },
-]);
 
+  labRoutes,
+]);
