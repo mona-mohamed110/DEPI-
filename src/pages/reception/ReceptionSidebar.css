@@ -1,0 +1,297 @@
+.reception-sidebar {
+  width: 260px;
+  min-width: 260px;
+  height: 100vh;
+  background-color: #ffffff;
+  border-left: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 16px;
+  position: sticky;
+  top: 0;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.reception-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 20px;
+}
+
+.reception-logo-img {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+}
+
+.patient-logo {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 4px 12px 20px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid #f1f5f9;
+  transition: border-color 0.3s ease;
+}
+
+.patient-logo-img {
+  display: block;
+  margin: 0 auto;
+  width: 70px;
+  height: auto;
+  max-width: 100%;
+}
+
+.reception-tag {
+  background-color: #eff6ff;
+  color: #2563eb;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.reception-sidebar .nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.reception-sidebar .nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  color: #64748b;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: 10px;
+  transition: all 0.2s ease-in-out;
+}
+
+.reception-sidebar .nav a:hover {
+  background-color: #f8fafc;
+  color: #1e293b;
+}
+
+.reception-sidebar .nav a.on {
+  background-color: #eff6ff;
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.reception-sidebar .nav a.on svg {
+  color: #2563eb;
+}
+
+.settings-wrap {
+  position: relative;
+  margin-top: auto;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.settings-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 14px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.settings-btn:hover {
+  background-color: #f1f5f9;
+}
+
+.settings-btn .grow {
+  text-align: right;
+  flex: 1;
+}
+
+.settings-btn .chev {
+  transition: transform 0.2s ease;
+}
+
+.settings-btn.open .chev {
+  transform: rotate(180deg);
+}
+
+.menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  width: 100%;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  padding: 8px;
+  z-index: 50;
+  box-sizing: border-box;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.menu-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #94a3b8;
+  padding: 8px 12px;
+  text-transform: uppercase;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #475569;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: right;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  font-family: inherit;
+}
+
+.menu-item:hover {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+.menu-item .grow {
+  flex: 1;
+}
+
+.menu-item.danger {
+  color: #ef4444;
+}
+.menu-item.danger:hover {
+  background-color: #fef2f2;
+}
+
+.menu hr {
+  border: none;
+  border-top: 1px solid #f1f5f9;
+  margin: 6px 0;
+}
+
+.switch {
+  width: 38px;
+  height: 22px;
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+  position: relative;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.switch.on {
+  background-color: #2563eb;
+}
+
+.switch.on::after {
+  transform: translateX(-16px);
+}
+
+.reception-sidebar.dark-mode {
+  background-color: #0f172a;
+  border-left-color: #334155;
+}
+
+.reception-sidebar.dark-mode .patient-logo {
+  border-bottom-color: #334155;
+}
+
+.reception-sidebar.dark-mode .nav a {
+  color: #94a3b8;
+}
+
+.reception-sidebar.dark-mode .nav a:hover {
+  background-color: #1e293b;
+  color: #f8fafc;
+}
+
+.reception-sidebar.dark-mode .nav a.on {
+  background-color: #1e293b;
+  color: #38bdf8;
+}
+
+.reception-sidebar.dark-mode .nav a.on svg {
+  color: #38bdf8;
+}
+
+.reception-sidebar.dark-mode .settings-wrap {
+  border-top-color: #334155;
+}
+
+.reception-sidebar.dark-mode .settings-btn {
+  background-color: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+.reception-sidebar.dark-mode .settings-btn:hover {
+  background-color: #334155;
+}
+
+.reception-sidebar.dark-mode .menu {
+  background-color: #1e293b;
+  border-color: #334155;
+}
+
+.reception-sidebar.dark-mode .menu-title {
+  color: #64748b;
+}
+
+.reception-sidebar.dark-mode .menu-item {
+  color: #cbd5e1;
+}
+
+.reception-sidebar.dark-mode .menu-item:hover {
+  background-color: #0f172a;
+  color: #ffffff;
+}
+
+.reception-sidebar.dark-mode .menu hr {
+  border-top-color: #334155;
+}
+
+.reception-sidebar.dark-mode .menu-item.danger {
+  color: #f87171;
+}
+
+.reception-sidebar.dark-mode .menu-item.danger:hover {
+  background-color: rgba(239, 68, 68, 0.15);
+}

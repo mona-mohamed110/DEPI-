@@ -1,0 +1,17 @@
+.reception-layout-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f8fafc;
+  transition: background-color 0.3s ease;
+}
+
+.reception-main-content {
+  flex: 1;
+  overflow-y: auto;
+  height: 100vh;
+}
+
+
+.reception-layout-container.dark-mode {
+  background-color: #0f172a;
+}

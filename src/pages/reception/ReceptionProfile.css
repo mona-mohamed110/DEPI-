@@ -1,0 +1,269 @@
+.profile-page-wrapper {
+  padding: 10px 20px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.page-title-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.title-text-group h1 {
+  font-size: 1.6rem;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+  font-weight: 700;
+  transition: color 0.3s ease;
+}
+
+.title-text-group p {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin: 0;
+  transition: color 0.3s ease;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  color: #334155;
+  transition: background 0.2s;
+}
+
+.back-btn:hover {
+  background: #e2e8f0;
+}
+
+.profile-main-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+  overflow: hidden;
+  max-width: 650px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.card-top-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; 
+  gap: 16px;
+  padding: 24px 30px;
+  border-bottom: 1px solid #f1f5f9;
+  transition: border-color 0.3s ease;
+}
+
+.user-avatar-circle {
+  width: 50px;
+  height: 50px;
+  background: #eff6ff;
+  color: #2563eb;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.user-name-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  transition: color 0.3s ease;
+}
+
+.card-content-body {
+  padding: 20px 30px 30px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.info-stack-item {
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.info-stack-item .stack-label {
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.info-stack-item .stack-value {
+  color: #0f172a;
+  font-size: 1.05rem;
+  font-weight: 700;
+  transition: color 0.3s ease;
+}
+
+.card-footer-action {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 10px;
+  padding-top: 10px;
+}
+
+.edit-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.edit-action-btn:hover {
+  background: #1d4ed8;
+}
+
+.profile-edit-form {
+  padding: 30px;
+}
+
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.form-input {
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  background: #fff;
+  color: #0f172a;
+  transition: border-color 0.2s, background-color 0.3s ease, color 0.3s ease;
+}
+
+.form-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.cancel-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #475569;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.save-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border: none;
+  background: #2563eb;
+  color: #ffffff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.save-btn:hover {
+  background: #1d4ed8;
+}
+
+.profile-page-wrapper.dark-mode .profile-main-card {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+.profile-page-wrapper.dark-mode .title-text-group h1, 
+.profile-page-wrapper.dark-mode .user-name-title,
+.profile-page-wrapper.dark-mode .stack-value {
+  color: #f8fafc !important;
+}
+
+.profile-page-wrapper.dark-mode .title-text-group p,
+.profile-page-wrapper.dark-mode .stack-label,
+.profile-page-wrapper.dark-mode .form-group label {
+  color: #94a3b8 !important;
+}
+
+.profile-page-wrapper.dark-mode .card-top-header,
+.profile-page-wrapper.dark-mode .card-footer-action {
+  border-color: #334155;
+}
+
+.profile-page-wrapper.dark-mode .info-stack-item {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+.profile-page-wrapper.dark-mode .user-avatar-circle {
+  background: #334155;
+  color: #f8fafc;
+}
+
+.profile-page-wrapper.dark-mode .back-btn {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+.profile-page-wrapper.dark-mode .form-input {
+  background: #0f172a;
+  border-color: #475569;
+  color: #f8fafc;
+}
+
+.profile-page-wrapper.dark-mode .cancel-btn {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+}

@@ -1,0 +1,325 @@
+.reception-container {
+  padding: 32px;
+  background-color: #f8fafc;
+  min-height: 100vh;
+  font-family: 'Tajawal', 'Cairo', sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.page-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+  transition: color 0.3s ease;
+}
+
+.page-header p {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin: 0 0 24px 0;
+  transition: color 0.3s ease;
+}
+
+.stats-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.stat-title {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #0f172a;
+  transition: color 0.3s ease;
+}
+
+.stat-value.text-blue {
+  color: #2563eb;
+}
+
+.queue-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 24px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.search-box-container {
+  margin-bottom: 16px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  outline: none;
+  background-color: #f8fafc;
+  color: #0f172a;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.search-input:focus {
+  background-color: #ffffff;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.filters-row {
+  display: flex;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  color: #475569;
+  padding: 8px 20px;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.filter-btn.active {
+  background-color: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+  font-weight: 600;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.reception-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: inherit;
+}
+
+.reception-table th {
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 12px 16px;
+  border-bottom: 2px solid #f1f5f9;
+  background-color: #f8fafc;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.reception-table td {
+  padding: 16px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  transition: border-color 0.3s ease;
+}
+
+.reception-table tr:last-child td {
+  border-bottom: none;
+}
+
+.patient-cell {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.avatar-circle {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  border-radius: 50%;
+  background-color: #eff6ff;
+  color: #2563eb;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.patient-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 3px;
+  transition: color 0.3s ease;
+}
+
+.patient-doc {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.time-text {
+  color: #64748b;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.status-badge {
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.status-badge.ended { background-color: #dcfce7; color: #15803d; }
+.status-badge.in-exam { background-color: #dbeafe; color: #1d4ed8; }
+.status-badge.arrived { background-color: #fef9c3; color: #a16207; }
+.status-badge.not-arrived { background-color: #f1f5f9; color: #64748b; }
+
+.action-buttons-group {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  padding: 7px 16px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.btn-arrived {
+  background-color: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #ffedd5;
+}
+.btn-arrived:hover {
+  background-color: #ffedd5;
+}
+.btn-arrived.active-action {
+  background-color: #f97316;
+  color: #ffffff;
+  border-color: #f97316;
+  box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.3);
+}
+
+.btn-inexam {
+  background-color: #f0f9ff;
+  color: #0284c7;
+  border: 1px solid #e0f2fe;
+}
+.btn-inexam:hover {
+  background-color: #e0f2fe;
+}
+.btn-inexam.active-action {
+  background-color: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+  box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.3);
+}
+
+.btn-ended {
+  background-color: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #dcfce7;
+}
+.btn-ended:hover {
+  background-color: #dcfce7;
+}
+.btn-ended.active-action {
+  background-color: #16a34a;
+  color: #ffffff;
+  border-color: #16a34a;
+  box-shadow: 0 4px 6px -1px rgba(22, 163, 74, 0.3);
+}
+
+.no-data-msg {
+  text-align: center;
+  padding: 30px;
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+
+
+.reception-container.dark-mode {
+  background-color: #0f172a;
+}
+
+.reception-container.dark-mode .stat-card,
+.reception-container.dark-mode .queue-card {
+  background-color: #1e293b;
+  border-color: #334155;
+}
+
+.reception-container.dark-mode .page-header h1,
+.reception-container.dark-mode .stat-value,
+.reception-container.dark-mode .patient-name {
+  color: #f8fafc;
+}
+
+.reception-container.dark-mode .page-header p,
+.reception-container.dark-mode .stat-title,
+.reception-container.dark-mode .patient-doc,
+.reception-container.dark-mode .time-text {
+  color: #94a3b8;
+}
+
+.reception-container.dark-mode .search-input {
+  background-color: #0f172a;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+.reception-container.dark-mode .filter-btn {
+  background-color: #1e293b;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
+.reception-container.dark-mode .filter-btn.active {
+  background-color: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+.reception-container.dark-mode .reception-table th {
+  background-color: #0f172a;
+  border-bottom-color: #334155;
+  color: #94a3b8;
+}
+
+.reception-container.dark-mode .reception-table td {
+  border-bottom-color: #334155;
+}
+
+.reception-container.dark-mode .avatar-circle {
+  background-color: #334155;
+  color: #38bdf8;
+}

@@ -19,6 +19,12 @@ import Permissions from "./pages/Patient/Permissions";
 import Profile from "./pages/Patient/Profile";
 import AccountSettings from "./pages/Patient/AccountSettings";
 
+import ReceptionLayout from "./pages/reception/ReceptionLayout";
+import ReceptionDashboard from "./pages/reception/ReceptionDashboard";
+import AppointmentsManager from "./pages/reception/AppointmentsManager";
+import PatientsDataPage from "./pages/reception/PatientsDataPage";
+import ReceptionProfile from "./pages/reception/ReceptionProfile";
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -48,10 +54,8 @@ export const router = createBrowserRouter([
         path: "forgot-password",
         element: <ForgotPasswordPage />,
       },
-
     ],
   },
-
 
   {
     path: "/patient",
@@ -69,5 +73,15 @@ export const router = createBrowserRouter([
       { path: "account-settings", element: <AccountSettings /> },
     ],
   },
-]);
 
+  {
+    path: "/reception",
+    element: <ReceptionLayout />,
+    children: [
+      { index: true, element: <ReceptionDashboard /> },
+      { path: "appointments", element: <AppointmentsManager /> },
+      { path: "patients", element: <PatientsDataPage /> },
+      { path: "profile", element: <ReceptionProfile /> },
+    ],
+  },
+]);
