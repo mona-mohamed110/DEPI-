@@ -1,0 +1,366 @@
+.admin-layout {
+  --bg: #f7f9fc;
+  --card: #fff;
+  --border: #e5eaf2;
+  --text: #0f1b2d;
+  --muted: #64748b;
+  --soft: #eff4ff;
+  --soft2: #eef2f8;
+
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.admin-layout[data-theme="dark"] {
+  --bg: #0b1220;
+  --card: #131c2e;
+  --border: #243049;
+  --text: #e6edf7;
+  --muted: #94a3b8;
+  --soft: #1b2a4a;
+  --soft2: #1c2639;
+}
+
+.admin-sidebar {
+  width: 250px;
+  background: var(--card);
+  border-inline-end: 1px solid var(--border);
+  padding: 18px 12px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 18px;
+  color: #2563eb;
+  padding: 4px 12px 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+
+.admin-logo img {
+  height: 40px;
+}
+
+.admin-logo span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-sidebar a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: var(--text);
+  text-decoration: none;
+  margin-bottom: 2px;
+}
+
+.admin-sidebar a:hover {
+  background: var(--soft);
+}
+
+.admin-sidebar a.active {
+  background: var(--soft);
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.admin-main {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---------- قايمة الإعدادات ---------- */
+
+.admin-settings {
+  position: relative;
+  margin-top: auto;
+}
+
+.admin-user {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  background: var(--soft);
+  color: #2563eb;
+  border-radius: 12px;
+  cursor: pointer;
+  font: inherit;
+  text-align: start;
+}
+
+.admin-user-text {
+  flex: 1;
+}
+
+.admin-layout[data-theme="dark"] .admin-user {
+  color: #60a5fa;
+}
+
+.admin-user-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.admin-user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-user-info b {
+  display: block;
+  font-size: 14px;
+}
+
+.admin-user-info small {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  inset-inline: 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 8px;
+  box-shadow: 0 10px 30px rgba(15, 27, 45, 0.15);
+  z-index: 20;
+}
+
+.admin-menu-title {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 6px 10px;
+}
+
+.admin-menu hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 6px 0;
+}
+
+.admin-menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+  text-align: start;
+}
+
+.admin-menu-item:hover {
+  background: var(--soft);
+}
+
+.admin-menu-item.static:hover {
+  background: transparent;
+}
+
+.admin-menu-item.danger {
+  color: #dc2626;
+}
+
+.admin-menu-item .grow {
+  flex: 1;
+}
+
+.admin-menu-item .muted {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.admin-submenu {
+  padding-inline-start: 20px;
+}
+
+.admin-switch {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  background: var(--border);
+  border: 0;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.admin-switch::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  inset-inline-start: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: 0.2s;
+}
+
+.admin-switch.on {
+  background: #2563eb;
+}
+
+.admin-switch.on::after {
+  inset-inline-start: 21px;
+}
+
+/* ---------- toast و modal مشتركين ---------- */
+
+.admin-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0f1b2d;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 10px;
+  z-index: 100;
+}
+
+.admin-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 27, 45, 0.5);
+  display: grid;
+  place-items: center;
+  z-index: 50;
+}
+
+.admin-modal {
+  background: var(--card);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+}
+
+.admin-modal h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.admin-modal p {
+  color: var(--muted);
+  margin: 0 0 16px;
+}
+
+.admin-modal-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ---------- موبايل ---------- */
+
+@media (max-width: 820px) {
+  .admin-layout {
+    flex-direction: column;
+  }
+
+  .admin-sidebar {
+    width: 100%;
+    height: auto;
+    z-index: 5;
+    flex-direction: row;
+    gap: 4px;
+    overflow-x: auto;
+    border-inline-end: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 8px;
+  }
+
+  .admin-logo {
+    display: none;
+  }
+
+  .admin-sidebar a {
+    white-space: nowrap;
+    margin: 0;
+  }
+
+  .admin-settings {
+    display: none;
+  }
+}
+.admin-layout {
+  --bg: #f7f9fc;
+  --card: #fff;
+  --border: #e5eaf2;
+  --text: #0f1b2d;
+  --muted: #64748b;
+  --soft: #eff4ff;
+  --soft2: #eef2f8;
+  color: var(--text);
+}
+
+.admin-layout[data-theme="dark"] {
+  --bg: #0b1220;
+  --card: #131c2e;
+  --border: #243049;
+  --text: #e6edf7;
+  --muted: #94a3b8;
+  --soft: #1b2a4a;
+  --soft2: #1c2639;
+}
+/* النوافذ: حدود وظل وبلور */
+.admin-overlay,
+.licenses-overlay,
+.profile-overlay {
+  background: rgba(5, 10, 20, 0.6);
+  backdrop-filter: blur(6px);
+}
+
+.admin-modal,
+.licenses-modal,
+.profile-modal {
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+/* اللوجو والاسم في الوضع الداكن */
+.admin-layout[data-theme="dark"] .admin-logo {
+  color: #60a5fa;
+}
+
+.admin-layout[data-theme="dark"] .admin-logo img {
+  background: #fff;
+  border-radius: 10px;
+  padding: 4px;
+}

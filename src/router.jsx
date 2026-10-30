@@ -19,6 +19,12 @@ import Permissions from "./pages/Patient/Permissions";
 import Profile from "./pages/Patient/Profile";
 import AccountSettings from "./pages/Patient/AccountSettings";
 
+import AdminLayout from "./components/Admin/AdminLayout";
+import Accounts from "./pages/Admin/Accounts";
+import Licenses from "./pages/Admin/Licenses";
+import Monitoring from "./pages/Admin/Monitoring";
+import AdminProfile from "./pages/Admin/Profile";
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -69,5 +75,15 @@ export const router = createBrowserRouter([
       { path: "account-settings", element: <AccountSettings /> },
     ],
   },
+{
+  path: "/admin",
+  element: <AdminLayout />,
+  children: [
+    { index: true, element: <Monitoring /> },
+    { path: "licenses", element: <Licenses /> },
+    { path: "accounts", element: <Accounts /> },
+    { path: "profile", element: <AdminProfile /> },
+  ],
+},
 ]);
 
