@@ -10,7 +10,9 @@ function Shell() {
       <div className="d-app">
         <DoctorSidebar />
         <main className="d-main">
-          <Outlet />
+          <div className="d-main-inner">
+            <Outlet />
+          </div>
         </main>
       </div>
       <div className={`d-toast ${toastMsg ? 'show' : ''}`}>{toastMsg}</div>
