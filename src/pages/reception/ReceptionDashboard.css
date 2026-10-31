@@ -123,10 +123,11 @@
 .reception-table {
   width: 100%;
   border-collapse: collapse;
-  text-align: inherit;
+  text-align: center;
 }
 
 .reception-table th {
+  text-align: center;
   color: #64748b;
   font-size: 0.85rem;
   font-weight: 600;
@@ -150,6 +151,7 @@
 .patient-cell {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 14px;
 }
 
@@ -201,6 +203,7 @@
 
 .action-buttons-group {
   display: flex;
+  justify-content: center;
   gap: 8px;
 }
 
