@@ -10,7 +10,7 @@
 .patient button { font: inherit; color: inherit; cursor: pointer; }
 .patient h1 { font-size: 24px; margin: 0 0 4px; }
 .patient h2 { font-size: 17px; margin: 0 0 12px; }
-.patient .sub { color: var(--mu); margin: 0 0 20px; }
+.patient .sub { color: var(--mu)}
 .patient .muted { color: var(--mu); font-size: 14px; }
 .patient .grow { flex: 1; text-align: start; }
 .patient .gap { height: 14px; }

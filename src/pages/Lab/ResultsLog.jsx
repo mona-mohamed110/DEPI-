@@ -43,7 +43,7 @@ function DatePicker({ value, dates, onChange }) {
       <button type="button" className="lb-dp-btn" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
         <Icon name="calendar" size={18} />
         <span>{value ? fmtDay(value) : t("allDays")}</span>
-        {value && <span className="lb-x" role="button" aria-label="clear" onClick={(e) => { e.stopPropagation(); onChange(""); }}>×</span>}
+        {value && <span className="lb-x" role="button" aria-label="clear" onClick={(e) => { e.stopPropagation(); onChange(""); }}><Icon name="x" size={16} /></span>}
       </button>
 
       {open && (
@@ -79,7 +79,7 @@ function DatePicker({ value, dates, onChange }) {
 
 /* ---------- الصفحة ---------- */
 export default function ResultsLog() {
-  const { t, requests, fmtDateTime, toast } = useLab();
+  const { t, testName, requests, fmtDateTime, toast } = useLab();
   const [name, setName] = useState("");
   const [day, setDay] = useState("");
   const [dates, setDates] = useState([]);
@@ -118,10 +118,10 @@ export default function ResultsLog() {
             <tbody>
               {rows.length === 0 ? <tr><td colSpan={6} className="lb-sub">{t("noResults")}</td></tr> : rows.map((q) => (
                 <tr key={q.id}>
-                  <td>#{q.id}</td><td><b>{q.name}</b></td><td>{q.test}</td>
+                  <td>#{q.id}</td><td><b>{q.name}</b></td><td>{testName(q.test)}</td>
                   <td>{(q.files || []).map((f) => <span key={f} className="lb-badge" style={{ margin: "0 2px" }}>{fileType(f)}</span>)}</td>
                   <td>{fmtDateTime(q.uploadedAt)}</td>
-                  <td><span className="lb-badge ok">{t("linked")}</span></td>
+                  <td><span className="lb-badge ok"><Icon name="check" size={14} />{t("linked")}</span></td>
                 </tr>
               ))}
             </tbody>

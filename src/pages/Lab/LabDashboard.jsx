@@ -7,7 +7,7 @@ const STATUS = { new: { k: "stNew", c: "wn" }, progress: { k: "stProg", c: "" },
 const FILTERS = [["all", "fAll"], ["new", "fNew"], ["progress", "fProg"], ["done", "fDone"]];
 
 export default function LabDashboard() {
-  const { t, num, requests, counts, loading, startRequest, fmtDateTime } = useLab();
+  const { t, testName, num, requests, counts, loading, startRequest, fmtDateTime } = useLab();
   const nav = useNavigate();
   const [f, setF] = useState("all");
   const list = useMemo(() => requests.filter((r) => f === "all" || r.status === f), [requests, f]);
@@ -45,10 +45,10 @@ export default function LabDashboard() {
           const st = STATUS[r.status];
           return (
             <div className="lb-row" key={r.id}>
-              <div className="lb-ty">{r.kind === "xray" ? "🩻" : "🧪"}</div>
+              <div className="lb-ty"><Icon name={r.kind === "xray" ? "scan" : "tube"} size={22} /></div>
               <div className="lb-m">
                 <b>{r.name}</b>
-                <small>{r.test} · {fmtDateTime(r.createdAt)}</small>
+                <small>{testName(r.test)} · {fmtDateTime(r.createdAt)}</small>
               </div>
               <span className={`lb-badge ${st.c}`}>{t(st.k)}</span>
               {r.status === "new" && <button type="button" className="lb-btn lb-s" onClick={() => startRequest(r.id)}>{t("start")}</button>}

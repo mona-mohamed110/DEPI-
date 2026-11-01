@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useLab } from "../../context/LabContext";
+import Icon from "../../components/Lab/Icon";
 import * as api from "../../services/labApi";
 
 export default function LabProfile() {
-  const { t, toast } = useLab();
+  const { t, testName, toast } = useLab();
   const [p, setP] = useState(null);
   const [newTest, setNewTest] = useState("");
 
@@ -30,9 +31,9 @@ export default function LabProfile() {
       <div className="lb-grid lb-g2">
         <div className="lb-card">
           <div className="lb-row" style={{ border: 0 }}>
-            <div className="lb-ty" style={{ width: 56, height: 56, fontSize: 26 }}>🏥</div>
+            <div className="lb-ty" style={{ width: 56, height: 56, fontSize: 26 }}><Icon name="building" size={26} /></div>
             <div className="lb-m"><b style={{ fontSize: 18 }}>{p.name}</b><small>{t("licensed", { n: p.license })}</small></div>
-            <span className="lb-badge ok">{t("approved")}</span>
+            <span className="lb-badge ok"><Icon name="check" size={14} />{t("approved")}</span>
           </div>
           <label>{t("address")}</label>
           <input value={p.address} onChange={(e) => set("address", e.target.value)} />
@@ -60,7 +61,7 @@ export default function LabProfile() {
           ))}
           <h2 style={{ marginTop: 20 }}>{t("availableTests")}</h2>
           <div className="lb-chips">
-            {p.tests.map((x, i) => <button type="button" key={x.name} className={`lb-chip ${x.on ? "on" : ""}`} onClick={() => toggleTest(i)}>{x.name}</button>)}
+            {p.tests.map((x, i) => <button type="button" key={x.name} className={`lb-chip ${x.on ? "on" : ""}`} onClick={() => toggleTest(i)}>{testName(x.name)}</button>)}
           </div>
           <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
             <input value={newTest} onChange={(e) => setNewTest(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addTest()} placeholder={t("newTest")} />

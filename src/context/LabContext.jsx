@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from "react";
 import * as api from "../services/labApi";
 import { translate } from "../i18nLab";
+import { TEST_CATALOG } from "../data/labData";
 
 const Ctx = createContext(null);
 export const useLab = () => useContext(Ctx);
@@ -21,6 +22,9 @@ export function LabProvider({ children }) {
   const t = useCallback((k, v) => translate(lang, k, v), [lang]);
   const tRef = useRef(t);
   tRef.current = t;
+
+  // أسماء الفحوصات بتتخزن بالعربي في الداتا، وهنا بتتعرض بلغة الواجهة
+  const testName = useCallback((name) => (lang === "ar" ? name : TEST_CATALOG.find((x) => x.ar === name)?.en || name), [lang]);
 
   const locale = lang === "ar" ? "ar-EG" : "en-US";
   const num = (n) => Number(n).toLocaleString(locale);
@@ -73,7 +77,7 @@ export function LabProvider({ children }) {
   }), [requests]);
 
   const value = {
-    lang, setLang, theme, setTheme, t, num, fmtDateTime, fmtDay,
+    lang, setLang, theme, setTheme, t, testName, num, fmtDateTime, fmtDay,
     requests, counts, loading, toast, toastMsg, addRequest, startRequest, uploadResult, refresh,
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

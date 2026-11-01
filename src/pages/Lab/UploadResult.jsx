@@ -8,7 +8,7 @@ import Icon from "../../components/Lab/Icon";
 export default function UploadResult() {
   const { id } = useParams();
   const nav = useNavigate();
-  const { t, requests, uploadResult, toast } = useLab();
+  const { t, testName, requests, uploadResult, toast } = useLab();
   const [pending, setPending] = useState([]); // الطلبات اللي لسه ماترفعش ليها نتيجة (فلترة من الـ API)
   const [sel, setSel] = useState("");
   const [files, setFiles] = useState([]);
@@ -44,13 +44,13 @@ export default function UploadResult() {
         <label className="lb-first">{t("reqLabel")}</label>
         <select value={sel} onChange={(e) => setSel(e.target.value)}>
           {pending.length === 0 && <option value="">{t("noPending")}</option>}
-          {pending.map((r) => <option key={r.id} value={r.id}>#{r.id} · {r.name} · {r.test}</option>)}
+          {pending.map((r) => <option key={r.id} value={r.id}>#{r.id} · {r.name} · {testName(r.test)}</option>)}
         </select>
 
         <label>{t("files")}</label>
         <label className="lb-drop">
           <input type="file" multiple accept=".pdf,.dcm,image/*" onChange={(e) => setFiles([...e.target.files])} />
-          <span style={{ fontSize: 30 }}>📤</span>
+          <Icon name="upload" size={32} />
           <b>{t("pickFiles")}</b>
           <small>{t("fileTypes")}</small>
         </label>

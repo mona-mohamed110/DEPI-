@@ -1,4 +1,4 @@
-/* ملف الستايل الوحيد للوحة المعمل — كل الكلاسات بادئة بـ lb- ومحصورة داخل .lab-app */
+  /* ملف الستايل الوحيد للوحة المعمل — كل الكلاسات بادئة بـ lb- ومحصورة داخل .lab-app */
 @import url("https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap");
 
 .lab-app{
@@ -12,7 +12,11 @@
   --bg:#0b1220;--card:#121b2e;--side:#0f1729;--tx:#e7edf7;--mu:#93a1b8;--bd:#222e45;--input:#0f1729;
   --pr:#5b93ff;--pr2:#16254a;--ok:#4ade80;--ok2:#10291c;--wn:#fbbf24;--wn2:#2e2410;--dg:#f87171;--shadow:none;
 }
+/* تثبيت الاتجاه والمحاذاة حسب اللغة (عشان أي ستايل عام في المشروع ما يلغيش القلب) */
+.lab-app[dir="rtl"]{direction:rtl;text-align:right}
+.lab-app[dir="ltr"]{direction:ltr;text-align:left}
 .lab-app *{box-sizing:border-box}
+.lab-app *:not([dir]){direction:inherit}
 .lab-app h1{font-size:26px;margin:0 0 4px}
 .lab-app h2{font-size:17px;margin:0 0 12px}
 .lab-app .lb-ic{flex-shrink:0}
@@ -63,7 +67,7 @@
 .lb-dp{position:relative}
 .lb-dp-btn{display:flex;align-items:center;gap:10px;min-width:210px;height:100%;padding:10px 14px;border:1px solid var(--bd);border-radius:10px;
   background:var(--input);color:var(--tx);font:inherit;cursor:pointer}
-.lb-dp-btn .lb-x{margin-inline-start:auto;color:var(--mu);font-size:18px;line-height:1;padding:0 2px}
+.lb-dp-btn .lb-x{margin-inline-start:auto;color:var(--mu);display:flex;padding:0 2px}
 .lb-cal{position:absolute;top:calc(100% + 8px);inset-inline-end:0;width:330px;max-width:92vw;background:var(--card);border:1px solid var(--bd);
   border-radius:16px;box-shadow:0 16px 40px rgba(15,27,45,.22);z-index:40;overflow:hidden}
 .lb-cal-top{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--bd);font-weight:500}
@@ -88,16 +92,17 @@
 /* ---------- Main ---------- */
 .lb-main{flex:1;min-width:0;height:100%;overflow-y:auto;overflow-x:hidden;padding:36px 44px;scrollbar-gutter:stable}
 .lb-main > *{max-width:1160px}
-/* شريط التمرير يكون ناحية الـ sidebar (بين الـ sidebar والمحتوى) */
+/* شريط التمرير دايماً بين الـ sidebar والمحتوى، في العربي والإنجليزي */
 .lab-app[dir="rtl"] .lb-main{direction:ltr}
 .lab-app[dir="rtl"] .lb-main > *{direction:rtl;margin-left:auto;margin-right:0}
+/* الإنجليزي: الـ sidebar شمال، فشريط التمرير على شمال المحتوى (برضه بين الـ sidebar والمحتوى) */
 .lab-app[dir="ltr"] .lb-main{direction:rtl}
-.lab-app[dir="ltr"] .lb-main > *{direction:ltr;margin-right:auto;margin-left:0}
+.lab-app[dir="ltr"] .lb-main > *{direction:ltr;margin-left:0;margin-right:auto}
 .lb-sub{color:var(--mu);margin:0 0 22px}
 .lb-grid{display:grid;gap:16px}
 .lb-g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
 .lb-g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
-.lb-narrow{max-width:640px}
+.lb-narrow{max-width:90%}
 .lb-card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:22px;box-shadow:var(--shadow)}
 
 /* stats */
@@ -113,12 +118,12 @@
 .lb-m{flex:1;min-width:140px}
 .lb-m b{display:block}
 .lb-row small{color:var(--mu);display:block}
-.lb-ty{width:44px;height:44px;border-radius:12px;background:var(--pr2);display:grid;place-items:center;font-size:20px;flex-shrink:0}
-.lb-badge{font-size:12px;padding:2px 12px;border-radius:20px;background:var(--pr2);color:var(--pr);white-space:nowrap}
+.lb-ty{color:var(--pr);width:44px;height:44px;border-radius:12px;background:var(--pr2);display:grid;place-items:center;font-size:20px;flex-shrink:0}
+.lb-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:2px 12px;border-radius:20px;background:var(--pr2);color:var(--pr);white-space:nowrap}
 .lb-badge.ok{background:var(--ok2);color:var(--ok)}.lb-badge.wn{background:var(--wn2);color:var(--wn)}
 
 /* buttons */
-.lb-btn{font:inherit;border:0;border-radius:10px;padding:10px 20px;background:var(--pr);color:#fff;cursor:pointer;font-weight:500;transition:filter .15s}
+.lb-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:inherit;border:0;border-radius:10px;padding:10px 20px;background:var(--pr);color:#fff;cursor:pointer;font-weight:500;transition:filter .15s}
 .lb-btn:hover{filter:brightness(.93)}
 .lb-btn:disabled{opacity:.6;cursor:not-allowed}
 .lb-btn.lb-o{background:transparent;border:1px solid var(--bd);color:var(--tx)}
@@ -140,11 +145,11 @@
 .lab-app input:not([type=file]),.lab-app select,.lab-app textarea{font:inherit;width:100%;border:1px solid var(--bd);background:var(--input);color:var(--tx);border-radius:10px;padding:10px 12px}
 .lab-app input:focus,.lab-app select:focus,.lab-app textarea:focus{outline:2px solid var(--pr2);border-color:var(--pr)}
 .lab-app input:disabled{opacity:.5}
-.lb-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px;max-width:760px}
+.lb-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px;width:90%}
 .lb-form label{margin-top:12px}
 .lb-full{grid-column:1/-1}
 .lb-err{color:var(--dg);font-size:12px;margin-top:4px}
-.lb-note{background:var(--pr2);color:var(--pr);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:14px}
+.lb-note{display:flex;align-items:flex-start;gap:10px;background:var(--pr2);color:var(--pr);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:14px}
 .lb-drop{display:block;border:2px dashed var(--pr);border-radius:14px;background:var(--pr2);text-align:center;padding:28px 10px;cursor:pointer;color:var(--pr);margin:0!important}
 .lb-drop input{display:none}.lb-drop b{display:block;font-size:16px}.lb-drop small{color:var(--mu)}
 
@@ -193,6 +198,7 @@
   .lb-set-btn span{display:none}
   .lb-menu{position:fixed;top:62px;bottom:auto;inset-inline:auto 12px;width:min(300px,92vw)}
   .lb-main{padding:20px 16px;height:auto;min-height:0}
-  .lb-form{grid-template-columns:1fr}
+  .lb-form{grid-template-columns:1fr;width: 100%;}
+  .lb-narrow{max-width:100%}
 }
 @media (prefers-reduced-motion:reduce){.lab-app *{transition:none!important}}
