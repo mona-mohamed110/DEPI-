@@ -8,7 +8,7 @@ function Switch({ defaultOn = false }) {
 
 export default function AccountSettings() {
   const { t, toast } = useApp();
-  const [name, setName] = useState(() => t('full_name'));
+  const [name, setName] = useState(null); // null = الاسم الافتراضي حسب اللغة
   const [email, setEmail] = useState('mona@example.com');
 
   return (
@@ -19,7 +19,7 @@ export default function AccountSettings() {
         <div className="card">
           <h2>{t('account')}</h2>
           <label>{t('name')}</label>
-          <input value={name} onChange={(e) => setName(e.target.value)} />
+          <input value={name ?? t('full_name')} onChange={(e) => setName(e.target.value)} />
           <div className="gap" />
           <label>{t('email')}</label>
           <input value={email} onChange={(e) => setEmail(e.target.value)} dir="ltr" />

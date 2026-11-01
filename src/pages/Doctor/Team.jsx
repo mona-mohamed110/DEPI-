@@ -3,8 +3,8 @@ import { useDoctor } from '../../context/DoctorContext.jsx';
 import Switch from '../../components/Doctor/Switch.jsx';
 
 export default function Team() {
-  const { t, toast } = useDoctor();
-  const [staff, setStaff] = useState([{ id: 1, n: 'سلمى أحمد', p: [true, true, true] }]);
+  const { t, toast, L } = useDoctor();
+  const [staff, setStaff] = useState([{ id: 1, n: { ar: 'سلمى أحمد', en: 'Salma Ahmed' }, p: [true, true, true] }]);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
 
@@ -29,8 +29,8 @@ export default function Team() {
           {staff.map((s) => (
             <div key={s.id} className="d-staff">
               <div className="d-row" style={{ border: 0 }}>
-                <div className="d-av">{s.n.charAt(0)}</div>
-                <div className="d-m"><b>{s.n}</b><small>{t('receptionist')}</small></div>
+                <div className="d-av">{L(s.n).charAt(0)}</div>
+                <div className="d-m"><b>{L(s.n)}</b><small>{t('receptionist')}</small></div>
                 <button
                   className="d-btn dg s"
                   onClick={() => {

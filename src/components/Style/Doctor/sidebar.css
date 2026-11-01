@@ -27,3 +27,6 @@
   .doctor .d-nav a span { display: none; }
   .doctor .d-nav a.on span { display: inline; }
 }
+
+/* اسم المستخدم أسفل الشعار */
+.doctor .d-user-name { margin-top: 8px; font-weight: 700; font-size: 15px; color: var(--tx); text-align: center; word-break: break-word; }

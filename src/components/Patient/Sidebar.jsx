@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, FolderHeart, Pill, FlaskConical, Bot, CalendarPlus, CalendarCheck, ShieldCheck, Stethoscope } from 'lucide-react';
+import { Home, FolderHeart, Pill, FlaskConical, Bot, CalendarPlus, CalendarCheck, ShieldCheck } from 'lucide-react';
 import { useApp } from '../../context/AppContext.jsx';
 import SettingsMenu from './SettingsMenu.jsx';
 import logo from '../../assets/logo.png';
@@ -19,10 +19,12 @@ export default function Sidebar() {
   const { t } = useApp();
   return (
     <aside className="sidebar">
-<div className="patient-logo">
-  <img src={logo} alt="Shefaa" className="patient-logo-img" />
-</div>
-      <nav className="nav">
+      <div className="p-logo">
+        <img src={logo} alt="Shefaa" className="p-logo-img" />
+        {/* TODO: اجلب اسم المستخدم الحقيقي من بيانات تسجيل الدخول */}
+        <div className="p-user-name">{t('full_name')}</div>
+      </div>
+      <nav className="p-nav">
         {navItems.map(({ to, key, icon: Icon, end }) => (
           <NavLink key={to} to={to} end={end} className={({ isActive }) => (isActive ? 'on' : '')}>
             <Icon size={19} />

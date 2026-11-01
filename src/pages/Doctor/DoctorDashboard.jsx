@@ -3,7 +3,7 @@ import { appointments, patients } from '../../data/doctorData.js';
 import TodayAppointments from '../../components/Doctor/TodayAppointments.jsx';
 
 export default function DoctorDashboard() {
-  const { t } = useDoctor();
+  const { t, fmt } = useDoctor();
   const stats = [
     [t('stat_today'), appointments.length],
     [t('stat_waiting'), appointments.filter((a) => a.status === 'wait').length],
@@ -17,7 +17,7 @@ export default function DoctorDashboard() {
         {stats.map(([label, value]) => (
           <div className="d-card d-stat" key={label}>
             <span>{label}</span>
-            <b>{value.toLocaleString('ar-EG')}</b>
+            <b>{fmt(value)}</b>
           </div>
         ))}
       </div>

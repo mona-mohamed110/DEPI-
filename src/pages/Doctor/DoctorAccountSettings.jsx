@@ -4,7 +4,7 @@ import Switch from '../../components/Doctor/Switch.jsx';
 
 export default function DoctorAccountSettings() {
   const { t, toast } = useDoctor();
-  const [name, setName] = useState(() => t('doctor_name'));
+  const [name, setName] = useState(null); // null = الاسم الافتراضي حسب اللغة
   const [email, setEmail] = useState('doctor@example.com');
 
   return (
@@ -15,7 +15,7 @@ export default function DoctorAccountSettings() {
         <div className="d-card">
           <h2>{t('account')}</h2>
           <label className="first">{t('name_l')}</label>
-          <input value={name} onChange={(e) => setName(e.target.value)} />
+          <input value={name ?? t('doctor_name')} onChange={(e) => setName(e.target.value)} />
           <label>{t('email')}</label>
           <input value={email} onChange={(e) => setEmail(e.target.value)} dir="ltr" />
           <br /><br />

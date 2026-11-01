@@ -17,6 +17,8 @@ export default function DoctorSidebar() {
     <aside className="d-sidebar">
       <div className="d-logo">
         <img src={logo} alt="Shefaa" className="d-logo-img" />
+        {/* TODO: اجلب اسم المستخدم الحقيقي من بيانات تسجيل الدخول */}
+        <div className="d-user-name">{t('doctor_name')}</div>
       </div>
       <nav className="d-nav">
         {doctorNavItems.map(({ to, key, icon: Icon, end }) => (

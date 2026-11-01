@@ -21,8 +21,8 @@ export default function ProfessionalProfile() {
   const [form, setForm] = useState({
     license: 'EG-2014-58231',
     specialty: 'sp_internal',
-    clinic: t('clinic_name_v'),
-    address: t('address_v'),
+    clinic: null, // null = القيمة الافتراضية حسب اللغة حتى يعدّلها المستخدم
+    address: null,
   });
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
@@ -100,9 +100,9 @@ export default function ProfessionalProfile() {
             <option value="sp_neuro">{t('sp_neuro')}</option>
           </select>
           <label>{t('clinic_name')}</label>
-          <input value={form.clinic} onChange={set('clinic')} />
+          <input value={form.clinic ?? t('clinic_name_v')} onChange={set('clinic')} />
           <label>{t('address')}</label>
-          <input value={form.address} onChange={set('address')} />
+          <input value={form.address ?? t('address_v')} onChange={set('address')} />
           <br /><br />
           <button className="d-btn" onClick={() => toast(t('saved_prof'))}>{t('save')}</button>
         </div>

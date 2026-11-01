@@ -15,7 +15,7 @@ const loadCustom = () => {
 };
 
 export default function Exam() {
-  const { t, toast } = useDoctor();
+  const { t, toast, L } = useDoctor();
   const [params, setParams] = useSearchParams();
   const patientId = params.get('p') || String(patients[0]?.id ?? '');
 
@@ -24,8 +24,8 @@ export default function Exam() {
   const [dose, setDose] = useState('');
   const [meds, setMeds] = useState([]);
 
-  const [custom, setCustom] = useState(loadCustom);
-  const [picked, setPicked] = useState([]);
+  const [custom, setCustom] = useState(loadCustom); // أنواع أضافها الطبيب (نصوص)
+  const [picked, setPicked] = useState([]); // مفاتيح الأنواع المحددة
   const [newTest, setNewTest] = useState('');
 
   useEffect(() => {
@@ -36,7 +36,11 @@ export default function Exam() {
     }
   }, [custom]);
 
-  const allTests = [...defaultTests, ...custom];
+  // الافتراضية تُترجم حسب اللغة، والمضافة تظهر كما كُتبت
+  const allTests = [
+    ...defaultTests.map((d) => ({ key: d.key, label: L(d), names: [d.ar, d.en], custom: false })),
+    ...custom.map((c) => ({ key: `custom:${c}`, label: c, names: [c], custom: true })),
+  ];
 
   const addMed = () => {
     if (!drug) return toast(t('pick_drug'));
@@ -45,19 +49,18 @@ export default function Exam() {
     setDose('');
   };
 
-  const toggleTest = (name) =>
-    setPicked((p) => (p.includes(name) ? p.filter((x) => x !== name) : [...p, name]));
+  const toggleTest = (key) => setPicked((p) => (p.includes(key) ? p.filter((x) => x !== key) : [...p, key]));
 
   const addTest = () => {
     const name = newTest.trim();
     if (!name) return;
-    const existing = allTests.find((x) => x.toLowerCase() === name.toLowerCase());
+    const existing = allTests.find((x) => x.names.some((n) => n.toLowerCase() === name.toLowerCase()));
     if (existing) {
-      setPicked((p) => (p.includes(existing) ? p : [...p, existing]));
+      setPicked((p) => (p.includes(existing.key) ? p : [...p, existing.key]));
       toast(t('test_exists'));
     } else {
       setCustom((c) => [...c, name]);
-      setPicked((p) => [...p, name]);
+      setPicked((p) => [...p, `custom:${name}`]);
       toast(t('test_added'));
     }
     setNewTest('');
@@ -65,7 +68,7 @@ export default function Exam() {
 
   const removeCustom = (name) => {
     setCustom((c) => c.filter((x) => x !== name));
-    setPicked((p) => p.filter((x) => x !== name));
+    setPicked((p) => p.filter((x) => x !== `custom:${name}`));
   };
 
   const save = () => {
@@ -87,7 +90,7 @@ export default function Exam() {
           <label className="first">{t('patient')}</label>
           <select value={patientId} onChange={(e) => setParams({ p: e.target.value })}>
             {patients.map((x) => (
-              <option key={x.id} value={x.id}>{x.n}</option>
+              <option key={x.id} value={x.id}>{L(x.n)}</option>
             ))}
           </select>
 
@@ -117,19 +120,16 @@ export default function Exam() {
         <div className="d-card">
           <h2>{t('tests_title')}</h2>
           <div className="d-chips">
-            {allTests.map((name) => {
-              const isCustom = custom.includes(name);
-              return (
-                <span key={name} className={`d-chip-wrap ${picked.includes(name) ? 'on' : ''}`}>
-                  <button className="d-chip-btn" onClick={() => toggleTest(name)}>{name}</button>
-                  {isCustom && (
-                    <button className="d-chip-x" onClick={() => removeCustom(name)} aria-label={t('remove')}>
-                      <X size={13} />
-                    </button>
-                  )}
-                </span>
-              );
-            })}
+            {allTests.map((x) => (
+              <span key={x.key} className={`d-chip-wrap ${picked.includes(x.key) ? 'on' : ''}`}>
+                <button className="d-chip-btn" onClick={() => toggleTest(x.key)}>{x.label}</button>
+                {x.custom && (
+                  <button className="d-chip-x" onClick={() => removeCustom(x.label)} aria-label={t('remove')}>
+                    <X size={13} />
+                  </button>
+                )}
+              </span>
+            ))}
           </div>
 
           <div className="d-inline" style={{ marginTop: 14 }}>
