@@ -1,0 +1,77 @@
+/* عناصر الواجهة المشتركة */
+.doctor .d-grid { display: grid; gap: 14px; }
+.doctor .d-g2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.doctor .d-g3 { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.doctor .d-card { background: var(--card); border: 1px solid var(--bd); border-radius: 12px; padding: 20px; }
+.doctor .d-stat span { color: var(--mu); font-size: 13px; }
+.doctor .d-stat b { display: block; font-size: 28px; color: var(--pr); }
+
+.doctor .d-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--bd); }
+.doctor .d-row:last-child { border: 0; }
+.doctor .d-m { flex: 1; min-width: 0; }
+.doctor .d-row small { color: var(--mu); display: block; }
+.doctor .d-perm { padding: 6px 0; border: 0; font-size: 14px; }
+.doctor .d-staff { padding: 8px 0; border-bottom: 1px solid var(--bd); }
+.doctor .d-staff:last-child { border: 0; }
+
+.doctor .d-av {
+  width: 42px; height: 42px; border-radius: 50%; background: var(--pr2); color: var(--pr);
+  display: grid; place-items: center; font-weight: 700; flex-shrink: 0;
+}
+.doctor .d-av.big { width: 60px; height: 60px; font-size: 22px; }
+.doctor .d-profile-head { display: flex; align-items: center; gap: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--bd); font-size: 18px; }
+
+.doctor .d-badge { font-size: 12px; padding: 2px 10px; border-radius: 20px; background: var(--pr2); color: var(--pr); white-space: nowrap; }
+.doctor .d-badge.ok { background: var(--ok2); color: var(--ok); }
+.doctor .d-badge.wn { background: var(--wn2); color: var(--wn); }
+.doctor .d-badge.gr { background: var(--gr); color: var(--mu); }
+
+.doctor .d-btn {
+  display: inline-block; border: 0; border-radius: 8px; padding: 9px 18px; background: var(--pr); color: #fff;
+  font-weight: 500; text-decoration: none; transition: 0.15s; font-size: 14px;
+}
+.doctor .d-btn:hover { filter: brightness(0.93); }
+.doctor .d-btn.o { background: transparent; border: 1px solid var(--bd); color: var(--tx); }
+.doctor .d-btn.dg { background: var(--dg); color: #fff; }
+.doctor .d-btn.s { padding: 5px 12px; font-size: 13px; }
+
+.doctor input, .doctor select, .doctor textarea {
+  font: inherit; width: 100%; border: 1px solid var(--bd); background: var(--card); color: var(--tx);
+  border-radius: 8px; padding: 10px;
+}
+.doctor input:focus, .doctor select:focus, .doctor textarea:focus { outline: 2px solid var(--pr2); border-color: var(--pr); }
+.doctor input:disabled { opacity: 0.5; }
+.doctor label { font-size: 13px; color: var(--mu); display: block; margin: 12px 0 4px; }
+.doctor label.first { margin-top: 0; }
+.doctor .d-inline { display: flex; gap: 8px; align-items: center; }
+.doctor .d-inline input { flex: 1; min-width: 0; }
+.doctor .d-inline .d-btn { white-space: nowrap; }
+.doctor .d-time { width: auto !important; }
+.doctor .d-day { width: 70px; }
+
+.doctor .d-search { position: relative; }
+.doctor .d-search svg { position: absolute; inset-inline-start: 11px; top: 50%; transform: translateY(-50%); color: var(--mu); pointer-events: none; }
+.doctor .d-search input { padding-inline-start: 36px; }
+
+.doctor .d-note { background: var(--pr2); color: var(--pr); border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; font-size: 14px; }
+
+/* مفتاح التشغيل */
+.doctor .d-switch {
+  position: relative; width: 42px; height: 24px; border: 0; padding: 0; flex-shrink: 0;
+  background: var(--bd); border-radius: 20px; transition: background 0.2s;
+}
+.doctor .d-switch::after {
+  content: ''; position: absolute; top: 3px; inset-inline-start: 3px; width: 18px; height: 18px;
+  border-radius: 50%; background: #fff; transition: inset-inline-start 0.2s; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+.doctor .d-switch.on { background: var(--pr); }
+.doctor .d-switch.on::after { inset-inline-start: 21px; }
+.doctor .d-switch:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* التوست */
+.doctor .d-toast {
+  position: fixed; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); inset-inline: 0; margin: auto;
+  width: max-content; max-width: 90%; background: var(--tx); color: var(--bg);
+  padding: 10px 18px; border-radius: 10px; opacity: 0; transition: 0.3s; pointer-events: none; z-index: 50;
+}
+.doctor .d-toast.show { opacity: 1; }

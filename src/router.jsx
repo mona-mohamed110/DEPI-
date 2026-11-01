@@ -24,6 +24,16 @@ import Accounts from "./pages/Admin/Accounts";
 import Licenses from "./pages/Admin/Licenses";
 import Monitoring from "./pages/Admin/Monitoring";
 import AdminProfile from "./pages/Admin/Profile";
+import DoctorLayout from "./components/Doctor/DoctorLayout";
+import DoctorDashboard from "./pages/Doctor/DoctorDashboard";
+import Patients from "./pages/Doctor/Patients";
+import PatientFile from "./pages/Doctor/PatientFile";
+import Exam from "./pages/Doctor/Exam";
+import Team from "./pages/Doctor/Team";
+import ProfessionalProfile from "./pages/Doctor/ProfessionalProfile";
+import Schedule from "./pages/Doctor/Schedule";
+import DoctorProfile from "./pages/Doctor/DoctorProfile";
+import DoctorAccountSettings from "./pages/Doctor/DoctorAccountSettings";
 
 export const router = createBrowserRouter([
   {
@@ -75,15 +85,30 @@ export const router = createBrowserRouter([
       { path: "account-settings", element: <AccountSettings /> },
     ],
   },
-{
-  path: "/admin",
-  element: <AdminLayout />,
-  children: [
-    { index: true, element: <Monitoring /> },
-    { path: "licenses", element: <Licenses /> },
-    { path: "accounts", element: <Accounts /> },
-    { path: "profile", element: <AdminProfile /> },
-  ],
-},
-]);
+  {
+    path: "/admin",
+    element: <AdminLayout />,
+    children: [
+      { index: true, element: <Monitoring /> },
+      { path: "licenses", element: <Licenses /> },
+      { path: "accounts", element: <Accounts /> },
+      { path: "profile", element: <AdminProfile /> },
+    ],
+  },
 
+  {
+    path: "/doctor",
+    element: <DoctorLayout />,
+    children: [
+      { index: true, element: <DoctorDashboard /> },
+      { path: "patients", element: <Patients /> },
+      { path: "patient-file", element: <PatientFile /> },
+      { path: "exam", element: <Exam /> },
+      { path: "team", element: <Team /> },
+      { path: "professional-profile", element: <ProfessionalProfile /> },
+      { path: "schedule", element: <Schedule /> },
+      { path: "profile", element: <DoctorProfile /> },
+      { path: "account-settings", element: <DoctorAccountSettings /> },
+    ],
+  },
+]);

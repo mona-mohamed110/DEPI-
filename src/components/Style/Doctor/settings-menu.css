@@ -1,0 +1,30 @@
+/* زر الحساب والإعدادات والقائمة المنبثقة */
+.doctor .d-settings-wrap { position: relative; padding-top: 12px; border-top: 1px solid var(--bd); }
+.doctor .d-settings-btn {
+  width: 100%; display: flex; align-items: center; gap: 10px; padding: 11px 14px;
+  border-radius: 12px; font-size: 14px; background: var(--pr2); color: var(--pr); border: 1px solid var(--bd);
+}
+.doctor .d-settings-btn .chev { transition: transform 0.2s; }
+.doctor .d-settings-btn.open .chev { transform: rotate(180deg); }
+.doctor .d-menu {
+  position: absolute; bottom: calc(100% + 8px); inset-inline: 0; z-index: 30;
+  background: var(--card); border: 1px solid var(--bd); border-radius: 14px; box-shadow: var(--shadow); padding: 8px;
+}
+.doctor .d-menu-title { color: var(--mu); font-size: 13px; padding: 8px 10px 6px; }
+.doctor .d-menu hr { border: 0; border-top: 1px solid var(--bd); margin: 6px 0; }
+.doctor .d-menu-item {
+  width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px;
+  border: 0; background: transparent; border-radius: 10px; font-size: 15px; font-weight: 500;
+}
+.doctor button.d-menu-item:hover, .doctor .d-menu-item.current { background: var(--pr2); }
+.doctor .d-menu-item.current { color: var(--pr); }
+.doctor .d-menu-item.static { cursor: default; }
+.doctor .d-menu-item.danger { color: var(--dg); }
+.doctor .d-menu-item.sub { padding-inline-start: 40px; font-size: 14px; }
+
+@media (max-width: 820px) {
+  .doctor .d-settings-wrap { border: 0; padding: 0; flex-shrink: 0; position: static; }
+  .doctor .d-settings-btn { padding: 9px 12px; }
+  .doctor .d-settings-btn .grow, .doctor .d-settings-btn .chev { display: none; }
+  .doctor .d-menu { position: fixed; top: 62px; bottom: auto; inset-inline: 10px; max-height: calc(100vh - 80px); overflow-y: auto; }
+}

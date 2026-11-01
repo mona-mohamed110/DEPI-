@@ -1,0 +1,49 @@
+/* الأساسيات — محصورة داخل .doctor فقط حتى لا تؤثر على باقي الموقع */
+.doctor {
+  background: var(--bg);
+  color: var(--tx);
+  font-family: Tajawal, Tahoma, system-ui, sans-serif;
+  line-height: 1.6;
+  text-align: start;
+  height: 100vh;
+  overflow: hidden; /* التمرير يحدث داخل d-main فقط */
+}
+/* نمنع تمرير الصفحة نفسها حتى لا يظهر شريط ثانٍ على حافة الشاشة */
+body:has(.doctor) { overflow: hidden; }
+
+/* نفرض الاتجاه على كل العناصر الداخلية: يمنع أي قاعدة عامة في موقعك
+   (مثل * { direction: rtl }) من إبقاء المحتوى RTL عند تبديل اللغة */
+.doctor[dir='rtl'], .doctor[dir='rtl'] * { direction: rtl; }
+.doctor[dir='ltr'], .doctor[dir='ltr'] * { direction: ltr; }
+
+.doctor *, .doctor *::before, .doctor *::after { box-sizing: border-box; }
+.doctor button { font: inherit; color: inherit; cursor: pointer; }
+.doctor h1 { font-size: 24px; margin: 0 0 4px; }
+.doctor h2 { font-size: 17px; margin: 0 0 12px; }
+.doctor .d-sub { color: var(--mu); margin: 0 0 20px; }
+.doctor .muted { color: var(--mu); font-size: 14px; }
+.doctor .grow { flex: 1; text-align: start; }
+
+
+/* اتجاه الشاشة كلها (السايدبار + المحتوى) يتبع اللغة:
+   العربية: السايدبار على اليمين — English: السايدبار على اليسار */
+.doctor .d-app { display: flex; height: 100vh; }
+.doctor[dir='rtl'] .d-app { direction: rtl; }
+.doctor[dir='ltr'] .d-app { direction: ltr; }
+
+/* d-main هو حاوية التمرير. اتجاهه عكس اتجاه الصفحة ليظهر شريط التمرير
+   على الحافة المجاورة للسايدبار */
+.doctor .d-main { flex: 1; min-width: 0; height: 100vh; overflow-y: auto; }
+.doctor[dir='rtl'] .d-main { direction: ltr; }
+.doctor[dir='ltr'] .d-main { direction: rtl; }
+
+/* المحتوى الداخلي بعرض المساحة المتاحة كاملة، ويرجع لاتجاه الصفحة الطبيعي */
+.doctor .d-main-inner { width: 100%; padding: 24px 32px; }
+.doctor[dir='rtl'] .d-main-inner { direction: rtl; }
+.doctor[dir='ltr'] .d-main-inner { direction: ltr; }
+
+@media (max-width: 820px) {
+  .doctor .d-app { flex-direction: column; }
+  .doctor .d-main { height: auto; flex: 1; min-height: 0; }
+  .doctor .d-main-inner { padding: 16px; }
+}
