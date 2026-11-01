@@ -45,10 +45,10 @@ export default function PatientsDataPage() {
   }, [patients]);
 
   const handleDeletePatient = (patientToDelete) => {
-    const confirmMsg = lang === 'ar' 
+    const confirmMsg = lang === 'ar'
       ? `هل أنت متأكد من حذف بيانات المريض (${patientToDelete.name}) من السجل والنظام؟`
       : `Are you sure you want to delete patient (${patientToDelete.name}) from records?`;
-      
+
     if (window.confirm(confirmMsg)) {
       setPatients(prev => prev.filter(p => p.id !== patientToDelete.id));
 
@@ -65,20 +65,18 @@ export default function PatientsDataPage() {
     }
   };
 
-  const filteredPatients = patients.filter(patient => 
-    (patient.name && patient.name.includes(searchTerm)) || 
-    (patient.phone && patient.phone.includes(searchTerm)) ||
-    (patient.doctor && patient.doctor.includes(searchTerm))
+  const filteredPatients = patients.filter(patient =>
+    (patient.name && patient.name.includes(searchTerm)) ||
+    (patient.phone && patient.phone.includes(searchTerm))
   );
 
   const translations = {
     ar: {
       title: 'سجل المرضى (منتهى الكشف)',
       subtitle: 'قائمة بجميع المرضى الذين أتموا الكشف الطبي بنجاح وتم تحويلهم للسجل',
-      searchPlaceholder: 'ابحث باسم المريض، رقم الهاتف، أو الدكتور...',
-      thPatientDoc: 'المريض والدكتور',
+      searchPlaceholder: 'ابحث باسم المريض أو رقم الهاتف...',
+      thPatient: 'المريض',
       thPhone: 'رقم الهاتف',
-      thTime: 'وقت الكشف',
       thActions: 'الإجراءات',
       deleteText: 'حذف',
       noData: 'لا توجد سجلات لمرضى انتهى كشفهم بعد.'
@@ -86,10 +84,9 @@ export default function PatientsDataPage() {
     en: {
       title: 'Patients Record (Completed Exams)',
       subtitle: 'List of all patients who successfully completed their medical exam',
-      searchPlaceholder: 'Search by patient name, phone, or doctor...',
-      thPatientDoc: 'Patient & Doctor',
+      searchPlaceholder: 'Search by patient name or phone...',
+      thPatient: 'Patient',
       thPhone: 'Phone Number',
-      thTime: 'Exam Time',
       thActions: 'Actions',
       deleteText: 'Delete',
       noData: 'No completed patient records found yet.'
@@ -97,9 +94,10 @@ export default function PatientsDataPage() {
   };
 
   const t = translations[lang] || translations.ar;
+  const dir = lang === 'ar' ? 'rtl' : 'ltr';
 
   return (
-    <div className={`reception-container ${isDark ? 'dark-mode' : ''}`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+    <div className={`reception-container ${isDark ? 'dark-mode' : ''}`} dir={dir} lang={lang}>
       <header className="page-header">
         <h1>{t.title}</h1>
         <p>{t.subtitle}</p>
@@ -111,6 +109,7 @@ export default function PatientsDataPage() {
             <Search size={18} className="search-icon" />
             <input
               type="text"
+              dir={dir}
               className="search-input-with-icon"
               placeholder={t.searchPlaceholder}
               value={searchTerm}
@@ -123,9 +122,8 @@ export default function PatientsDataPage() {
           <table className="reception-table">
             <thead>
               <tr>
-                <th>{t.thPatientDoc}</th>
+                <th>{t.thPatient}</th>
                 <th>{t.thPhone}</th>
-                <th>{t.thTime}</th>
                 <th>{t.thActions}</th>
               </tr>
             </thead>
@@ -138,25 +136,18 @@ export default function PatientsDataPage() {
                         <div className="avatar-circle">
                           {patient.name ? patient.name.charAt(0) : 'م'}
                         </div>
-                        <div>
-                          <div className="patient-name">{patient.name}</div>
-                          <div className="patient-doc">{patient.doctor || (lang === 'ar' ? 'طبيب عام' : 'General Practitioner')}</div>
-                        </div>
+                        <div className="patient-name">{patient.name}</div>
                       </div>
                     </td>
                     <td>
                       <span className="phone-text">
-                        <Phone size={14} className="inline-icon" /> {patient.phone || '010XXXXXXXX'}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="status-badge ended">
-                        {patient.time || (lang === 'ar' ? 'اليوم' : 'Today')}
+                        <Phone size={14} className="inline-icon" />
+                        <bdi dir="ltr">{patient.phone || '010XXXXXXXX'}</bdi>
                       </span>
                     </td>
                     <td>
                       <div className="action-buttons-group">
-                        <button 
+                        <button
                           className="action-btn delete-btn-custom"
                           onClick={() => handleDeletePatient(patient)}
                           title={t.deleteText}
@@ -169,7 +160,7 @@ export default function PatientsDataPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className="no-data-msg">{t.noData}</td>
+                  <td colSpan="3" className="no-data-msg">{t.noData}</td>
                 </tr>
               )}
             </tbody>

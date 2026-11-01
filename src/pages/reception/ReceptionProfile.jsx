@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Edit2, Save, X, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Edit2, Save, X } from 'lucide-react';
 import './ReceptionProfile.css';
 
 export default function ReceptionProfile() {
@@ -77,7 +77,6 @@ export default function ReceptionProfile() {
     ar: {
       title: 'الملف الشخصي',
       subtitle: 'بياناتك الشخصية الأساسية',
-      back: 'رجوع',
       nameLabel: 'الاسم',
       emailLabel: 'البريد الإلكتروني',
       passLabel: 'كلمة المرور',
@@ -90,7 +89,6 @@ export default function ReceptionProfile() {
     en: {
       title: 'Profile',
       subtitle: 'Your core personal information',
-      back: 'Back',
       nameLabel: 'Name',
       emailLabel: 'Email',
       passLabel: 'Password',
@@ -103,7 +101,6 @@ export default function ReceptionProfile() {
   };
 
   const t = translations[lang] || translations.ar;
-  const BackIcon = lang === 'ar' ? ArrowRight : ArrowLeft;
 
   return (
     <div className={`profile-page-wrapper ${isDark ? 'dark-mode' : ''}`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
@@ -112,9 +109,6 @@ export default function ReceptionProfile() {
           <h1>{t.title}</h1>
           <p>{t.subtitle}</p>
         </div>
-        <button className="back-btn" onClick={() => navigate(-1)}>
-          <BackIcon size={18} /> {t.back}
-        </button>
       </div>
 
       <div className="profile-main-card">

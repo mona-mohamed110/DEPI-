@@ -1,8 +1,95 @@
 import { useState, useEffect } from 'react';
 import { LuUpload, LuTrash2, LuFileText, LuEye, LuX } from 'react-icons/lu';
+import { useApp } from '../../context/AppContext.jsx';
 import '../../components/Style/Patient/MedicalFile.css';
 
+const translations = {
+  ar: {
+    mainTitle: "ملفي الطبي",
+    subTitle: "بياناتك الصحية في مكان واحد",
+    personalSection: "Personal & Chronic Data",
+    nameLabel: "Name:",
+    nameVal: "Mona Mohamed",
+    ageLabel: "Age:",
+    ageVal: "25 Years",
+    bloodLabel: "Blood Type:",
+    bloodVal: "O+",
+    heightWeightLabel: "Height / Weight:",
+    heightWeightVal: "165 cm / 60 kg",
+    chronicLabel: "Chronic Diseases:",
+    chronicChips: ["Type 2 Diabetes", "Blood Pressure"],
+    historySection: "التاريخ المرضي",
+    thCondition: "الحالة المرضية",
+    thDate: "التاريخ",
+    thNotes: "ملاحظات",
+    medicalHistory: [
+      { id: 1, condition: 'استئصال الزائدة', date: '٢٠١٩', notes: 'عملية جراحية ناجحة' },
+      { id: 2, condition: 'التهاب الجيوب الأنفية', date: '٢٠٢٣', notes: 'حالة موسمية' },
+    ],
+    uploadSection: "إرفاق تقارير أو أشعة جديدة",
+    uploadText: "اضغط هنا لرفع ملف أو اسحب الصورة / ملف الـ PDF هنا",
+    reportsSection: "التقارير والأشعة المرفوعة",
+    emptyReports: "لا توجد أي تقارير مرفوعة حالياً.",
+    thFileName: "اسم الملف",
+    thUploadDate: "تاريخ الرفع",
+    thSize: "الحجم",
+    thActions: "الإجراءات",
+    viewBtn: "عرض",
+    deleteBtn: "حذف",
+    defaultReports: [
+      { id: 1, name: 'تقرير تحليل الدم الشامل.pdf', date: '٢٠٢٦/١٠/١٥', size: '2.4 MB', type: 'pdf', url: '' },
+      { id: 2, name: 'أشعة الصدر.jpg', date: '٢٠٢٦/١٠/٢٠', size: '1.1 MB', type: 'image', url: '' },
+    ],
+    demoAlert: 'هذا ملف تجريبي افتراضي، جرب رفع ملف حقيقي لفتحه ومعاينته.'
+  },
+  en: {
+    mainTitle: "My Medical File",
+    subTitle: "Your health records in one place",
+    personalSection: "Personal & Chronic Data",
+    nameLabel: "Name:",
+    nameVal: "Mona Mohamed",
+    ageLabel: "Age:",
+    ageVal: "25 Years",
+    bloodLabel: "Blood Type:",
+    bloodVal: "O+",
+    heightWeightLabel: "Height / Weight:",
+    heightWeightVal: "165 cm / 60 kg",
+    chronicLabel: "Chronic Diseases:",
+    chronicChips: ["Type 2 Diabetes", "Blood Pressure"],
+    historySection: "Medical History",
+    thCondition: "Condition",
+    thDate: "Date",
+    thNotes: "Notes",
+    medicalHistory: [
+      { id: 1, condition: 'Appendectomy', date: '2019', notes: 'Successful surgery' },
+      { id: 2, condition: 'Sinusitis', date: '2023', notes: 'Seasonal condition' },
+    ],
+    uploadSection: "Attach New Reports or Scans",
+    uploadText: "Click here to upload file or drag image / PDF here",
+    reportsSection: "Uploaded Reports & Scans",
+    emptyReports: "No reports uploaded yet.",
+    thFileName: "File Name",
+    thUploadDate: "Upload Date",
+    thSize: "Size",
+    thActions: "Actions",
+    viewBtn: "View",
+    deleteBtn: "Delete",
+    defaultReports: [
+      { id: 1, name: 'Blood_Test_Report.pdf', date: '2025/10/15', size: '2.4 MB', type: 'pdf', url: '' },
+      { id: 2, name: 'Chest_XRay.jpg', date: '2025/10/20', size: '1.1 MB', type: 'image', url: '' },
+    ],
+    demoAlert: 'This is a default demo file, try uploading a real file to view it.'
+  }
+};
+
 const MedicalFile = () => {
+  const app = useApp() || {};
+  const currentLang = app.lang || app.language || 'ar';
+  const isArabic = currentLang === 'ar' || currentLang === 'AR';
+  const currentTheme = app.theme || (app.isDark || app.darkMode ? 'dark' : 'light');
+
+  const t = translations[isArabic ? 'ar' : 'en'];
+
   const [reports, setReports] = useState(() => {
     const savedReports = localStorage.getItem('medical_reports');
     if (savedReports) {
@@ -12,10 +99,7 @@ const MedicalFile = () => {
         console.error(e);
       }
     }
-    return [
-      { id: 1, name: 'تقرير تحليل الدم الشامل.pdf', date: '٢٠٢٦/١٠/١٥', size: '2.4 MB', type: 'pdf', url: '' },
-      { id: 2, name: 'أشعة الصدر.jpg', date: '٢٠٢٦/١٠/٢٠', size: '1.1 MB', type: 'image', url: '' },
-    ];
+    return t.defaultReports;
   });
 
   const [activeModalReport, setActiveModalReport] = useState(null);
@@ -33,7 +117,7 @@ const MedicalFile = () => {
         const newReport = {
           id: Date.now(),
           name: file.name,
-          date: new Date().toLocaleDateString('ar-EG'),
+          date: new Date().toLocaleDateString(isArabic ? 'ar-EG' : 'en-US'),
           size: (file.size / (1024 * 1024)).toFixed(1) + ' MB',
           type: isPdf ? 'pdf' : 'image',
           url: reader.result, 
@@ -56,7 +140,7 @@ const MedicalFile = () => {
     if (report.url && report.url.trim() !== '') {
       setActiveModalReport(report);
     } else {
-      alert('هذا ملف تجريبي افتراضي، جرب رفع ملف حقيقي لفتحه ومعاينته.');
+      alert(t.demoAlert);
     }
   };
 
@@ -64,61 +148,57 @@ const MedicalFile = () => {
     setActiveModalReport(null);
   };
 
-  const medicalHistory = [
-    { id: 1, condition: 'استئصال الزائدة', date: '٢٠١٩', notes: 'عملية جراحية ناجحة' },
-    { id: 2, condition: 'التهاب الجيوب الأنفية', date: '٢٠٢٣', notes: 'حالة موسمية' },
-  ];
-
   return (
-    <div className="medical-file-wrapper" dir="rtl">
+    <div className={`medical-file-wrapper ${currentTheme}`} dir={isArabic ? 'rtl' : 'ltr'}>
       <div className="page-header">
-        <h1 className="main-title">ملفي الطبي</h1>
-        <p className="sub-title">بياناتك الصحية في مكان واحد</p>
+        <h1 className="main-title">{t.mainTitle}</h1>
+        <p className="sub-title">{t.subTitle}</p>
       </div>
 
       <div className="medical-card info-summary-card">
-        <h3 className="card-section-title">البيانات الشخصية والمزمنة</h3>
+        <h3 className="card-section-title">{t.personalSection}</h3>
         
         <div className="info-grid">
           <div className="info-item">
-            <span className="info-label">الاسم:</span>
-            <span className="info-value">منى محمد</span>
+            <span className="info-label" dir="ltr">{t.nameLabel}</span>
+            <span className="info-value" dir="ltr">{t.nameVal}</span>
           </div>
           <div className="info-item">
-            <span className="info-label">العمر:</span>
-            <span className="info-value">٢٥ سنة</span>
+            <span className="info-label" dir="ltr">{t.ageLabel}</span>
+            <span className="info-value" dir="ltr">{t.ageVal}</span>
           </div>
           <div className="info-item">
-            <span className="info-label">فصيلة الدم:</span>
-            <span className="info-value">+O</span>
+            <span className="info-label" dir="ltr">{t.bloodLabel}</span>
+            <span className="info-value" dir="ltr">{t.bloodVal}</span>
           </div>
           <div className="info-item">
-            <span className="info-label">الطول / الوزن:</span>
-            <span className="info-value">١٦٥ سم / ٦٠ كجم</span>
+            <span className="info-label" dir="ltr">{t.heightWeightLabel}</span>
+            <span className="info-value" dir="ltr">{t.heightWeightVal}</span>
           </div>
         </div>
 
         <div className="chronic-diseases-row">
-          <span className="info-label">الأمراض المزمنة:</span>
+          <span className="info-label" dir="ltr">{t.chronicLabel}</span>
           <div className="chips-group">
-            <span className="chronic-chip">ضغط الدم</span>
-            <span className="chronic-chip">السكر النوع ٢</span>
+            {t.chronicChips.map((chip, idx) => (
+              <span key={idx} className="chronic-chip">{chip}</span>
+            ))}
           </div>
         </div>
       </div>
 
       <div className="medical-card table-card">
-        <h3 className="card-section-title">التاريخ المرضي</h3>
+        <h3 className="card-section-title">{t.historySection}</h3>
         <table className="medical-table">
           <thead>
             <tr>
-              <th>الحالة المرضية</th>
-              <th>التاريخ</th>
-              <th>ملاحظات</th>
+              <th>{t.thCondition}</th>
+              <th>{t.thDate}</th>
+              <th>{t.thNotes}</th>
             </tr>
           </thead>
           <tbody>
-            {medicalHistory.map((item) => (
+            {t.medicalHistory.map((item) => (
               <tr key={item.id}>
                 <td className="condition-name">{item.condition}</td>
                 <td>{item.date}</td>
@@ -130,7 +210,7 @@ const MedicalFile = () => {
       </div>
 
       <div className="medical-card upload-card">
-        <h3 className="card-section-title">إرفاق تقارير أو أشعة جديدة</h3>
+        <h3 className="card-section-title">{t.uploadSection}</h3>
         <label className="upload-dropzone">
           <input 
             type="file" 
@@ -140,25 +220,23 @@ const MedicalFile = () => {
           />
           <div className="upload-content">
             <LuUpload className="upload-icon" />
-            <span className="upload-text">
-              اضغط هنا لرفع ملف أو اسحب الصورة / ملف الـ PDF هنا
-            </span>
+            <span className="upload-text">{t.uploadText}</span>
           </div>
         </label>
       </div>
 
       <div className="medical-card table-card">
-        <h3 className="card-section-title">التقارير والأشعة المرفوعة</h3>
+        <h3 className="card-section-title">{t.reportsSection}</h3>
         {reports.length === 0 ? (
-          <p className="empty-reports-text">لا توجد أي تقارير مرفوعة حالياً.</p>
+          <p className="empty-reports-text">{t.emptyReports}</p>
         ) : (
           <table className="medical-table">
             <thead>
               <tr>
-                <th>اسم الملف</th>
-                <th>تاريخ الرفع</th>
-                <th>الحجم</th>
-                <th className="action-col">الإجراءات</th>
+                <th>{t.thFileName}</th>
+                <th>{t.thUploadDate}</th>
+                <th>{t.thSize}</th>
+                <th className="action-col">{t.thActions}</th>
               </tr>
             </thead>
             <tbody>
@@ -175,18 +253,18 @@ const MedicalFile = () => {
                       <button 
                         className="view-report-btn" 
                         onClick={() => handleViewReport(report)}
-                        title="عرض الملف"
+                        title={t.viewBtn}
                       >
                         <LuEye />
-                        <span>عرض</span>
+                        <span>{t.viewBtn}</span>
                       </button>
                       <button 
                         className="delete-report-btn" 
                         onClick={() => handleDeleteReport(report.id)}
-                        title="حذف الملف"
+                        title={t.deleteBtn}
                       >
                         <LuTrash2 />
-                        <span>حذف</span>
+                        <span>{t.deleteBtn}</span>
                       </button>
                     </div>
                   </td>

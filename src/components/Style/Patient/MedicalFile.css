@@ -1,5 +1,44 @@
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');
 
+
+.medical-file-wrapper.light {
+  --bg-main: #f7f9fc;
+  --bg-card: #ffffff;
+  --border-card: #eef2f8;
+  --border-divider: #f1f5f9;
+  --text-title: #0b132a;
+  --text-muted: #8a94a6;
+  --text-sub: #334155;
+  --shadow-card: rgba(15, 23, 42, 0.02);
+  --dropzone-bg: #f8fafc;
+  --dropzone-border: #cbd5e1;
+  --table-th-bg: #fafbfc;
+  --modal-bg: #ffffff;
+}
+
+.medical-file-wrapper.dark {
+  --bg-main: #0f172a;
+  --bg-card: #1e293b;
+  --border-card: #334155;
+  --border-divider: #334155;
+  --text-title: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-sub: #cbd5e1;
+  --shadow-card: rgba(0, 0, 0, 0.2);
+  --dropzone-bg: #1e293b;
+  --dropzone-border: #475569;
+  --table-th-bg: #1e293b;
+  --modal-bg: #1e293b;
+}
+
+
+.medical-file-wrapper,
+.medical-file-wrapper *,
+.medical-file-wrapper *::before,
+.medical-file-wrapper *::after {
+  box-sizing: border-box;
+}
+
 .medical-file-wrapper {
   width: 100%;
   max-width: 1100px;
@@ -9,80 +48,120 @@
   box-sizing: border-box;
   text-align: start;
   background-color: #f7f9fc;
+  background-color: var(--bg-main);
+  color: var(--text-sub);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-wrap: anywhere;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.medical-file-wrapper[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+
+.medical-file-wrapper[dir="ltr"] {
+  direction: ltr;
+  text-align: left;
 }
 
 .page-header {
   margin-bottom: 24px;
   text-align: start;
+
 }
 
 .main-title {
-  font-size: 28px;
+  font-size: clamp(22px, 5vw, 28px);
   font-weight: 800;
-  color: #0b132a;
+  color: var(--text-title) !important;
   margin: 0 0 4px 0;
+  line-height: 1.4;
 }
 
 .sub-title {
-  font-size: 15px;
-  color: #8a94a6;
+  font-size: clamp(13px, 3.5vw, 15px);
+  color: var(--text-muted);
   font-weight: 500;
   margin: 0;
+  line-height: 1.6;
 }
 
 .medical-card {
-  background-color: #ffffff;
+  background-color: var(--bg-card);
   border-radius: 18px;
-  border: 1px solid #eef2f8;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
+  border: 1px solid var(--border-card);
+  box-shadow: 0 2px 8px var(--shadow-card);
   padding: 24px;
   margin-bottom: 24px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .card-section-title {
-  font-size: 18px;
+  font-size: clamp(16px, 4vw, 18px);
   font-weight: 800;
-  color: #0b132a;
+  color: var(--text-title);
   margin: 0 0 20px 0;
+  width: 100%;
+  display: block;
 }
 
 .info-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
   margin-bottom: 20px;
   padding-bottom: 20px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--border-divider);
 }
+
+.medical-file-wrapper[dir="ltr"] .info-grid { direction: ltr; text-align: left; }
+.medical-file-wrapper[dir="rtl"] .info-grid { direction: rtl; text-align: right; }
 
 .info-item {
   display: flex;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 4px 8px;
   align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
 }
+
+.medical-file-wrapper[dir="ltr"] .info-item { direction: ltr; flex-direction: row; }
+.medical-file-wrapper[dir="rtl"] .info-item { direction: rtl; flex-direction: row; }
 
 .info-label {
   font-size: 14px;
-  color: #8a94a6;
+  color: var(--text-muted);
   font-weight: 600;
 }
 
 .info-value {
   font-size: 15px;
-  color: #0b132a;
+  color: var(--text-title);
   font-weight: 700;
+  min-width: 0;
 }
 
 .chronic-diseases-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: flex-start;
+  flex-direction: row;
+  gap: 8px 12px;
+  flex-wrap: wrap;
 }
+
+.medical-file-wrapper[dir="ltr"] .chronic-diseases-row { direction: ltr; }
+.medical-file-wrapper[dir="rtl"] .chronic-diseases-row { direction: rtl; }
 
 .chips-group {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  min-width: 0;
 }
 
 .chronic-chip {
@@ -92,11 +171,20 @@
   border-radius: 20px;
   font-size: 13px;
   font-weight: 700;
+  white-space: nowrap;
 }
 
+.medical-file-wrapper.dark .chronic-chip {
+  background-color: rgba(202, 138, 4, 0.2);
+  color: #facc15;
+}
+
+
 .table-card {
-  overflow: hidden;
   padding: 24px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 .table-card .card-section-title {
@@ -105,6 +193,7 @@
 
 .medical-table {
   width: 100%;
+  min-width: 620px;
   border-collapse: collapse;
   text-align: start;
 }
@@ -112,19 +201,44 @@
 .medical-table th {
   text-align: start;
   color: #94a3b8;
+}
+
+.medical-file-wrapper[dir="rtl"] .medical-table { text-align: right; }
+.medical-file-wrapper[dir="ltr"] .medical-table { text-align: left; }
+
+.medical-file-wrapper[dir="ltr"] .medical-table tr {
+  display: flex;
+  flex-direction: row-reverse;
+  width: 100%;
+}
+
+.medical-file-wrapper[dir="ltr"] .medical-table th,
+.medical-file-wrapper[dir="ltr"] .medical-table td {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.medical-file-wrapper[dir="rtl"] .medical-table tr {
+  display: table-row;
+}
+
+.medical-table th {
+  color: var(--text-muted);
   font-size: 14px;
   font-weight: 700;
   padding: 16px 24px;
-  border-bottom: 1px solid #f1f5f9;
-  background-color: #fafbfc;
+  border-bottom: 1px solid var(--border-divider);
+  background-color: var(--table-th-bg);
+  white-space: nowrap;
 }
 
 .medical-table td {
   padding: 18px 24px;
   font-size: 14px;
-  color: #334155;
+  color: var(--text-sub);
   font-weight: 600;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--border-divider);
+  vertical-align: middle;
 }
 
 .medical-table tr:last-child td {
@@ -133,23 +247,23 @@
 
 .condition-name {
   font-weight: 800;
-  color: #0b132a;
+  color: var(--text-title);
 }
+
 
 .upload-dropzone {
   display: block;
-  border: 2px dashed #cbd5e1;
+  border: 2px dashed var(--dropzone-border);
   border-radius: 14px;
   padding: 30px;
   text-align: center;
-  background-color: #f8fafc;
+  background-color: var(--dropzone-bg);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .upload-dropzone:hover {
   border-color: #2b70f0;
-  background-color: #f0f6ff;
 }
 
 .upload-content {
@@ -166,14 +280,20 @@
 
 .upload-text {
   font-size: 14px;
-  color: #64748b;
+  color: var(--text-muted);
   font-weight: 600;
+  line-height: 1.6;
 }
 
 .file-name-cell {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
+}
+
+.medical-file-wrapper[dir="ltr"] .file-name-cell {
+  flex-direction: row;
 }
 
 .file-row-icon {
@@ -188,17 +308,17 @@
 
 .actions-buttons-group {
   display: inline-flex;
+  flex-wrap: wrap;
   gap: 8px;
   align-items: center;
   justify-content: center;
 }
 
-.view-report-btn {
+.view-report-btn,
+.delete-report-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background-color: #eff6ff;
-  color: #2b70f0;
   border: none;
   padding: 6px 14px;
   border-radius: 8px;
@@ -207,6 +327,18 @@
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: 'Cairo', sans-serif;
+  white-space: nowrap;
+  min-height: 36px;
+}
+
+.view-report-btn {
+  background-color: #eff6ff;
+  color: #2b70f0;
+}
+
+.medical-file-wrapper.dark .view-report-btn {
+  background-color: rgba(43, 112, 240, 0.2);
+  color: #60a5fa;
 }
 
 .view-report-btn:hover {
@@ -215,19 +347,13 @@
 }
 
 .delete-report-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
   background-color: #fee2e2;
   color: #dc2626;
-  border: none;
-  padding: 6px 14px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: 'Cairo', sans-serif;
+}
+
+.medical-file-wrapper.dark .delete-report-btn {
+  background-color: rgba(220, 38, 38, 0.2);
+  color: #f87171;
 }
 
 .delete-report-btn:hover {
@@ -237,17 +363,15 @@
 
 .empty-reports-text {
   padding: 0 24px 16px 24px;
-  color: #8a94a6;
+  color: var(--text-muted);
   font-size: 14px;
   font-weight: 600;
 }
 
+
 .file-modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
   background-color: rgba(11, 19, 42, 0.6);
   backdrop-filter: blur(4px);
   display: flex;
@@ -255,58 +379,56 @@
   justify-content: center;
   z-index: 1000;
   padding: 20px;
+  padding-top: max(20px, env(safe-area-inset-top));
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
 }
 
 .file-modal-content {
-  background-color: #ffffff;
+  background-color: var(--modal-bg);
   border-radius: 16px;
   width: 100%;
   max-width: 800px;
   max-height: 90vh;
+  max-height: 90dvh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
   overflow: hidden;
-  animation: modalScaleIn 0.25s ease;
-}
-
-@keyframes modalScaleIn {
-  from {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
 }
 
 .file-modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding: 16px 24px;
-  border-bottom: 1px solid #eef2f8;
+  border-bottom: 1px solid var(--border-card);
+  flex-shrink: 0;
 }
 
 .file-modal-header h3 {
   margin: 0;
   font-size: 18px;
   font-weight: 800;
-  color: #0b132a;
+  color: var(--text-title);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .close-modal-btn {
-  background: #f1f5f9;
+  background: var(--dropzone-bg);
   border: none;
   width: 36px;
   height: 36px;
+  flex-shrink: 0;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #64748b;
+  color: var(--text-muted);
   transition: all 0.2s ease;
 }
 
@@ -320,14 +442,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
-  max-height: calc(90vh - 70px);
-  background-color: #f8fafc;
+  background-color: var(--bg-main);
 }
 
 .modal-img-viewer {
   max-width: 100%;
   max-height: 70vh;
+  max-height: 70dvh;
   object-fit: contain;
   border-radius: 8px;
 }
@@ -335,26 +459,131 @@
 .modal-pdf-viewer {
   width: 100%;
   height: 70vh;
+  height: 70dvh;
   border: none;
   border-radius: 8px;
 }
 
+
+@media (max-width: 992px) {
+  .medical-file-wrapper {
+    padding: 24px 16px;
+  }
+}
+
 @media (max-width: 768px) {
+  .medical-file-wrapper {
+    padding: 16px 12px;
+  }
+
+  .medical-card {
+    padding: 16px;
+    border-radius: 14px;
+    margin-bottom: 16px;
+  }
+
   .info-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
+
   .table-card {
-    overflow-x: auto;
+    padding: 16px 0;
   }
+
+  .table-card .card-section-title {
+    padding: 0 16px;
+  }
+
   .medical-table {
-    min-width: 500px;
+    min-width: 560px;
   }
-  .view-report-btn span,
-  .delete-report-btn span {
-    display: none;
+
+  .medical-table th,
+  .medical-table td {
+    padding: 12px 16px;
   }
+
+  .empty-reports-text {
+    padding: 0 16px 12px 16px;
+  }
+
+  .upload-dropzone {
+    padding: 22px 16px;
+  }
+
+  .file-modal-overlay {
+    padding: 12px;
+  }
+
+  .file-modal-header {
+    padding: 12px 16px;
+  }
+
+  .file-modal-header h3 {
+    font-size: 16px;
+  }
+
+  .file-modal-body {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .medical-file-wrapper {
+    padding: 12px 8px;
+  }
+
+  .info-label,
+  .info-value {
+    font-size: 14px;
+  }
+
+  .chronic-chip {
+    font-size: 12px;
+    padding: 3px 10px;
+  }
+
+  .medical-table {
+    min-width: 520px;
+  }
+
+  .medical-table th,
+  .medical-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
   .view-report-btn,
   .delete-report-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .upload-icon {
+    font-size: 26px;
+  }
+
+  .file-modal-overlay {
     padding: 8px;
+  }
+
+  .file-modal-content {
+    border-radius: 12px;
+  }
+
+  .modal-pdf-viewer {
+    height: 65dvh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .medical-file-wrapper,
+  .medical-card,
+  .upload-dropzone,
+  .view-report-btn,
+  .delete-report-btn,
+  .close-modal-btn {
+    transition: none;
   }
 }

@@ -36,11 +36,11 @@ export default function ReceptionDashboard() {
       }
     }
     return [
-      { id: 1, name: 'أحمد حسن', phone: '01012345678', doctor: 'د. أحمد سمير · باطنة', time: '٩:٠٠ ص', status: 'ended', label: 'انتهى', initial: 'أ' },
-      { id: 2, name: 'فاطمة علي', phone: '01123456789', doctor: 'د. أحمد سمير · باطنة', time: '٩:٣٠ ص', status: 'in-exam', label: 'في الكشف', initial: 'ف' },
-      { id: 3, name: 'محمود سعيد', phone: '01234567890', doctor: 'د. سارة علي · قلب', time: '١٠:٠٠ ص', status: 'arrived', label: 'وصل', initial: 'م' },
-      { id: 4, name: 'نورا إبراهيم', phone: '01098765432', doctor: 'د. سارة علي · قلب', time: '١٠:٣٠ ص', status: 'not-arrived', label: 'لم يصل', initial: 'ن' },
-      { id: 5, name: 'ياسر مصطفى', phone: '01556701334', doctor: 'د. مها خالد · أطفال', time: '١١:٠٠ ص', status: 'not-arrived', label: 'لم يصل', initial: 'ي' },
+      { id: 1, name: 'أحمد حسن', phone: '01012345678', doctor: 'د. أحمد سمير · باطنة', time: '٩:٠٠ ص', status: 'ended', initial: 'أ' },
+      { id: 2, name: 'فاطمة علي', phone: '01123456789', doctor: 'د. أحمد سمير · باطنة', time: '٩:٣٠ ص', status: 'in-exam', initial: 'ف' },
+      { id: 3, name: 'محمود سعيد', phone: '01234567890', doctor: 'د. سارة علي · قلب', time: '١٠:٠٠ ص', status: 'arrived', initial: 'م' },
+      { id: 4, name: 'نورا إبراهيم', phone: '01098765432', doctor: 'د. سارة علي · قلب', time: '١٠:٣٠ ص', status: 'not-arrived', initial: 'ن' },
+      { id: 5, name: 'ياسر مصطفى', phone: '01556701334', doctor: 'د. مها خالد · أطفال', time: '١١:٠٠ ص', status: 'not-arrived', initial: 'ي' },
     ];
   });
 
@@ -48,12 +48,11 @@ export default function ReceptionDashboard() {
     localStorage.setItem('reception_queue_data', JSON.stringify(queueData));
   }, [queueData]);
 
-  const handleStatusChange = (id, newStatus, newLabelAr, newLabelEn) => {
-    const newLabel = lang === 'ar' ? newLabelAr : newLabelEn;
+  const handleStatusChange = (id, newStatus) => {
     setQueueData(prev =>
       prev.map(item => {
         if (item.id === id) {
-          const updatedItem = { ...item, status: newStatus, label: newLabel };
+          const updatedItem = { ...item, status: newStatus };
 
           if (newStatus === 'ended') {
             const endedPatients = JSON.parse(localStorage.getItem('reception_ended_patients') || '[]');
@@ -103,6 +102,12 @@ export default function ReceptionDashboard() {
       thStatus: 'الحالة',
       thActions: 'الإجراءات',
       noData: 'لا يوجد مرضى يطابقون البحث أو الفلتر المختار.',
+      statusLabels: {
+        'not-arrived': 'لم يصل',
+        'arrived': 'وصل',
+        'in-exam': 'في الكشف',
+        'ended': 'انتهى'
+      },
       filters: [
         { label: 'الكل', key: 'all' },
         { label: 'لم يصل', key: 'not-arrived' },
@@ -124,6 +129,12 @@ export default function ReceptionDashboard() {
       thStatus: 'Status',
       thActions: 'Actions',
       noData: 'No patients match the selected search or filter.',
+      statusLabels: {
+        'not-arrived': 'Not Arrived',
+        'arrived': 'Arrived',
+        'in-exam': 'In Exam',
+        'ended': 'Ended'
+      },
       filters: [
         { label: 'All', key: 'all' },
         { label: 'Not Arrived', key: 'not-arrived' },
@@ -212,25 +223,27 @@ export default function ReceptionDashboard() {
                       <span className="time-text">{item.time}</span>
                     </td>
                     <td>
-                      <span className={`status-badge ${item.status}`}>{item.label}</span>
+                      <span className={`status-badge ${item.status}`}>
+                        {t.statusLabels[item.status] || item.status}
+                      </span>
                     </td>
                     <td>
                       <div className="action-buttons-group">
                         <button
                           className={`action-btn btn-arrived ${item.status === 'arrived' ? 'active-action' : ''}`}
-                          onClick={() => handleStatusChange(item.id, 'arrived', 'وصل', 'Arrived')}
+                          onClick={() => handleStatusChange(item.id, 'arrived')}
                         >
                           {lang === 'ar' ? 'وصل' : 'Arrived'}
                         </button>
                         <button
                           className={`action-btn btn-inexam ${item.status === 'in-exam' ? 'active-action' : ''}`}
-                          onClick={() => handleStatusChange(item.id, 'in-exam', 'في الكشف', 'In Exam')}
+                          onClick={() => handleStatusChange(item.id, 'in-exam')}
                         >
                           {lang === 'ar' ? 'في الكشف' : 'In Exam'}
                         </button>
                         <button
                           className={`action-btn btn-ended ${item.status === 'ended' ? 'active-action' : ''}`}
-                          onClick={() => handleStatusChange(item.id, 'ended', 'انتهى', 'Ended')}
+                          onClick={() => handleStatusChange(item.id, 'ended')}
                         >
                           {lang === 'ar' ? 'انتهى' : 'Ended'}
                         </button>
