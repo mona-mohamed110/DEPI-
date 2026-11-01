@@ -1,7 +1,10 @@
 import { useState } from "react";
+import { useApp } from "../../context/AppContext.jsx";
 import "../../components/Style/Admin/Accounts.css";
 
 function Accounts() {
+  const { t, lang } = useApp();
+
   const [users, setUsers] = useState([
     { id: 1, name: "منى محمد", email: "mona@example.com", role: "pt", active: true },
     { id: 2, name: "أحمد حسن", email: "ahmed.h@example.com", role: "pt", active: true },
@@ -14,50 +17,43 @@ function Accounts() {
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("all");
   const [toast, setToast] = useState("");
-const [confirmUser, setConfirmUser] = useState(null);
+  const [confirmUser, setConfirmUser] = useState(null);
 
-function showToast(text) {
-  setToast(text);
-  setTimeout(function () {
-    setToast("");
-  }, 2200);
-}
-
-function changeUser(id) {
-  let message = "";
-  const newUsers = users.map(function (u) {
-    if (u.id === id) {
-      if (u.active) {
-        message = "تم إيقاف حساب " + u.name;
-      } else {
-        message = "تم تفعيل حساب " + u.name;
-      }
-      return { ...u, active: !u.active };
-    }
-    return u;
-  });
-  setUsers(newUsers);
-  showToast(message);
-}
-
-function toggleUser(u) {
-  if (u.active) {
-    setConfirmUser(u);
-  } else {
-    changeUser(u.id);
+  function showToast(text) {
+    setToast(text);
+    setTimeout(function () {
+      setToast("");
+    }, 2200);
   }
-}
 
-function confirmStop() {
-  changeUser(confirmUser.id);
-  setConfirmUser(null);
-}
+  function changeUser(id) {
+    let message = "";
+    const newUsers = users.map(function (u) {
+      if (u.id === id) {
+        if (u.active) {
+          message = t("adm_toast_stopped") + " " + u.name;
+        } else {
+          message = t("adm_toast_activated") + " " + u.name;
+        }
+        return { ...u, active: !u.active };
+      }
+      return u;
+    });
+    setUsers(newUsers);
+    showToast(message);
+  }
 
-  function roleName(r) {
-    if (r === "pt") return "مريض";
-    if (r === "dr") return "طبيب";
-    if (r === "lab") return "معمل";
-    return "استقبال";
+  function toggleUser(u) {
+    if (u.active) {
+      setConfirmUser(u);
+    } else {
+      changeUser(u.id);
+    }
+  }
+
+  function confirmStop() {
+    changeUser(confirmUser.id);
+    setConfirmUser(null);
   }
 
   const filteredUsers = users.filter(function (u) {
@@ -70,22 +66,24 @@ function confirmStop() {
     return u.active;
   }).length;
 
+  const questionMark = lang === "ar" ? "؟" : "?";
+
   return (
-    <div className="accounts" dir="rtl">
-      <h1>إدارة الحسابات</h1>
-      <p className="accounts-sub">تفعيل أو إيقاف أي حساب في المنصة</p>
+    <div className="accounts">
+      <h1>{t("adm_acc_title")}</h1>
+      <p className="accounts-sub">{t("adm_acc_sub")}</p>
 
       <div className="accounts-stats">
         <div className="accounts-card">
-          <span>إجمالي الحسابات</span>
+          <span>{t("adm_acc_total")}</span>
           <b>{users.length}</b>
         </div>
         <div className="accounts-card">
-          <span>حسابات مفعّلة</span>
+          <span>{t("adm_acc_active")}</span>
           <b>{activeCount}</b>
         </div>
         <div className="accounts-card">
-          <span>حسابات موقوفة</span>
+          <span>{t("adm_acc_stopped")}</span>
           <b>{users.length - activeCount}</b>
         </div>
       </div>
@@ -94,17 +92,17 @@ function confirmStop() {
         <input
           className="accounts-search"
           type="text"
-          placeholder="ابحثي بالاسم أو البريد..."
+          placeholder={t("adm_acc_search")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
 
         <div className="accounts-tabs">
-          <button className={role === "all" ? "on" : ""} onClick={() => setRole("all")}>الكل</button>
-          <button className={role === "pt" ? "on" : ""} onClick={() => setRole("pt")}>المرضى</button>
-          <button className={role === "dr" ? "on" : ""} onClick={() => setRole("dr")}>الأطباء</button>
-          <button className={role === "lab" ? "on" : ""} onClick={() => setRole("lab")}>المعامل</button>
-          <button className={role === "rc" ? "on" : ""} onClick={() => setRole("rc")}>الاستقبال</button>
+          <button className={role === "all" ? "on" : ""} onClick={() => setRole("all")}>{t("adm_tab_all")}</button>
+          <button className={role === "pt" ? "on" : ""} onClick={() => setRole("pt")}>{t("adm_tab_pt")}</button>
+          <button className={role === "dr" ? "on" : ""} onClick={() => setRole("dr")}>{t("adm_tab_dr")}</button>
+          <button className={role === "lab" ? "on" : ""} onClick={() => setRole("lab")}>{t("adm_tab_lab")}</button>
+          <button className={role === "rc" ? "on" : ""} onClick={() => setRole("rc")}>{t("adm_tab_rc")}</button>
         </div>
 
         {filteredUsers.map(function (u) {
@@ -113,11 +111,11 @@ function confirmStop() {
               <div className="accounts-avatar">{u.name.replace("د. ", "").charAt(0)}</div>
               <div className="accounts-info">
                 <b>{u.name}</b>
-                <small>{u.email}</small>
+                <small dir="ltr" style={{ textAlign: "start" }}>{u.email}</small>
               </div>
-              <span className="accounts-badge">{roleName(u.role)}</span>
+              <span className="accounts-badge">{t("adm_role_" + u.role)}</span>
               <span className={u.active ? "accounts-badge ok" : "accounts-badge stop"}>
-                {u.active ? "مفعّل" : "موقوف"}
+                {u.active ? t("adm_on") : t("adm_off")}
               </span>
               <button
                 className={u.active ? "accounts-switch on" : "accounts-switch"}
@@ -127,22 +125,23 @@ function confirmStop() {
           );
         })}
 
-        {filteredUsers.length === 0 && <p>مفيش نتائج</p>}
+        {filteredUsers.length === 0 && <p>{t("adm_none")}</p>}
       </div>
-      {confirmUser && (
-  <div className="admin-overlay" onClick={() => setConfirmUser(null)}>
-    <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
-      <h2>إيقاف الحساب</h2>
-      <p>هل أنتِ متأكدة من إيقاف حساب {confirmUser.name}؟</p>
-      <div className="admin-modal-actions">
-        <button className="licenses-btn danger" onClick={confirmStop}>نعم، إيقاف</button>
-        <button className="licenses-btn outline" onClick={() => setConfirmUser(null)}>إلغاء</button>
-      </div>
-    </div>
-  </div>
-)}
 
-{toast && <div className="admin-toast">{toast}</div>}
+      {confirmUser && (
+        <div className="admin-overlay" onClick={() => setConfirmUser(null)}>
+          <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+            <h2>{t("adm_stop_title")}</h2>
+            <p>{t("adm_stop_ask")} {confirmUser.name}{questionMark}</p>
+            <div className="admin-modal-actions">
+              <button className="licenses-btn danger" onClick={confirmStop}>{t("adm_stop_yes")}</button>
+              <button className="licenses-btn outline" onClick={() => setConfirmUser(null)}>{t("adm_cancel")}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toast && <div className="admin-toast">{toast}</div>}
     </div>
   );
 }

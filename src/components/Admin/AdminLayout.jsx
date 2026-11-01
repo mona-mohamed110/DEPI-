@@ -7,11 +7,25 @@ import logo from "../../assets/logo.png";
 import "../Style/Admin/AdminLayout.css";
 
 function AdminLayout() {
-  const { theme, lang } = useApp();
-  const [admin, setAdmin] = useState({
-    name: "مدير النظام",
+  const { theme, lang, t } = useApp();
+
+  // الاسم فاضي = الاسم الافتراضي، وبيترجم مع اللغة
+  const [saved, setSaved] = useState({
+    name: "",
     email: "admin@shefaa.com",
   });
+
+  const admin = {
+    name: saved.name || t("adm_name"),
+    email: saved.email,
+  };
+
+  function setAdmin(next) {
+    setSaved({
+      name: next.name === t("adm_name") ? "" : next.name,
+      email: next.email,
+    });
+  }
 
   return (
     <div
@@ -26,11 +40,11 @@ function AdminLayout() {
           <span>{admin.name}</span>
         </div>
 
-        <NavLink to="/admin" end><Activity size={19} /> أداء النظام والتقارير</NavLink>
-        <NavLink to="/admin/licenses"><BadgeCheck size={19} /> التحقق من التراخيص</NavLink>
-        <NavLink to="/admin/accounts"><Users size={19} /> إدارة الحسابات</NavLink>
+        <NavLink to="/admin" end><Activity size={19} /> {t("adm_nav_mon")}</NavLink>
+        <NavLink to="/admin/licenses"><BadgeCheck size={19} /> {t("adm_nav_lic")}</NavLink>
+        <NavLink to="/admin/accounts"><Users size={19} /> {t("adm_nav_acc")}</NavLink>
 
-        <AdminSettingsMenu admin={admin} />
+        <AdminSettingsMenu />
       </aside>
 
       <main className="admin-main">

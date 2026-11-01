@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Check, ChevronLeft, ChevronRight, ChevronUp, Languages, LogOut, Moon, SlidersHorizontal, Sun, User } from "lucide-react";
 import { useApp } from "../../context/AppContext.jsx";
 
-export default function AdminSettingsMenu({ admin }) {
-  const { t, lang, setLang, theme, toggleTheme } = useApp();
+export default function AdminSettingsMenu() {
+    const { t, lang, setLang, theme, toggleTheme } = useApp();
   const [open, setOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const ref = useRef(null);

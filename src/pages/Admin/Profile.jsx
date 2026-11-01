@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useOutletContext } from "react-router-dom";
+import { useApp } from "../../context/AppContext.jsx";
 import "../../components/Style/Admin/Profile.css";
 
 function Profile() {
+  const { t } = useApp();
   const { admin, setAdmin } = useOutletContext();
 
   const [editing, setEditing] = useState("");
@@ -35,12 +37,12 @@ function Profile() {
 
   function saveEdit() {
     if (tempValue.trim() === "") {
-      showToast("الحقل مطلوب");
+      showToast(t("adm_pf_required"));
       return;
     }
     setAdmin({ ...admin, [editing]: tempValue });
     setEditing("");
-    showToast("تم حفظ التغيير ✅");
+    showToast(t("adm_pf_toast_saved"));
   }
 
   function closePass() {
@@ -53,42 +55,42 @@ function Profile() {
 
   function savePassword() {
     if (oldPassword === "") {
-      setError("اكتبي كلمة المرور الحالية");
+      setError(t("adm_pf_err_old"));
       return;
     }
     if (newPassword.length < 8) {
-      setError("كلمة المرور الجديدة لازم تكون 8 حروف على الأقل");
+      setError(t("adm_pf_err_len"));
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError("كلمة المرور الجديدة مش متطابقة");
+      setError(t("adm_pf_err_match"));
       return;
     }
     closePass();
-    showToast("تم تغيير كلمة المرور ✅");
+    showToast(t("adm_pf_toast_pass"));
   }
 
   return (
-    <div className="profile" dir="rtl">
-      <h1>الملف الشخصي</h1>
-      <p className="profile-sub">بياناتك الشخصية وكلمة المرور</p>
+    <div className="profile">
+      <h1>{t("adm_pf_title")}</h1>
+      <p className="profile-sub">{t("adm_pf_sub")}</p>
 
       <div className="profile-card">
         <div className="profile-head">
           <div className="profile-avatar">{admin.name.charAt(0)}</div>
           <div>
             <b>{admin.name}</b>
-            <span className="profile-badge">مدير النظام</span>
+            <span className="profile-badge">{t("adm_name")}</span>
           </div>
         </div>
 
         <div className="profile-row">
-          <span className="profile-label">الاسم</span>
+          <span className="profile-label">{t("name")}</span>
           {editing === "name" ? (
             <div className="profile-edit">
               <input value={tempValue} onChange={(e) => setTempValue(e.target.value)} />
-              <button className="profile-btn" onClick={saveEdit}>حفظ</button>
-              <button className="profile-btn outline" onClick={cancelEdit}>إلغاء</button>
+              <button className="profile-btn" onClick={saveEdit}>{t("save")}</button>
+              <button className="profile-btn outline" onClick={cancelEdit}>{t("adm_cancel")}</button>
             </div>
           ) : (
             <>
@@ -99,47 +101,47 @@ function Profile() {
         </div>
 
         <div className="profile-row">
-          <span className="profile-label">البريد الإلكتروني</span>
+          <span className="profile-label">{t("email")}</span>
           {editing === "email" ? (
             <div className="profile-edit">
               <input dir="ltr" value={tempValue} onChange={(e) => setTempValue(e.target.value)} />
-              <button className="profile-btn" onClick={saveEdit}>حفظ</button>
-              <button className="profile-btn outline" onClick={cancelEdit}>إلغاء</button>
+              <button className="profile-btn" onClick={saveEdit}>{t("save")}</button>
+              <button className="profile-btn outline" onClick={cancelEdit}>{t("adm_cancel")}</button>
             </div>
           ) : (
             <>
-              <span className="profile-value" dir="ltr">{admin.email}</span>
+              <span className="profile-value" dir="ltr" style={{ textAlign: "start" }}>{admin.email}</span>
               <button className="profile-pencil" onClick={() => startEdit("email")}>✏️</button>
             </>
           )}
         </div>
 
         <div className="profile-row">
-          <span className="profile-label">كلمة المرور</span>
+          <span className="profile-label">{t("adm_pf_password")}</span>
           <span className="profile-value">••••••••</span>
-          <button className="profile-btn outline" onClick={() => setShowPass(true)}>تغيير كلمة المرور</button>
+          <button className="profile-btn outline" onClick={() => setShowPass(true)}>{t("change_password")}</button>
         </div>
       </div>
 
       {showPass && (
         <div className="profile-overlay" onClick={closePass}>
           <div className="profile-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>تغيير كلمة المرور</h2>
+            <h2>{t("change_password")}</h2>
 
-            <label>كلمة المرور الحالية</label>
+            <label>{t("adm_pf_old")}</label>
             <input type="password" dir="ltr" value={oldPassword} onChange={(e) => setOldPassword(e.target.value)} />
 
-            <label>كلمة المرور الجديدة</label>
+            <label>{t("adm_pf_new")}</label>
             <input type="password" dir="ltr" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
 
-            <label>تأكيد كلمة المرور الجديدة</label>
+            <label>{t("adm_pf_confirm")}</label>
             <input type="password" dir="ltr" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
 
             {error && <p className="profile-error">{error}</p>}
 
             <div className="profile-actions">
-              <button className="profile-btn" onClick={savePassword}>حفظ</button>
-              <button className="profile-btn outline" onClick={closePass}>إلغاء</button>
+              <button className="profile-btn" onClick={savePassword}>{t("save")}</button>
+              <button className="profile-btn outline" onClick={closePass}>{t("adm_cancel")}</button>
             </div>
           </div>
         </div>

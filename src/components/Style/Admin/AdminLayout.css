@@ -8,7 +8,8 @@
   --soft2: #eef2f8;
 
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+overflow: hidden;
   background: var(--bg);
   color: var(--text);
 }
@@ -39,21 +40,27 @@
 
 .admin-logo {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  font-weight: 700;
-  font-size: 18px;
-  color: #2563eb;
-  padding: 4px 12px 20px;
+  gap: 8px;
+  text-align: center;
+  padding: 4px 12px 18px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 14px;
 }
 
 .admin-logo img {
-  height: 40px;
+  height: 64px;
 }
 
 .admin-logo span {
+  font-weight: 700;
+  font-size: 15px;
+  color: #2563eb;
+  background: var(--soft);
+  padding: 4px 14px;
+  border-radius: 20px;
+  max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -83,6 +90,8 @@
 .admin-main {
   flex: 1;
   min-width: 0;
+  height: 100%;
+  overflow-y: auto;
 }
 
 /* ---------- قايمة الإعدادات ---------- */
@@ -363,4 +372,14 @@
   background: #fff;
   border-radius: 10px;
   padding: 4px;
+}
+.admin-layout[dir="ltr"] {
+  direction: ltr;
+}
+
+.admin-layout[dir="rtl"] {
+  direction: rtl;
+}
+.admin-layout[data-theme="dark"] .admin-logo span {
+  color: #60a5fa;
 }
