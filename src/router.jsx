@@ -24,6 +24,7 @@ import Accounts from "./pages/Admin/Accounts";
 import Licenses from "./pages/Admin/Licenses";
 import Monitoring from "./pages/Admin/Monitoring";
 import AdminProfile from "./pages/Admin/Profile";
+
 import DoctorLayout from "./components/Doctor/DoctorLayout";
 import DoctorDashboard from "./pages/Doctor/DoctorDashboard";
 import Patients from "./pages/Doctor/Patients";
@@ -40,34 +41,14 @@ export const router = createBrowserRouter([
     path: "/",
     element: <Layout />,
     children: [
-      {
-        index: true,
-        element: <Home />,
-      },
-      {
-        path: "learn-more",
-        element: <LearnMore />,
-      },
-      {
-        path: "ClinicLabSearch",
-        element: <ClinicLabSearch />,
-      },
-      {
-        path: "login",
-        element: <Login />,
-      },
-      {
-        path: "register",
-        element: <Register />,
-      },
-      {
-        path: "forgot-password",
-        element: <ForgotPasswordPage />,
-      },
-
+      { index: true, element: <Home /> },
+      { path: "learn-more", element: <LearnMore /> },
+      { path: "ClinicLabSearch", element: <ClinicLabSearch /> },
+      { path: "login", element: <Login /> },
+      { path: "register", element: <Register /> },
+      { path: "forgot-password", element: <ForgotPasswordPage /> },
     ],
   },
-
 
   {
     path: "/patient",
@@ -85,6 +66,7 @@ export const router = createBrowserRouter([
       { path: "account-settings", element: <AccountSettings /> },
     ],
   },
+
   {
     path: "/admin",
     element: <AdminLayout />,
