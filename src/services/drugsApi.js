@@ -1,15 +1,22 @@
 // خدمة الأدوية: تقرأ الملف src/data/egyptian-drugs.json
-// يُحمَّل بالاستيراد الديناميكي، فيصبح ملفاً منفصلاً لا يُحمَّل إلا عند أول فتح لقائمة الأدوية.
-// لاستخدام API حقيقي لاحقاً: ضع الرابط في .env  →  VITE_DRUGS_API_URL=https://...
+// - يُحمَّل عند أول فتح لقائمة الأدوية فقط (ملف منفصل، لا يثقل باقي الموقع).
+// - إن لم يوجد الملف في src/data يُجرَّب /egyptian-drugs.json من مجلد public.
+// - لاستخدام API حقيقي لاحقاً: ضع الرابط في .env  →  VITE_DRUGS_API_URL=https://...
 const API_URL = import.meta.env.VITE_DRUGS_API_URL;
+const localFiles = import.meta.glob('../data/egyptian-drugs.json');
 
-const fetchDrugs = () =>
-  API_URL
-    ? fetch(API_URL).then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-    : import('../data/egyptian-drugs.json').then((m) => m.default);
+async function fetchJson(url) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(`HTTP ${r.status} عند طلب ${url}`);
+  return r.json();
+}
+
+async function fetchDrugs() {
+  if (API_URL) return fetchJson(API_URL);
+  const loadLocal = Object.values(localFiles)[0];
+  if (loadLocal) return (await loadLocal()).default;
+  return fetchJson('../data/egyptian-drugs.json');
+}
 
 const norm = (s) =>
   (s || '')
@@ -28,6 +35,7 @@ export function loadDrugs() {
   if (!pending) {
     pending = fetchDrugs()
       .then((list) => {
+        if (!Array.isArray(list)) throw new Error('صيغة ملف الأدوية غير متوقعة: يجب أن يكون مصفوفة');
         cache = list.map((d) => ({
           ...d,
           _n: norm(`${d.commercial_name_en} ${d.commercial_name_ar}`),
@@ -36,6 +44,7 @@ export function loadDrugs() {
         return cache;
       })
       .catch((e) => {
+        console.error('[drugsApi] تعذر تحميل قائمة الأدوية:', e);
         pending = null;
         throw e;
       });
