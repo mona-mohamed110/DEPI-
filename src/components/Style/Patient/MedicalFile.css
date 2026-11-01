@@ -587,3 +587,26 @@
     transition: none;
   }
 }
+
+/* ===== No visible content box: page background = content background ===== */
+.medical-file-wrapper,
+.medical-file-wrapper.light,
+.medical-file-wrapper.dark {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  outline: none;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* ancestors (layout, main, body, html) take the page color */
+:has(> .medical-file-wrapper.light),
+:has(.medical-file-wrapper.light) {
+  background-color: #f7f9fc !important;
+}
+
+:has(> .medical-file-wrapper.dark),
+:has(.medical-file-wrapper.dark) {
+  background-color: #0b1220 !important;
+}

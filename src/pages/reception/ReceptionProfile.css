@@ -1,4 +1,6 @@
 .profile-page-wrapper {
+  width: 100%;
+  box-sizing: border-box;
   padding: 10px 20px;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
@@ -7,6 +9,8 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
   margin-bottom: 24px;
 }
 
@@ -49,7 +53,9 @@
   border: 1px solid #e2e8f0;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
   overflow: hidden;
-  max-width: 650px;
+  width: 90%;
+  max-width: none;
+  box-sizing: border-box;
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
@@ -164,6 +170,8 @@
 }
 
 .form-input {
+  width: 100%;
+  box-sizing: border-box;
   padding: 10px 14px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
@@ -266,4 +274,74 @@
   background: #1e293b;
   border-color: #334155;
   color: #f8fafc;
+}
+
+/* ===== Direction: English = left, Arabic = right ===== */
+.profile-page-wrapper[dir="ltr"] { text-align: left; }
+.profile-page-wrapper[dir="rtl"] { text-align: right; }
+
+.user-name-title,
+.info-stack-item .stack-value {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .profile-page-wrapper { padding: 10px 12px; }
+  .profile-main-card { width: 100%; }
+  .card-top-header { padding: 20px; }
+  .card-content-body { padding: 16px 20px 24px; }
+  .profile-edit-form { padding: 20px; }
+}
+
+@media (max-width: 480px) {
+  .title-text-group h1 { font-size: 1.3rem; }
+  .user-avatar-circle { width: 42px; height: 42px; font-size: 1.1rem; }
+  .user-name-title { font-size: 1.05rem; }
+  .info-stack-item { padding: 12px 14px; }
+  .edit-action-btn { width: 100%; justify-content: center; }
+  .form-actions { flex-direction: column-reverse; }
+  .cancel-btn, .save-btn { width: 100%; justify-content: center; }
+}
+
+/* ===== Force direction on every element (overrides any parent/global RTL) ===== */
+.profile-page-wrapper[dir="ltr"],
+.profile-page-wrapper[dir="ltr"] * {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+.profile-page-wrapper[dir="rtl"],
+.profile-page-wrapper[dir="rtl"] * {
+  direction: rtl !important;
+  text-align: right !important;
+}
+
+/* Keep buttons centered on mobile */
+.profile-page-wrapper .edit-action-btn,
+.profile-page-wrapper .cancel-btn,
+.profile-page-wrapper .save-btn {
+  text-align: center !important;
+}
+
+/* Inputs + placeholder follow the page direction */
+.profile-page-wrapper[dir="ltr"] .form-input { text-align: left !important; }
+.profile-page-wrapper[dir="rtl"] .form-input { text-align: right !important; }
+.profile-page-wrapper[dir="ltr"] .form-input::placeholder { text-align: left; direction: ltr; }
+.profile-page-wrapper[dir="rtl"] .form-input::placeholder { text-align: right; direction: rtl; }
+
+/* Header: avatar first, then name, from the start side */
+.card-top-header { justify-content: flex-start; }
+
+/* ===== Remove page scrollbars ===== */
+.profile-page-wrapper {
+  overflow: hidden;
+  max-width: 100%;
+  margin: 0;
+}
+
+.profile-main-card {
+  max-width: 100%;
+  margin-bottom: 0;
 }

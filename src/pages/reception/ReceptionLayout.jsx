@@ -28,7 +28,7 @@ export default function ReceptionLayout() {
   return (
     <div className={`reception-layout-container ${isDark ? 'dark-mode' : ''}`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       <ReceptionSidebar />
-      <main className="reception-main-content">
+      <main className="reception-main-content" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
         <Outlet />
       </main>
     </div>

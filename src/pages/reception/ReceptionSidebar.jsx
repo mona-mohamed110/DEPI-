@@ -9,6 +9,16 @@ import './ReceptionSidebar.css';
 import logo from "../../assets/logo.png";
 import ReceptionSettingsMenu from './ReceptionSettingsMenu.jsx';
 
+const getUserName = () => {
+  try {
+    const saved = JSON.parse(localStorage.getItem('reception_user_profile'));
+    if (saved && saved.name) return saved.name;
+  } catch (e) {
+    /* ignore */
+  }
+  return 'أمل محروس';
+};
+
 export default function ReceptionSidebar() {
   const [isDark, setIsDark] = useState(() => {
     return localStorage.getItem('reception_theme') === 'dark';
@@ -18,8 +28,11 @@ export default function ReceptionSidebar() {
     return localStorage.getItem('reception_lang') || 'ar';
   });
 
+  const [userName, setUserName] = useState(getUserName);
+
   useEffect(() => {
     const checkSettings = () => {
+      setUserName(getUserName());
       setIsDark(localStorage.getItem('reception_theme') === 'dark');
       setLang(localStorage.getItem('reception_lang') || 'ar');
     };
@@ -53,9 +66,10 @@ export default function ReceptionSidebar() {
   ];
 
   return (
-    <aside className={`reception-sidebar ${isDark ? 'dark-mode' : ''}`}>
+    <aside className={`reception-sidebar ${isDark ? 'dark-mode' : ''}`} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       <div className="patient-logo">
         <img src={logo} alt="Shefaa" className="patient-logo-img" />
+        <div className="sidebar-user-name" title={userName}>{userName}</div>
       </div>
 
       <nav className="nav">

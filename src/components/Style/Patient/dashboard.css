@@ -525,3 +525,25 @@
 [dir="ltr"] .prescription-content {
   flex-direction: row-reverse;
 }
+/* ===== No visible content box: page background = content background ===== */
+.dashboard-wrapper,
+.dashboard-wrapper.light,
+.dashboard-wrapper.dark {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  outline: none;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* ancestors (layout, main, body, html) take the page color */
+:has(> .dashboard-wrapper.light),
+:has(.dashboard-wrapper.light) {
+  background-color: #f7f9fc !important;
+}
+
+:has(> .dashboard-wrapper.dark),
+:has(.dashboard-wrapper.dark) {
+  background-color: #0b1220 !important;
+}

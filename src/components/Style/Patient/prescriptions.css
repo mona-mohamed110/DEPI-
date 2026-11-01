@@ -219,3 +219,26 @@
     min-width: 500px;
   }
 }
+
+/* ===== No visible content box: page background = content background ===== */
+.prescriptions-wrapper,
+.prescriptions-wrapper.light,
+.prescriptions-wrapper.dark {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  outline: none;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* ancestors (layout, main, body, html) take the page color */
+:has(> .prescriptions-wrapper.light),
+:has(.prescriptions-wrapper.light) {
+  background-color: #f7f9fc !important;
+}
+
+:has(> .prescriptions-wrapper.dark),
+:has(.prescriptions-wrapper.dark) {
+  background-color: #0b1220 !important;
+}
