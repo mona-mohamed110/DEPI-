@@ -14,6 +14,7 @@ export function LabProvider({ children }) {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [toastMsg, setToastMsg] = useState("");
+  const [me, setMe] = useState(null); // بيانات المستخدم الداخل (من /lab/me)
   const timer = useRef();
 
   useEffect(() => { try { localStorage.setItem("lab_lang", lang); } catch { /* ignore */ } }, [lang]);
@@ -44,6 +45,10 @@ export function LabProvider({ children }) {
   }, [toast]);
 
   useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => { api.getMe().then(setMe).catch(() => {}); }, []);
+
+  // اسم المستخدم اللي ظاهر في الـ sidebar
+  const userName = me?.name || api.readLoginUser();
 
   const run = async (fn, okMsg) => {
     try { const r = await fn(); if (okMsg) toast(okMsg); return r; }
@@ -77,7 +82,7 @@ export function LabProvider({ children }) {
   }), [requests]);
 
   const value = {
-    lang, setLang, theme, setTheme, t, testName, num, fmtDateTime, fmtDay,
+    lang, setLang, theme, setTheme, t, testName, num, me, setMe, userName, fmtDateTime, fmtDay,
     requests, counts, loading, toast, toastMsg, addRequest, startRequest, uploadResult, refresh,
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

@@ -33,6 +33,44 @@ async function http(path, { method = "GET", body, form } = {}) {
   return res.status === 204 ? null : res.json();
 }
 
+// اسم المستخدم اللي سجّل دخول: بيدوّر في localStorage (user / username / ...) وبعدين جوه التوكن (JWT).
+// لو تطبيقك بيخزّن اسم المستخدم بمفتاح تاني، ضيفه في القوايم اللي تحت.
+const NAME_KEYS = ["name", "fullName", "full_name", "username", "userName", "displayName"];
+const pickName = (o) => {
+  if (!o || typeof o !== "object") return "";
+  const u = o.user && typeof o.user === "object" ? o.user : o.data && typeof o.data === "object" ? o.data : o;
+  for (const k of NAME_KEYS) if (typeof u[k] === "string" && u[k].trim()) return u[k].trim();
+  return typeof u.email === "string" ? u.email.split("@")[0] : "";
+};
+export function readLoginUser() {
+  try {
+    for (const k of ["user", "currentUser", "authUser", "userInfo", "profile"]) {
+      const raw = localStorage.getItem(k);
+      if (!raw) continue;
+      try {
+        const n = pickName(JSON.parse(raw));
+        if (n) return n;
+      } catch {
+        if (raw.trim()) return raw.trim(); // مخزّن كنص عادي
+      }
+    }
+    for (const k of ["username", "userName", "name", "fullName"]) {
+      const v = localStorage.getItem(k);
+      if (v && v.trim()) return v.trim();
+    }
+    const parts = (localStorage.getItem("token") || "").split(".");
+    if (parts.length === 3) {
+      const b64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+      const json = new TextDecoder().decode(Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)));
+      const n = pickName(JSON.parse(json));
+      if (n) return n;
+    }
+  } catch {
+    /* ignore */
+  }
+  return "";
+}
+
 // يحول التاريخ ليوم محلي بصيغة YYYY-MM-DD
 export const dayKey = (iso) => {
   const d = new Date(iso);
@@ -112,7 +150,7 @@ export async function updateLabProfile(p) {
 export async function getMe() {
   if (!USE_MOCK) return http("/lab/me");
   await wait(100);
-  return store.get("lab_me", { name: "موظف المعمل", email: "lab@shefaa.com", phone: "01000000000", notifNew: true, notifSms: false });
+  return store.get("lab_me", { name: readLoginUser() || "موظف المعمل", email: "lab@shefaa.com", phone: "01000000000", notifNew: true, notifSms: false });
 }
 export async function updateMe(m) {
   if (!USE_MOCK) return http("/lab/me", { method: "PUT", body: m });

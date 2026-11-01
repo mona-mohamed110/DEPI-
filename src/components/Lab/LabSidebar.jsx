@@ -13,10 +13,13 @@ const ITEMS = [
 ];
 
 export default function LabSidebar() {
-  const { t, counts, num } = useLab();
+  const { t, counts, num, userName } = useLab();
   return (
     <aside className="lb-side">
-      <div className="lb-logo"><img src={logo} alt="SHEFAA" /></div>
+      <div className="lb-logo">
+        <img src={logo} alt="SHEFAA" />
+        {userName && <div className="lb-user" title={userName}>{userName}</div>}
+      </div>
       <nav className="lb-nav">
         {ITEMS.map((i) => (
           <NavLink key={i.to} to={i.to} end={i.end} className={({ isActive }) => (isActive ? "on" : "")}>

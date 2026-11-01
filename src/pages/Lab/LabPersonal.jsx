@@ -3,14 +3,14 @@ import { useLab } from "../../context/LabContext";
 import * as api from "../../services/labApi";
 
 export default function LabPersonal() {
-  const { t, toast } = useLab();
+  const { t, toast, setMe } = useLab();
   const [m, setM] = useState(null);
   useEffect(() => { api.getMe().then(setM).catch(() => toast(t("error"))); /* eslint-disable-next-line */ }, []);
   if (!m) return <p className="lb-sub">{t("loading")}</p>;
   const set = (k, v) => setM((x) => ({ ...x, [k]: v }));
   const save = async (e) => {
     e.preventDefault();
-    try { await api.updateMe(m); toast(t("saved")); } catch { toast(t("error")); }
+    try { await api.updateMe(m); setMe(m); toast(t("saved")); } catch { toast(t("error")); }
   };
   return (
     <section>
