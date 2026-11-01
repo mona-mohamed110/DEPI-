@@ -1,8 +1,8 @@
-import { 
-  LuCalendarDays, 
-  LuPill, 
-  LuLock, 
-  LuTestTube 
+import {
+  LuCalendarDays,
+  LuPill,
+  LuLock,
+  LuTestTube
 } from 'react-icons/lu';
 import { useApp } from '../../context/AppContext.jsx';
 import '../../components/Style/Patient/dashboard.css';
@@ -33,6 +33,7 @@ const translations = {
     prescriptionMeds: "٣ أدوية · ميتفورمين، أملوديبين، فيتامين د",
     prescriptionDate: "٢٠ أكتوبر ٢٠٢٦"
   },
+
   en: {
     greeting: "Welcome, Mona",
     subtitle: "Here is your health summary today",
@@ -61,37 +62,56 @@ const translations = {
 };
 
 const MainDashboard = () => {
-  const app = useApp() || {};
-  
+  const app = useApp();
+
   const currentLang = app.lang || app.language || 'ar';
-  const isArabic = currentLang === 'ar' || currentLang === 'AR';
-  const currentTheme = app.theme || (app.isDark || app.darkMode ? 'dark' : 'light');
+
+  const isArabic =
+    currentLang === 'ar' || currentLang === 'AR';
+
+  const currentTheme =
+    app.theme || (app.isDark || app.darkMode ? 'dark' : 'light');
 
   const t = translations[isArabic ? 'ar' : 'en'];
 
   return (
-    <div className={`dashboard-wrapper ${currentTheme}`} dir={isArabic ? 'rtl' : 'ltr'}>
+    <div
+      className={`dashboard-wrapper ${currentTheme}`}
+      dir={isArabic ? 'rtl' : 'ltr'}
+    >
       <header className="dashboard-header">
         <div className="header-greeting">
           <h1 className="greeting-title">
             {t.greeting} <span className="hand-emoji">👋</span>
           </h1>
-          <p className="greeting-subtitle">{t.subtitle}</p>
+
+          <p className="greeting-subtitle">
+            {t.subtitle}
+          </p>
         </div>
-        <div className="user-avatar-badge">{t.userInitial}</div>
+
+        <div className="user-avatar-badge">
+          {t.userInitial}
+        </div>
       </header>
 
       <div className="dashboard-grid">
-        
+
         <div className="card summary-card">
           <div className="card-top-row">
             <div className="icon-wrapper calendar-icon">
               <LuCalendarDays />
             </div>
           </div>
+
           <div className="card-bottom-content">
-            <span className="card-label">{t.nextAppointment}</span>
-            <h2 className="card-main-value">{t.nextAppointmentVal}</h2>
+            <span className="card-label">
+              {t.nextAppointment}
+            </span>
+
+            <h2 className="card-main-value">
+              {t.nextAppointmentVal}
+            </h2>
           </div>
         </div>
 
@@ -101,9 +121,15 @@ const MainDashboard = () => {
               <LuPill />
             </div>
           </div>
+
           <div className="card-bottom-content">
-            <span className="card-label">{t.currentMeds}</span>
-            <h2 className="card-main-value">{t.currentMedsVal}</h2>
+            <span className="card-label">
+              {t.currentMeds}
+            </span>
+
+            <h2 className="card-main-value">
+              {t.currentMedsVal}
+            </h2>
           </div>
         </div>
 
@@ -113,67 +139,120 @@ const MainDashboard = () => {
               <LuLock />
             </div>
           </div>
+
           <div className="card-bottom-content">
-            <span className="card-label">{t.pendingRequests}</span>
-            <h2 className="card-main-value">{t.pendingRequestsVal}</h2>
+            <span className="card-label">
+              {t.pendingRequests}
+            </span>
+
+            <h2 className="card-main-value">
+              {t.pendingRequestsVal}
+            </h2>
           </div>
         </div>
 
         <div className="card detail-card">
-          <h3 className="section-title">{t.upcomingAppts}</h3>
+          <h3 className="section-title">
+            {t.upcomingAppts}
+          </h3>
+
           <div className="appointments-container">
-            
+
             <div className="appointment-row">
-              <div className="doc-avatar-circle">{isArabic ? 'أ' : 'A'}</div>
-              <div className="doc-meta">
-                <h4 className="doc-name">{t.doc1Name}</h4>
-                <p className="doc-sub">{t.doc1Sub}</p>
+              <div className="doc-avatar-circle">
+                {isArabic ? 'أ' : 'A'}
               </div>
-              <span className="status-tag status-confirmed">{t.statusConfirmed}</span>
+
+              <div className="doc-meta">
+                <h4 className="doc-name">
+                  {t.doc1Name}
+                </h4>
+
+                <p className="doc-sub">
+                  {t.doc1Sub}
+                </p>
+              </div>
+
+              <span className="status-tag status-confirmed">
+                {t.statusConfirmed}
+              </span>
             </div>
 
             <div className="appointment-divider"></div>
 
             <div className="appointment-row">
-              <div className="doc-avatar-circle">{isArabic ? 'س' : 'S'}</div>
-              <div className="doc-meta">
-                <h4 className="doc-name">{t.doc2Name}</h4>
-                <p className="doc-sub">{t.doc2Sub}</p>
+              <div className="doc-avatar-circle">
+                {isArabic ? 'س' : 'S'}
               </div>
-              <span className="status-tag status-pending">{t.statusPending}</span>
+
+              <div className="doc-meta">
+                <h4 className="doc-name">
+                  {t.doc2Name}
+                </h4>
+
+                <p className="doc-sub">
+                  {t.doc2Sub}
+                </p>
+              </div>
+
+              <span className="status-tag status-pending">
+                {t.statusPending}
+              </span>
             </div>
 
           </div>
         </div>
 
         <div className="card detail-card">
-          <h3 className="section-title">{t.alerts}</h3>
+          <h3 className="section-title">
+            {t.alerts}
+          </h3>
+
           <div className="alerts-container">
-            
+
             <div className="alert-row">
               <LuTestTube className="react-alert-icon lab-icon" />
-              <span className="alert-text">{t.alert1}</span>
+
+              <span className="alert-text">
+                {t.alert1}
+              </span>
             </div>
 
             <div className="alert-divider"></div>
 
             <div className="alert-row">
               <LuLock className="react-alert-icon lock-alert-icon" />
-              <span className="alert-text">{t.alert2}</span>
+
+              <span className="alert-text">
+                {t.alert2}
+              </span>
             </div>
 
           </div>
         </div>
 
         <div className="card detail-card prescription-card">
-          <h3 className="section-title">{t.latestPrescription}</h3>
-          
+          <h3 className="section-title">
+            {t.latestPrescription}
+          </h3>
+
           <div className="prescription-content">
             <div className="prescription-meta">
-              <h4 className="prescription-doc">{t.doc1Name}</h4>
-              <span className="prescription-date">{t.prescriptionDate}</span>
+              <h4 className="prescription-doc">
+                {t.doc1Name}
+              </h4>
+
+              <span className="prescription-date">
+                {t.prescriptionDate}
+              </span>
             </div>
-            <button className="btn-show" type="button">{t.showBtn}</button>
+
+            <button
+              className="btn-show"
+              type="button"
+            >
+              {t.showBtn}
+            </button>
           </div>
 
           <div className="prescription-footer-divider"></div>
