@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { request, extractList } from "./request";
+import { request, extractList, loc, errText } from "./request";
+import usePatientPrefs from "../../components/Patient/usePatientPrefs";
 
 /* =====================================================================
    API — الأذونات النشطة (عدّل المسارات حسب الباك إند)
@@ -22,7 +23,9 @@ function normalize(raw) {
     id: raw.id ?? raw._id,
     type: raw.type ?? raw.grantee?.type ?? "other",
     name: raw.name ?? raw.grantee?.name ?? "",
+    nameEn: raw.nameEn ?? raw.name_en ?? null,
     accessLevel: raw.accessLevel ?? raw.level ?? "",
+    accessLevelEn: raw.accessLevelEn ?? raw.access_level_en ?? null,
     expiresAt: raw.expiresAt ?? raw.expires_at ?? null, // null = دائم
     avatarUrl: raw.avatarUrl ?? null,
   };
@@ -35,25 +38,25 @@ const TYPE_ICONS = { doctor: "🧑‍⚕️", hospital: "🏥", lab: "🧪", rad
 
 const parseDate = (s) => (/^\d{4}-\d{2}-\d{2}$/.test(s) ? new Date(`${s}T00:00:00`) : new Date(s));
 
-function expiryText(expiresAt) {
-  if (!expiresAt) return "دائم";
+function expiryText(expiresAt, { t, locale }) {
+  if (!expiresAt) return t("pm_forever");
   const d = parseDate(expiresAt);
   if (Number.isNaN(d.getTime())) return "";
   const sameYear = d.getFullYear() === new Date().getFullYear();
-  return (
-    "لحد " +
-    d.toLocaleDateString("ar-EG", {
+  return t("pm_until", {
+    date: d.toLocaleDateString(locale, {
       day: "numeric",
       month: "long",
       ...(sameYear ? {} : { year: "numeric" }),
-    })
-  );
+    }),
+  });
 }
 
 /* =====================================================================
    مربع التأكيد (تأكيد / إلغاء)
    ===================================================================== */
 function ConfirmDialog({ title, message, confirmLabel, busy, error, onConfirm, onCancel }) {
+  const { t } = usePatientPrefs();
   const ref = useRef(null);
 
   // يرجّع التركيز للزرار اللي فتح المربع بعد ما يتقفل
@@ -107,10 +110,10 @@ function ConfirmDialog({ title, message, confirmLabel, busy, error, onConfirm, o
         <div className="pm-dialog-actions">
           {/* التركيز الافتراضي على "إلغاء" علشان Enter بالغلط ما يسحبش حاجة */}
           <button type="button" className="pm-btn pm-btn-outline" onClick={onCancel} disabled={busy} autoFocus>
-            إلغاء
+            {t("pm_cancel")}
           </button>
           <button type="button" className="pm-btn pm-btn-danger" onClick={onConfirm} disabled={busy}>
-            {busy ? "جارٍ السحب..." : confirmLabel}
+            {busy ? t("pm_revoking") : confirmLabel}
           </button>
         </div>
       </div>
@@ -122,12 +125,14 @@ function ConfirmDialog({ title, message, confirmLabel, busy, error, onConfirm, o
    التاب: الأذونات النشطة
    ===================================================================== */
 export default function ActivePermissions() {
+  const prefs = usePatientPrefs();
+  const { t, lang } = prefs;
   const [items, setItems] = useState([]);
   const [status, setStatus] = useState("loading"); // loading | ready | error
   const [loadError, setLoadError] = useState("");
   const [confirm, setConfirm] = useState(null); // { mode: "one", item } | { mode: "all" }
   const [busy, setBusy] = useState(false);
-  const [dialogError, setDialogError] = useState("");
+  const [dialogError, setDialogError] = useState(null); // { msg } أو null
 
   const load = useCallback(async (signal) => {
     setStatus("loading");
@@ -138,7 +143,7 @@ export default function ActivePermissions() {
       setStatus("ready");
     } catch (err) {
       if (err.name === "AbortError") return;
-      setLoadError(err.message || "تعذّر تحميل الأذونات.");
+      setLoadError(errText(err, ""));
       setStatus("error");
     }
   }, []);
@@ -151,12 +156,12 @@ export default function ActivePermissions() {
 
   const closeDialog = () => {
     setConfirm(null);
-    setDialogError("");
+    setDialogError(null);
   };
 
   const handleConfirm = async () => {
     setBusy(true);
-    setDialogError("");
+    setDialogError(null);
     try {
       if (confirm.mode === "all") {
         await api.revokeAll();
@@ -167,7 +172,7 @@ export default function ActivePermissions() {
       }
       closeDialog();
     } catch (err) {
-      setDialogError(err.message || "تعذّر سحب الإذن. حاول مرة أخرى.");
+      setDialogError({ msg: errText(err, "") });
     } finally {
       setBusy(false);
     }
@@ -177,7 +182,7 @@ export default function ActivePermissions() {
     <>
       <section className="pm-card" aria-busy={status === "loading"}>
         {status === "loading" && (
-          <ul className="pm-list" aria-label="جارٍ التحميل">
+          <ul className="pm-list" aria-label={t("pm_loading")}>
             {[1, 2, 3].map((n) => (
               <li key={n} className="pm-row pm-row--skeleton">
                 <span className="pm-sk pm-sk-icon" />
@@ -192,16 +197,16 @@ export default function ActivePermissions() {
 
         {status === "error" && (
           <div className="pm-state">
-            <p>{loadError}</p>
+            <p>{loadError || t("pm_err_load_perms")}</p>
             <button className="pm-btn pm-btn-outline" onClick={() => load()}>
-              إعادة المحاولة
+              {t("pm_retry")}
             </button>
           </div>
         )}
 
         {status === "ready" && items.length === 0 && (
           <div className="pm-state">
-            <p>مفيش أذونات نشطة حاليًا.</p>
+            <p>{t("pm_active_empty")}</p>
           </div>
         )}
 
@@ -214,14 +219,14 @@ export default function ActivePermissions() {
                 </span>
 
                 <div className="pm-info">
-                  <h3>{item.name}</h3>
-                  <p>{[item.accessLevel, expiryText(item.expiresAt)].filter(Boolean).join(" · ")}</p>
+                  <h3>{loc(item, "name", lang)}</h3>
+                  <p>{[loc(item, "accessLevel", lang), expiryText(item.expiresAt, prefs)].filter(Boolean).join(" · ")}</p>
                 </div>
 
                 <div className="pm-actions">
-                  <span className="pm-pill-active">نشط</span>
+                  <span className="pm-pill-active">{t("pm_active_pill")}</span>
                   <button className="pm-btn pm-btn-danger" onClick={() => setConfirm({ mode: "one", item })}>
-                    سحب الإذن
+                    {t("pm_revoke")}
                   </button>
                 </div>
               </li>
@@ -233,29 +238,29 @@ export default function ActivePermissions() {
       {/* ظاهر في هذا التاب فقط */}
       <section className="pm-danger" aria-labelledby="pm-danger-title">
         <div>
-          <h2 id="pm-danger-title">سحب كل الأذونات فوراً</h2>
-          <p>هيتقفل الوصول لملفك عن الجميع في نفس اللحظة</p>
+          <h2 id="pm-danger-title">{t("pm_revoke_all_title")}</h2>
+          <p>{t("pm_revoke_all_desc")}</p>
         </div>
         <button
           className="pm-btn pm-btn-danger pm-btn-lg"
           onClick={() => setConfirm({ mode: "all" })}
           disabled={status !== "ready" || items.length === 0}
         >
-          سحب الإذن فوراً
+          {t("pm_revoke_now")}
         </button>
       </section>
 
       {confirm && (
         <ConfirmDialog
-          title={confirm.mode === "all" ? "سحب كل الأذونات؟" : "سحب الإذن؟"}
+          title={confirm.mode === "all" ? t("pm_dlg_all_title") : t("pm_dlg_one_title")}
           message={
             confirm.mode === "all"
-              ? `هيتم سحب كل الأذونات النشطة (${items.length}) وهيتقفل الوصول لملفك عن الجميع فوراً.`
-              : `هيتقفل وصول ${confirm.item.name} لملفك الطبي فوراً.`
+              ? t("pm_dlg_all_msg", { n: items.length })
+              : t("pm_dlg_one_msg", { name: loc(confirm.item, "name", lang) })
           }
-          confirmLabel={confirm.mode === "all" ? "نعم، اسحب الكل" : "نعم، اسحب الإذن"}
+          confirmLabel={confirm.mode === "all" ? t("pm_dlg_all_ok") : t("pm_dlg_one_ok")}
           busy={busy}
-          error={dialogError}
+          error={dialogError ? dialogError.msg || t("pm_err_revoke") : ""}
           onConfirm={handleConfirm}
           onCancel={closeDialog}
         />

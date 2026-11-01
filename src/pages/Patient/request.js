@@ -14,6 +14,13 @@ const getToken = () => localStorage.getItem("token"); // عدّلها حسب ن�
 export const extractList = (res) =>
   Array.isArray(res) ? res : res?.data ?? res?.items ?? res?.requests ?? [];
 
+// رسالة الخطأ: لو جاية من الـ API نعرضها، غير كده نعرض النص المترجم
+export const errText = (err, fallback) => (err?.fromApi ? err.message : fallback);
+
+// يرجّع النسخة الإنجليزية من الحقل (name → nameEn) لو اللغة إنجليزي ومتاحة، وإلا الأصل.
+// الـ API الحقيقي يقدر يبعت nameEn / accessLevelEn / requestedEn / actionEn (أو name_en ...) لو عايز ترجمة للبيانات.
+export const loc = (item, key, lang) => (lang === "en" && item[`${key}En`]) || item[key];
+
 export async function request(path, options = {}, signal) {
   if (USE_MOCK) return mockRequest(path, options);
 
@@ -29,13 +36,15 @@ export async function request(path, options = {}, signal) {
   });
 
   if (!res.ok) {
-    let message = "حدث خطأ، حاول مرة أخرى.";
+    let message = "";
     try {
-      message = (await res.json()).message || message;
+      message = (await res.json()).message || "";
     } catch {
       /* الرد مش JSON */
     }
-    throw new Error(message);
+    const error = new Error(message);
+    error.fromApi = Boolean(message); // لو false بنعرض رسالة مترجمة بدل النص ده
+    throw error;
   }
   return res.status === 204 ? null : res.json();
 }
@@ -61,19 +70,19 @@ const timeAt = (dayOffset, h, m) => {
 
 const db = {
   permissions: [
-    { id: 1, type: "doctor", name: "د. أحمد سمير", accessLevel: "وصول كامل", expiresAt: dateAfter(60) },
-    { id: 2, type: "hospital", name: "مستشفى النور", accessLevel: "الروشتات والتحاليل", expiresAt: dateAfter(30) },
-    { id: 3, type: "lab", name: "معمل الأمل", accessLevel: "التحاليل فقط", expiresAt: dateAfter(15) },
+    { id: 1, type: "doctor", name: "د. أحمد سمير", nameEn: "Dr. Ahmed Samir", accessLevel: "وصول كامل", accessLevelEn: "Full access", expiresAt: dateAfter(60) },
+    { id: 2, type: "hospital", name: "مستشفى النور", nameEn: "Al Nour Hospital", accessLevel: "الروشتات والتحاليل", accessLevelEn: "Prescriptions & labs", expiresAt: dateAfter(30) },
+    { id: 3, type: "lab", name: "معمل الأمل", nameEn: "Al Amal Lab", accessLevel: "التحاليل فقط", accessLevelEn: "Labs only", expiresAt: dateAfter(15) },
   ],
   requests: [
-    { id: 11, type: "lab", name: "معمل الأمل", requested: "نتائج التحاليل السابقة" },
-    { id: 12, type: "doctor", name: "د. هبة نبيل", requested: "الملف الطبي كامل" },
-    { id: 13, type: "radiology", name: "مركز الشفاء للأشعة", requested: "الأشعة والتحاليل" },
+    { id: 11, type: "lab", name: "معمل الأمل", nameEn: "Al Amal Lab", requested: "نتائج التحاليل السابقة", requestedEn: "Previous lab results" },
+    { id: 12, type: "doctor", name: "د. هبة نبيل", nameEn: "Dr. Heba Nabil", requested: "الملف الطبي كامل", requestedEn: "Full medical file" },
+    { id: 13, type: "radiology", name: "مركز الشفاء للأشعة", nameEn: "Al Shifa Radiology Center", requested: "الأشعة والتحاليل", requestedEn: "Radiology & labs" },
   ],
   log: [
-    { id: 1, name: "د. أحمد سمير", action: "فتح الملف الطبي", at: timeAt(0, 9, 15) },
-    { id: 2, name: "معمل الأمل", action: "عرض نتيجة CBC", at: timeAt(-1, 18, 30) },
-    { id: 3, name: "مستشفى النور", action: "عرض الروشتات", at: timeAt(-4, 11, 0) },
+    { id: 1, name: "د. أحمد سمير", nameEn: "Dr. Ahmed Samir", action: "فتح الملف الطبي", actionEn: "Opened the medical file", at: timeAt(0, 9, 15) },
+    { id: 2, name: "معمل الأمل", nameEn: "Al Amal Lab", action: "عرض نتيجة CBC", actionEn: "Viewed CBC result", at: timeAt(-1, 18, 30) },
+    { id: 3, name: "مستشفى النور", nameEn: "Al Nour Hospital", action: "عرض الروشتات", actionEn: "Viewed prescriptions", at: timeAt(-4, 11, 0) },
   ],
 };
 
@@ -105,7 +114,9 @@ async function mockRequest(path, { method = "GET" } = {}) {
         id: Date.now(),
         type: req.type,
         name: req.name,
+        nameEn: req.nameEn,
         accessLevel: req.requested,
+        accessLevelEn: req.requestedEn,
         expiresAt: null,
       });
     }

@@ -1,19 +1,48 @@
 .appts {
-  --ap-bg: #f8faff;
-  --ap-card: #ffffff;
-  --ap-border: #e8edf5;
-  --ap-text: #0f172a;
-  --ap-muted: #7b8798;
-  --ap-primary: #2f5be7;
-  --ap-primary-soft: #eef3ff;
-  --ap-danger: #dc2626;
+  --ap-bg: var(--bg, #f8faff);
+  --ap-card: var(--card, #ffffff);
+  --ap-border: var(--bd, #e8edf5);
+  --ap-text: var(--tx, #0f172a);
+  --ap-muted: var(--mu, #7b8798);
+  --ap-primary: var(--pr, #2f5be7);
+  --ap-primary-soft: var(--pr2, #eef3ff);
+  --ap-danger: var(--dg, #dc2626);
   --ap-danger-dark: #b91c1c;
+  --ap-danger-btn: #dc2626;
+  --ap-primary-btn: #2f5be7;
+  --ap-line: #eef1f6;
+  --ap-input: #ffffff;
+  --ap-btn-bg: #ffffff;
+  --ap-btn-hover-bg: #fafcff63;
+  --ap-btn-hover-border: #cdd7e6;
+  --ap-danger-hover-bg: #fafcfffd;
+  --ap-alert-bg: #fdeeee;
+  --ap-alert-border: #f5c2c4;
+  --ap-sk-1: #eef2f8;
+  --ap-sk-2: #f6f8fc;
 
   box-sizing: border-box;
   min-height: fit-content;
   padding: 36px 24px 60px;
   background: var(--ap-bg);
   color: var(--ap-text);
+}
+
+/* ---------- Dark mode ---------- */
+.appts[data-theme="dark"] {
+  color-scheme: dark;
+  /* الألوان الأساسية جاية من variables.css (نفس باقي صفحات المريض)؛ هنا الألوان المشتقة بس */
+  --ap-danger-dark: #fca5a5;
+  --ap-line: #1c2740;
+  --ap-input: var(--bg);
+  --ap-btn-bg: var(--card);
+  --ap-btn-hover-bg: var(--pr2);
+  --ap-btn-hover-border: #35456a;
+  --ap-danger-hover-bg: #2a1518;
+  --ap-alert-bg: #2a1518;
+  --ap-alert-border: #5b2227;
+  --ap-sk-1: #1a2540;
+  --ap-sk-2: #223052;
 }
 
 .appts *,
@@ -63,7 +92,7 @@
 /* ---------- Row ---------- */
 .appt {
   padding: 16px 0;
-  border-bottom: 1px solid #eef1f6;
+  border-bottom: 1px solid var(--ap-line);
 }
 
 .appt:last-child {
@@ -146,29 +175,29 @@
 }
 
 .btn-outline {
-  background: #fff;
+  background: var(--ap-btn-bg);
   border-color: var(--ap-border);
   color: var(--ap-text);
 }
 
 .btn-outline:hover:not(:disabled) {
-  border-color: #cdd7e6;
-  background: #fafcff63;
+  border-color: var(--ap-btn-hover-border);
+  background: var(--ap-btn-hover-bg);
   color: var(--ap-primary);
 }
 
 .btn-danger {
-  background: var(--ap-danger) !important;
+  background: var(--ap-danger-btn) !important;
   color: #fff;
 }
 
 .btn-danger:hover:not(:disabled) {
   color: var(--ap-danger-dark);
-  background: #fafcfffd !important;
+  background: var(--ap-danger-hover-bg) !important;
 }
 
 .btn-save {
-  background: var(--ap-primary);
+  background: var(--ap-primary-btn);
   color: #fff;
 }
 
@@ -205,7 +234,7 @@
   padding: 0 12px;
   border: 1.5px solid var(--ap-border);
   border-radius: 10px;
-  background: #fff;
+  background: var(--ap-input);
   font-size: 15px;
   color: var(--ap-text);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -239,9 +268,9 @@
   margin-top: 0;
   margin-bottom: 14px;
   padding: 10px 14px;
-  border: 1px solid #f5c2c4;
+  border: 1px solid var(--ap-alert-border);
   border-radius: 10px;
-  background: #fdeeee;
+  background: var(--ap-alert-bg);
   font-size: 14px;
   color: var(--ap-danger);
 }
@@ -269,7 +298,7 @@
 
 .sk {
   display: block;
-  background: linear-gradient(90deg, #eef2f8 25%, #f6f8fc 50%, #eef2f8 75%);
+  background: linear-gradient(90deg, var(--ap-sk-1) 25%, var(--ap-sk-2) 50%, var(--ap-sk-1) 75%);
   background-size: 200% 100%;
   animation: sk-shimmer 1.3s infinite linear;
 }

@@ -18,7 +18,7 @@
 }
 
 .header-greeting {
-  text-align: right;
+  text-align: start;
 }
 
 .greeting-title {
@@ -109,7 +109,7 @@
 }
 
 .card-bottom-content {
-  text-align: right;
+  text-align: start;
 }
 
 .card-label {
@@ -138,7 +138,7 @@
   font-weight: 800;
   color: #0b132a;
   margin: 0 0 20px 0;
-  text-align: right;
+  text-align: start;
 }
 
 .appointments-container {
@@ -168,7 +168,7 @@
 
 .doc-meta {
   flex: 1;
-  text-align: right;
+  text-align: start;
 }
 
 .doc-name {
@@ -240,7 +240,7 @@
   font-size: 13px;
   font-weight: 700;
   color: #334155;
-  text-align: right;
+  text-align: start;
 }
 
 .alert-divider {
@@ -260,7 +260,7 @@
 }
 
 .prescription-meta {
-  text-align: right;
+  text-align: start;
 }
 
 .prescription-doc {
@@ -305,7 +305,7 @@
   color: #94a3b8;
   font-weight: 600;
   margin: 0;
-  text-align: right;
+  text-align: start;
   line-height: 1.5;
 }
 @media (max-width: 992px) {

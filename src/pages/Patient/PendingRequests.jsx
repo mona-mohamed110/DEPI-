@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { request, extractList } from "./request";
+import { request, extractList, loc, errText } from "./request";
+import usePatientPrefs from "../../components/Patient/usePatientPrefs";
 
 /* =====================================================================
    API — الطلبات المعلقة (عدّل المسارات حسب الباك إند)
@@ -23,7 +24,9 @@ function normalize(raw) {
     id: raw.id ?? raw._id,
     type: raw.type ?? raw.requester?.type ?? "other",
     name: raw.name ?? raw.requester?.name ?? "",
+    nameEn: raw.nameEn ?? raw.name_en ?? null,
     requested: raw.requested ?? raw.scope ?? "",
+    requestedEn: raw.requestedEn ?? raw.requested_en ?? null,
     avatarUrl: raw.avatarUrl ?? null,
   };
 }
@@ -34,10 +37,11 @@ const TYPE_ICONS = { doctor: "🧑‍⚕️", hospital: "🏥", lab: "🧪", rad
    التاب: الطلبات المعلقة
    ===================================================================== */
 export default function PendingRequests({ onPendingCountChange = () => {} }) {
+  const { t, lang } = usePatientPrefs();
   const [items, setItems] = useState([]);
   const [status, setStatus] = useState("loading"); // loading | ready | error
   const [loadError, setLoadError] = useState("");
-  const [actionError, setActionError] = useState("");
+  const [actionError, setActionError] = useState(null); // { msg } أو null
   const [busy, setBusy] = useState(null); // { id, kind } أثناء الإرسال
 
   const load = useCallback(
@@ -52,7 +56,7 @@ export default function PendingRequests({ onPendingCountChange = () => {} }) {
         setStatus("ready");
       } catch (err) {
         if (err.name === "AbortError") return;
-        setLoadError(err.message || "تعذّر تحميل الطلبات.");
+        setLoadError(errText(err, ""));
         setStatus("error");
       }
     },
@@ -68,14 +72,14 @@ export default function PendingRequests({ onPendingCountChange = () => {} }) {
   // kind: "approve" | "reject"
   const handleAction = async (item, kind) => {
     setBusy({ id: item.id, kind });
-    setActionError("");
+    setActionError(null);
     try {
       await api[kind](item.id);
       const next = items.filter((i) => i.id !== item.id);
       setItems(next);
       onPendingCountChange(next.length);
     } catch (err) {
-      setActionError(err.message || "تعذّر تنفيذ العملية. حاول مرة أخرى.");
+      setActionError({ msg: errText(err, "") });
     } finally {
       setBusy(null);
     }
@@ -85,13 +89,13 @@ export default function PendingRequests({ onPendingCountChange = () => {} }) {
     <>
       {actionError && (
         <p className="pm-alert" role="alert">
-          {actionError}
+          {actionError.msg || t("pm_err_action")}
         </p>
       )}
 
       <section className="pm-card" aria-busy={status === "loading"}>
         {status === "loading" && (
-          <ul className="pm-list" aria-label="جارٍ التحميل">
+          <ul className="pm-list" aria-label={t("pm_loading")}>
             {[1, 2, 3].map((n) => (
               <li key={n} className="pm-row pm-row--skeleton">
                 <span className="pm-sk pm-sk-icon" />
@@ -106,16 +110,16 @@ export default function PendingRequests({ onPendingCountChange = () => {} }) {
 
         {status === "error" && (
           <div className="pm-state">
-            <p>{loadError}</p>
+            <p>{loadError || t("pm_err_load_req")}</p>
             <button className="pm-btn pm-btn-outline" onClick={() => load()}>
-              إعادة المحاولة
+              {t("pm_retry")}
             </button>
           </div>
         )}
 
         {status === "ready" && items.length === 0 && (
           <div className="pm-state">
-            <p>مفيش طلبات معلقة.</p>
+            <p>{t("pm_pending_empty")}</p>
           </div>
         )}
 
@@ -130,8 +134,8 @@ export default function PendingRequests({ onPendingCountChange = () => {} }) {
                   </span>
 
                   <div className="pm-info">
-                    <h3>{item.name}</h3>
-                    <p>يطلب: {item.requested}</p>
+                    <h3>{loc(item, "name", lang)}</h3>
+                    <p>{t("pm_requesting", { what: loc(item, "requested", lang) })}</p>
                   </div>
 
                   <div className="pm-actions">
@@ -140,14 +144,14 @@ export default function PendingRequests({ onPendingCountChange = () => {} }) {
                       onClick={() => handleAction(item, "approve")}
                       disabled={busy !== null}
                     >
-                      {rowBusy && busy.kind === "approve" ? "جارٍ..." : "موافقة"}
+                      {rowBusy && busy.kind === "approve" ? t("pm_working") : t("pm_approve")}
                     </button>
                     <button
                       className="pm-btn pm-btn-outline"
                       onClick={() => handleAction(item, "reject")}
                       disabled={busy !== null}
                     >
-                      {rowBusy && busy.kind === "reject" ? "جارٍ..." : "رفض"}
+                      {rowBusy && busy.kind === "reject" ? t("pm_working") : t("pm_reject")}
                     </button>
                   </div>
                 </li>

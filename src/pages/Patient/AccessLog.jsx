@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { request, extractList } from "./request";
+import { request, extractList, loc, errText } from "./request";
+import usePatientPrefs from "../../components/Patient/usePatientPrefs";
 
 /* =====================================================================
    API — سجل الوصول (قراءة فقط) — عدّل المسار حسب الباك إند
@@ -17,7 +18,9 @@ function normalize(raw) {
   return {
     id: raw.id ?? raw._id,
     name: raw.name ?? raw.actor?.name ?? "",
+    nameEn: raw.nameEn ?? raw.name_en ?? null,
     action: raw.action ?? "",
+    actionEn: raw.actionEn ?? raw.action_en ?? null,
     at: raw.at ?? raw.createdAt ?? raw.created_at,
   };
 }
@@ -25,7 +28,7 @@ function normalize(raw) {
 /* =====================================================================
    دوال العرض: "اليوم ٩:١٥ ص" / "أمس ٦:٣٠ م" / "٢٥ أكتوبر ١١:٠٠ ص"
    ===================================================================== */
-function formatWhen(iso) {
+function formatWhen(iso, { t, locale }) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
 
@@ -36,11 +39,11 @@ function formatWhen(iso) {
   const diff = Math.round((today - day) / 86400000);
 
   let dayLabel;
-  if (diff === 0) dayLabel = "اليوم";
-  else if (diff === 1) dayLabel = "أمس";
-  else dayLabel = d.toLocaleDateString("ar-EG", { day: "numeric", month: "long" });
+  if (diff === 0) dayLabel = t("today");
+  else if (diff === 1) dayLabel = t("pm_yesterday");
+  else dayLabel = d.toLocaleDateString(locale, { day: "numeric", month: "long" });
 
-  const timeLabel = d.toLocaleTimeString("ar-EG", { hour: "numeric", minute: "2-digit", hour12: true });
+  const timeLabel = d.toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit", hour12: true });
   return `${dayLabel} ${timeLabel}`;
 }
 
@@ -48,6 +51,8 @@ function formatWhen(iso) {
    التاب: سجل الوصول
    ===================================================================== */
 export default function AccessLog() {
+  const prefs = usePatientPrefs();
+  const { t, lang } = prefs;
   const [items, setItems] = useState([]);
   const [status, setStatus] = useState("loading"); // loading | ready | error
   const [loadError, setLoadError] = useState("");
@@ -61,7 +66,7 @@ export default function AccessLog() {
       setStatus("ready");
     } catch (err) {
       if (err.name === "AbortError") return;
-      setLoadError(err.message || "تعذّر تحميل السجل.");
+      setLoadError(errText(err, ""));
       setStatus("error");
     }
   }, []);
@@ -78,7 +83,7 @@ export default function AccessLog() {
   return (
     <section className="pm-card" aria-busy={status === "loading"}>
       {status === "loading" && (
-        <ul className="pm-list" aria-label="جارٍ التحميل">
+        <ul className="pm-list" aria-label={t("pm_loading")}>
           {[1, 2, 3].map((n) => (
             <li key={n} className="pm-row pm-row--skeleton">
               <span className="pm-sk pm-sk-icon" />
@@ -93,16 +98,16 @@ export default function AccessLog() {
 
       {status === "error" && (
         <div className="pm-state">
-          <p>{loadError}</p>
+          <p>{loadError || t("pm_err_load_log")}</p>
           <button className="pm-btn pm-btn-outline" onClick={() => load()}>
-            إعادة المحاولة
+            {t("pm_retry")}
           </button>
         </div>
       )}
 
       {status === "ready" && sorted.length === 0 && (
         <div className="pm-state">
-          <p>مفيش سجل وصول لحد دلوقتي.</p>
+          <p>{t("pm_log_empty")}</p>
         </div>
       )}
 
@@ -115,12 +120,12 @@ export default function AccessLog() {
               </span>
 
               <div className="pm-info">
-                <h3>{item.name}</h3>
-                <p>{item.action}</p>
+                <h3>{loc(item, "name", lang)}</h3>
+                <p>{loc(item, "action", lang)}</p>
               </div>
 
               <time className="pm-time" dateTime={item.at}>
-                {formatWhen(item.at)}
+                {formatWhen(item.at, prefs)}
               </time>
             </li>
           ))}

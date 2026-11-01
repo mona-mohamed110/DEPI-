@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import "../../components/Style/Patient/Appointments.css";
+import usePatientPrefs from "../../components/Patient/usePatientPrefs";
 
 /* =====================================================================
    1) الإعدادات
@@ -25,13 +26,15 @@ async function request(path = "", options = {}, signal) {
   });
 
   if (!res.ok) {
-    let message = "حدث خطأ، حاول مرة أخرى.";
+    let message = "";
     try {
-      message = (await res.json()).message || message;
+      message = (await res.json()).message || "";
     } catch {
       /* الرد مش JSON */
     }
-    throw new Error(message);
+    const error = new Error(message);
+    error.fromApi = Boolean(message); // لو false بنعرض رسالة مترجمة بدل النص ده
+    throw error;
   }
   return res.status === 204 ? null : res.json();
 }
@@ -106,7 +109,7 @@ const extractList = (res) =>
 const toDateObj = (date, time) => new Date(`${date}T${time}`);
 
 // "بكرة · ١٠:٣٠ ص" / "الأحد · ٤:٠٠ م"
-function formatWhen(date, time) {
+function formatWhen(date, time, { t, locale }) {
   const d = toDateObj(date, time);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -115,12 +118,12 @@ function formatWhen(date, time) {
   const diff = Math.round((day - today) / 86400000);
 
   let dayLabel;
-  if (diff === 0) dayLabel = "اليوم";
-  else if (diff === 1) dayLabel = "بكرة";
-  else if (diff > 1 && diff < 7) dayLabel = d.toLocaleDateString("ar-EG", { weekday: "long" });
-  else dayLabel = d.toLocaleDateString("ar-EG", { day: "numeric", month: "long" });
+  if (diff === 0) dayLabel = t("today");
+  else if (diff === 1) dayLabel = t("tomorrow");
+  else if (diff > 1 && diff < 7) dayLabel = d.toLocaleDateString(locale, { weekday: "long" });
+  else dayLabel = d.toLocaleDateString(locale, { day: "numeric", month: "long" });
 
-  const timeLabel = d.toLocaleTimeString("ar-EG", {
+  const timeLabel = d.toLocaleTimeString(locale, {
     hour: "numeric",
     minute: "2-digit",
     hour12: true,
@@ -129,12 +132,16 @@ function formatWhen(date, time) {
 }
 
 // أول حرف من الاسم بعد "د."
-const initialOf = (name) => name.replace(/^د\.?\s*/, "").trim().charAt(0) || "؟";
+const initialOf = (name) => name.replace(/^(د\.?|dr\.?)\s*/i, "").trim().charAt(0).toUpperCase() || "?";
+
+// رسالة الخطأ: لو جاية من الـ API نعرضها، غير كده نعرض النص المترجم
+const errText = (err, fallback) => (err?.fromApi ? err.message : fallback);
 
 /* =====================================================================
    5) فورم التعديل (التاريخ والوقت الحاليين من الـ API لكل موعد)
    ===================================================================== */
-function EditForm({ item, onSave, onClose }) {
+function EditForm({ item, onSave, onClose, prefs }) {
+  const { t } = prefs;
   const [date, setDate] = useState(item.date);
   const [time, setTime] = useState(item.time);
   const [saving, setSaving] = useState(false);
@@ -144,15 +151,15 @@ function EditForm({ item, onSave, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!date || !time) return setError("اختر التاريخ والوقت.");
-    if (toDateObj(date, time) < new Date()) return setError("لا يمكن اختيار موعد في الماضي.");
+    if (!date || !time) return setError(t("ap_pick_dt"));
+    if (toDateObj(date, time) < new Date()) return setError(t("ap_past"));
 
     setSaving(true);
     setError("");
     try {
       await onSave(item.id, { date, time });
     } catch (err) {
-      setError(err.message || "تعذّر حفظ التعديل.");
+      setError(errText(err, t("ap_err_save")));
       setSaving(false);
     }
   };
@@ -161,7 +168,7 @@ function EditForm({ item, onSave, onClose }) {
     <form className="appt-edit" onSubmit={handleSubmit} noValidate>
       <div className="appt-edit-fields">
         <label className="appt-field">
-          <span>التاريخ</span>
+          <span>{t("ap_date")}</span>
           <input
             type="date"
             value={date}
@@ -174,7 +181,7 @@ function EditForm({ item, onSave, onClose }) {
         </label>
 
         <label className="appt-field">
-          <span>الوقت</span>
+          <span>{t("ap_time")}</span>
           <input
             type="time"
             value={time}
@@ -194,10 +201,10 @@ function EditForm({ item, onSave, onClose }) {
 
       <div className="appt-edit-actions">
         <button type="submit" className="btn btn-save" disabled={saving || unchanged}>
-          {saving ? "جارٍ الحفظ..." : "حفظ التعديل"}
+          {saving ? t("ap_saving") : t("ap_save")}
         </button>
         <button type="button" className="btn btn-outline" onClick={onClose} disabled={saving}>
-          إغلاق
+          {t("ap_close")}
         </button>
       </div>
     </form>
@@ -218,7 +225,9 @@ function AppointmentRow({
   onCancelBack,
   onSave,
   onCloseEdit,
+  prefs,
 }) {
+  const { t } = prefs;
   return (
     <li className="appt">
       <div className="appt-main">
@@ -230,19 +239,19 @@ function AppointmentRow({
           <h3>{item.doctorName}</h3>
           <p>
             {item.specialty && `${item.specialty} · `}
-            {formatWhen(item.date, item.time)}
+            {formatWhen(item.date, item.time, prefs)}
           </p>
         </div>
 
         <div className="appt-actions">
           {isConfirming ? (
             <>
-              <span className="appt-confirm-text">إلغاء هذا الموعد؟</span>
+              <span className="appt-confirm-text">{t("ap_cancel_q")}</span>
               <button className="btn btn-danger" onClick={() => onCancelConfirm(item.id)} disabled={busy}>
-                {busy ? "جارٍ الإلغاء..." : "نعم ، إلغاء"}
+                {busy ? t("ap_cancelling") : t("ap_cancel_yes")}
               </button>
               <button className="btn btn-outline" onClick={onCancelBack} disabled={busy}>
-                تراجع
+                {t("ap_back")}
               </button>
             </>
           ) : (
@@ -252,17 +261,17 @@ function AppointmentRow({
                 onClick={() => (isEditing ? onCloseEdit() : onEdit(item.id))}
                 aria-expanded={isEditing}
               >
-                تعديل
+                {t("ap_edit")}
               </button>
               <button className="btn btn-danger" onClick={() => onCancelAsk(item.id)}>
-                إلغاء
+                {t("ap_cancel")}
               </button>
             </>
           )}
         </div>
       </div>
 
-      {isEditing && <EditForm item={item} onSave={onSave} onClose={onCloseEdit} />}
+      {isEditing && <EditForm item={item} onSave={onSave} onClose={onCloseEdit} prefs={prefs} />}
     </li>
   );
 }
@@ -271,6 +280,8 @@ function AppointmentRow({
    7) الصفحة
    ===================================================================== */
 export default function Appointments() {
+  const prefs = usePatientPrefs();
+  const { t } = prefs;
   const [items, setItems] = useState([]);
   const [status, setStatus] = useState("loading"); // loading | ready | error
   const [loadError, setLoadError] = useState("");
@@ -289,7 +300,7 @@ export default function Appointments() {
       setStatus("ready");
     } catch (err) {
       if (err.name === "AbortError") return;
-      setLoadError(err.message || "تعذّر تحميل المواعيد.");
+      setLoadError(errText(err, ""));
       setStatus("error");
     }
   }, []);
@@ -333,17 +344,17 @@ export default function Appointments() {
       setItems((prev) => prev.filter((a) => a.id !== id));
       setConfirmId(null);
     } catch (err) {
-      setActionError(err.message || "تعذّر إلغاء الموعد.");
+      setActionError(errText(err, t("ap_err_cancel")));
     } finally {
       setBusyId(null);
     }
   };
 
   return (
-    <main className="appts" dir="rtl">
+    <main className="appts" dir={prefs.dir} data-theme={prefs.theme}>
       <header className="appts-head">
-        <h1>مواعيدي</h1>
-        <p>إلغاء وتعديل المواعيد</p>
+        <h1>{t("ap_title")}</h1>
+        <p>{t("ap_sub")}</p>
       </header>
 
       {actionError && (
@@ -354,7 +365,7 @@ export default function Appointments() {
 
       <section className="appts-card" aria-busy={status === "loading"}>
         {status === "loading" && (
-          <ul className="appts-list" aria-label="جارٍ التحميل">
+          <ul className="appts-list" aria-label={t("ap_loading")}>
             {[1, 2].map((n) => (
               <li key={n} className="appt appt--skeleton">
                 <span className="sk sk-avatar" />
@@ -369,16 +380,16 @@ export default function Appointments() {
 
         {status === "error" && (
           <div className="appts-state">
-            <p>{loadError}</p>
+            <p>{loadError || t("ap_load_err")}</p>
             <button className="btn btn-outline" onClick={() => load()}>
-              إعادة المحاولة
+              {t("ap_retry")}
             </button>
           </div>
         )}
 
         {status === "ready" && sorted.length === 0 && (
           <div className="appts-state">
-            <p>لا توجد مواعيد قادمة.</p>
+            <p>{t("ap_empty")}</p>
           </div>
         )}
 
@@ -397,6 +408,7 @@ export default function Appointments() {
                 onCancelConfirm={handleCancel}
                 onCancelBack={() => setConfirmId(null)}
                 onSave={handleSave}
+                prefs={prefs}
               />
             ))}
           </ul>

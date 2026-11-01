@@ -163,7 +163,7 @@
   font-family: inherit;
   font-size: 17px;
   font-weight: 700;
-  color: #ffffff;
+  color: #ffffff !important;
   text-decoration: none;
   background: var(--tri-primary);
   border: none;
