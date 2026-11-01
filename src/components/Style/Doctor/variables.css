@@ -1,0 +1,18 @@
+/* ألوان الوضع الفاتح والداكن — محصورة داخل .doctor */
+.doctor,
+.doctor[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f7f9fc; --card: #ffffff; --tx: #0f1b2d; --mu: #64748b; --bd: #e5eaf2;
+  --pr: #2563eb; --pr2: #eff4ff; --dg: #dc2626;
+  --ok: #15803d; --ok2: #f0fdf4; --wn: #b45309; --wn2: #fffbeb; --gr: #f1f5f9;
+  --map: #eaf1fb;
+  --shadow: 0 8px 28px rgba(15, 27, 45, 0.14);
+}
+.doctor[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0b1220; --card: #131c2e; --tx: #e6edf7; --mu: #93a1b8; --bd: #25314a;
+  --pr: #5b8def; --pr2: #1b2a4a; --dg: #f87171;
+  --ok: #4ade80; --ok2: #12301f; --wn: #fbbf24; --wn2: #3a2a0b; --gr: #1c2740;
+  --map: #1a2742;
+  --shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+}
