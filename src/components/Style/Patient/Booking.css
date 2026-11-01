@@ -291,7 +291,7 @@
 .booking-primary-btn {
   min-height: 44px;
   padding: 11px 24px;
-  color: #ffffff;
+  color: #ffffff !important;
   background: var(--bk-primary);
   border: 1px solid var(--bk-primary);
   border-radius: 8px;

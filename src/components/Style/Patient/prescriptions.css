@@ -7,7 +7,7 @@
   padding: 32px 24px;
   font-family: 'Cairo', sans-serif;
   box-sizing: border-box;
-  text-align: right;
+  text-align: start;
   background-color: #f7f9fc;
 }
 
@@ -21,7 +21,7 @@
 
 .header-text {
   width: 100%;
-  text-align: right;
+  text-align: start;
 }
 
 .main-title {
@@ -78,10 +78,11 @@
 .prescriptions-table {
   width: 100%;
   border-collapse: collapse;
-  text-align: right;
+  text-align: start;
 }
 
 .prescriptions-table th {
+  text-align: start;
   color: #94a3b8;
   font-size: 14px;
   font-weight: 700;

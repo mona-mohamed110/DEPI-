@@ -1,22 +1,50 @@
 .pm {
-  --pm-bg: #f8faff;
-  --pm-card: #ffffff;
-  --pm-border: #e8edf5;
-  --pm-text: #0f172a;
-  --pm-muted: #7b8798;
-  --pm-primary: #2563eb;
+  --pm-bg: var(--bg, #f8faff);
+  --pm-card: var(--card, #ffffff);
+  --pm-border: var(--bd, #e8edf5);
+  --pm-text: var(--tx, #0f172a);
+  --pm-muted: var(--mu, #7b8798);
+  --pm-primary: var(--pr, #2563eb);
   --pm-primary-dark: #1d4fd0;
-  --pm-soft: #eef3ff;
-  --pm-danger: #dc2626;
+  --pm-soft: var(--pr2, #eef3ff);
+  --pm-danger: var(--dg, #dc2626);
   --pm-danger-dark: #b91c1c;
   --pm-green-bg: #ecfdf3;
   --pm-green: #15803d;
+  --pm-danger-btn: #dc2626;
+  --pm-line: #eef1f6;
+  --pm-surface: var(--card, #ffffff);
+  --pm-hover: #fafcff;
+  --pm-hover-border: #cdd7e6;
+  --pm-dialog-text: #475569;
+  --pm-alert-bg: #fdeeee;
+  --pm-alert-border: #f5c2c4;
+  --pm-sk-1: #eef2f8;
+  --pm-sk-2: #f6f8fc;
 
   box-sizing: border-box;
   min-height: fit-content;
   padding: 36px 24px 60px;
   background: var(--pm-bg);
   color: var(--pm-text);
+}
+
+/* ---------- Dark mode ---------- */
+.pm[data-theme="dark"] {
+  color-scheme: dark;
+  /* الألوان الأساسية جاية من variables.css (نفس باقي صفحات المريض)؛ هنا الألوان المشتقة بس */
+  --pm-primary-dark: #4a7fe8;
+  --pm-danger-dark: #ef4444;
+  --pm-green-bg: #10291c;
+  --pm-green: #4ade80;
+  --pm-line: #1c2740;
+  --pm-hover: var(--pr2);
+  --pm-hover-border: #35456a;
+  --pm-dialog-text: #b6c2d6;
+  --pm-alert-bg: #2a1518;
+  --pm-alert-border: #5b2227;
+  --pm-sk-1: #1a2540;
+  --pm-sk-2: #223052;
 }
 
 .pm *,
@@ -64,7 +92,7 @@
   padding: 0 22px;
   border: 1px solid var(--pm-border);
   border-radius: 999px;
-  background: #fff;
+  background: var(--pm-surface);
   font-size: 16px;
   font-weight: 500;
   color: var(--pm-text);
@@ -73,8 +101,8 @@
 }
 
 .pm-tab:hover:not(.pm-tab--active) {
-  border-color: #cdd7e6;
-  background: #fafcff;
+  border-color: var(--pm-hover-border);
+  background: var(--pm-hover);
 }
 
 .pm-tab:focus-visible {
@@ -123,7 +151,7 @@
   align-items: center;
   gap: 16px;
   padding: 16px 0;
-  border-bottom: 1px solid #eef1f6;
+  border-bottom: 1px solid var(--pm-line);
 }
 
 .pm-row:last-child {
@@ -217,7 +245,7 @@
 }
 
 .pm-btn-primary {
-  background: var(--pm-primary);
+  background: var(--pm-primary-btn, #2563eb);
   color: #fff !important;
 }
 
@@ -226,23 +254,24 @@
 }
 
 .pm-btn-outline {
-  background: #fff;
+  background: var(--pm-surface);
   border-color: var(--pm-border);
   color: var(--pm-text);
 }
 
 .pm-btn-outline:hover:not(:disabled) {
-  border-color: #cdd7e6 ;
-  background: #fafcff;
+  border-color: var(--pm-hover-border);
+  background: var(--pm-hover);
 }
 
 .pm-btn-danger {
-  background: var(--pm-danger);
+  background: var(--pm-danger-btn);
   color: #fff !important;
 }
 
 .pm-btn-danger:hover:not(:disabled) {
-  background: var(--pm-danger-dark);
+  background: var(--pm-danger-btn);
+  filter: brightness(0.9);
 }
 
 .pm-btn-lg {
@@ -260,7 +289,7 @@
   gap: 16px;
   margin-top: 18px;
   padding: 28px 26px;
-  background: #fff;
+  background: var(--pm-surface);
   border: 1px solid var(--pm-danger);
   border-radius: 14px;
 }
@@ -295,7 +324,7 @@
   width: 100%;
   max-width: 420px;
   padding: 26px;
-  background: #fff;
+  background: var(--pm-surface);
   border-radius: 18px;
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
   color: var(--pm-text);
@@ -312,14 +341,14 @@
   margin: 0;
   font-size: 15px;
   line-height: 1.8;
-  color: #475569;
+  color: var(--pm-dialog-text);
 }
 
 .pm-dialog .pm-dialog-error {
   margin-top: 12px;
   padding: 8px 12px;
   border-radius: 8px;
-  background: #fdeeee;
+  background: var(--pm-alert-bg);
   font-size: 13.5px;
   color: var(--pm-danger);
 }
@@ -348,9 +377,9 @@
 .pm-alert {
   margin: 0 auto 14px;
   padding: 10px 14px;
-  border: 1px solid #f5c2c4;
+  border: 1px solid var(--pm-alert-border);
   border-radius: 10px;
-  background: #fdeeee;
+  background: var(--pm-alert-bg);
   font-size: 14px;
   color: var(--pm-danger);
 }
@@ -372,7 +401,7 @@
 /* ---------- Skeleton ---------- */
 .pm-sk {
   display: block;
-  background: linear-gradient(90deg, #eef2f8 25%, #f6f8fc 50%, #eef2f8 75%);
+  background: linear-gradient(90deg, var(--pm-sk-1) 25%, var(--pm-sk-2) 50%, var(--pm-sk-1) 75%);
   background-size: 200% 100%;
   animation: pm-shimmer 1.3s infinite linear;
 }

@@ -4,17 +4,20 @@ import ActivePermissions from "./ActivePermissions";
 import PendingRequests from "./PendingRequests";
 import AccessLog from "./AccessLog";
 import "../../components/Style/Patient/Permissions.css";
+import usePatientPrefs from "../../components/Patient/usePatientPrefs";
 
 const TABS = [
-  { id: "active", label: "الأذونات النشطة", Component: ActivePermissions },
-  { id: "pending", label: "الطلبات المعلقة", Component: PendingRequests },
-  { id: "log", label: "سجل الوصول", Component: AccessLog },
+  { id: "active", labelKey: "pm_tab_active", Component: ActivePermissions },
+  { id: "pending", labelKey: "pm_tab_pending", Component: PendingRequests },
+  { id: "log", labelKey: "pm_tab_log", Component: AccessLog },
 ];
 
 // نفس الـ endpoint بتاع تاب الطلبات المعلقة — بنستخدمه هنا علشان عدّاد الدايرة الحمرا
 const PENDING_ENDPOINT = "/permissions/requests?status=pending";
 
 export default function Permissions() {
+  const prefs = usePatientPrefs();
+  const { t: tr } = prefs;
   const [tab, setTab] = useState("active");
   const [pendingCount, setPendingCount] = useState(0);
 
@@ -36,13 +39,13 @@ export default function Permissions() {
   const ActiveTab = TABS.find((t) => t.id === tab).Component;
 
   return (
-    <main className="pm" dir="rtl">
+    <main className="pm" dir={prefs.dir} data-theme={prefs.theme}>
       <header className="pm-head">
-        <h1>🔐 إدارة الأذونات</h1>
-        <p>أنت اللي بتتحكم مين يشوف ملفك الطبي، ولأي مدة</p>
+        <h1>🔐 {tr("pm_title")}</h1>
+        <p>{tr("pm_sub")}</p>
       </header>
 
-      <div className="pm-tabs" role="tablist" aria-label="أقسام إدارة الأذونات">
+      <div className="pm-tabs" role="tablist" aria-label={tr("pm_tabs_label")}>
         {TABS.map((t) => (
           <button
             key={t.id}
@@ -54,9 +57,9 @@ export default function Permissions() {
             className={`pm-tab${tab === t.id ? " pm-tab--active" : ""}`}
             onClick={() => setTab(t.id)}
           >
-            {t.label}
+            {tr(t.labelKey)}
             {t.id === "pending" && pendingCount > 0 && (
-              <span className="pm-badge" aria-label={`${pendingCount} طلبات`}>
+              <span className="pm-badge" aria-label={tr("pm_requests_n", { n: pendingCount })}>
                 {pendingCount}
               </span>
             )}
