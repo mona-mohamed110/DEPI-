@@ -78,8 +78,6 @@
   margin-bottom: 28px;
 }
 
-.header-greeting {
-  text-align: start;
 [dir="rtl"] .dashboard-header {
   flex-direction: row;
 }
@@ -162,8 +160,6 @@
   background-color: #fefce8;
 }
 
-.card-bottom-content {
-  text-align: start;
 .dashboard-wrapper.dark .calendar-icon {
   background-color: rgba(37, 99, 235, 0.15);
 }
@@ -202,8 +198,6 @@
   font-weight: 800;
   color: var(--text-title);
   margin: 0 0 20px 0;
-  text-align: start;
-
 }
 
 .appointments-container {
@@ -233,7 +227,6 @@
 
 .doc-meta {
   flex: 1;
-  text-align: start;
 }
 
 .doc-name {
@@ -307,8 +300,6 @@
 .alert-text {
   font-size: 13px;
   font-weight: 700;
-  color: #334155;
-  text-align: start;
   color: var(--text-body);
   flex: 1; 
 }
@@ -320,10 +311,6 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-}
-
-.prescription-meta {
-  text-align: start;
   gap: 12px;
 }
 
@@ -364,7 +351,6 @@
   color: var(--text-sub);
   font-weight: 600;
   margin: 0;
-  text-align: start;
   line-height: 1.5;
 }
 
@@ -539,4 +525,3 @@
 [dir="ltr"] .prescription-content {
   flex-direction: row-reverse;
 }
-}}
