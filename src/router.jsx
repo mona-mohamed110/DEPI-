@@ -19,7 +19,6 @@ import Permissions from "./pages/Patient/Permissions";
 import Profile from "./pages/Patient/Profile";
 import AccountSettings from "./pages/Patient/AccountSettings";
 
-
 import AdminLayout from "./components/Admin/AdminLayout";
 import Accounts from "./pages/Admin/Accounts";
 import Licenses from "./pages/Admin/Licenses";
@@ -49,6 +48,12 @@ import LabAppearance from "./pages/Lab/LabAppearance";
 import LabPersonal from "./pages/Lab/LabPersonal";
 import LabAccount from "./pages/Lab/LabAccount";
 
+import ReceptionLayout from "./pages/reception/ReceptionLayout";
+import ReceptionDashboard from "./pages/reception/ReceptionDashboard";
+import AppointmentsManager from "./pages/reception/AppointmentsManager";
+import PatientsDataPage from "./pages/reception/PatientsDataPage";
+import ReceptionProfile from "./pages/reception/ReceptionProfile";
+
 const labRoutes = {
   path: "/lab",
   element: <LabLayout />,
@@ -67,7 +72,6 @@ const labRoutes = {
     { path: "settings/account", element: <LabAccount /> },
   ],
 };
-
 
 export const router = createBrowserRouter([
   {
@@ -100,7 +104,6 @@ export const router = createBrowserRouter([
     ],
   },
 
-
   {
     path: "/admin",
     element: <AdminLayout />,
@@ -127,5 +130,17 @@ export const router = createBrowserRouter([
       { path: "account-settings", element: <DoctorAccountSettings /> },
     ],
   },
-labRoutes
+
+  labRoutes,
+
+  {
+    path: "/reception",
+    element: <ReceptionLayout />,
+    children: [
+      { index: true, element: <ReceptionDashboard /> },
+      { path: "appointments", element: <AppointmentsManager /> },
+      { path: "patients", element: <PatientsDataPage /> },
+      { path: "profile", element: <ReceptionProfile /> },
+    ],
+  },
 ]);
