@@ -1,57 +1,154 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './AppointmentsManager.css';
 
+
+const TRANSLATIONS = {
+  ar: {
+    pageTitle: 'حجز وتعديل المواعيد',
+    pageSubtitle: 'احجزي أو عدّلي أو ألغي ميعاد لمريض',
+    addPatientTitle: 'إضافة مريض جديد',
+    nameLabel: 'الاسم',
+    namePlaceholder: 'اكتب اسم المريض...',
+    phoneLabel: 'رقم الهاتف',
+    phonePlaceholder: '01xxxxxxxxx',
+    addPatientBtn: 'إضافة مريض',
+    bookingTitle: 'حجز ميعاد جديد',
+    patientLabel: 'المريض',
+    dayLabel: 'اليوم',
+    timeLabel: 'الوقت',
+    confirmBtn: 'تأكيد الحجز',
+    confirming: 'جاري تأكيد الحجز...',
+    notAvailable: 'غير متوفر',
+    notArrived: 'لم يصل',
+    errNameRequired: 'يرجى كتابة اسم المريض على الأقل',
+    errSelectPatient: 'الرجاء اختيار مريض أولاً',
+    patientAdded: (name) => `تم إضافة المريض (${name}) بنجاح!`,
+    bookingConfirmed: 'تم تأكيد حجز الميعاد وإضافته لطابور الاستقبال بنجاح!',
+    days: [
+      { id: 'today', label: 'اليوم' },
+      { id: 'tomorrow', label: 'بكرة' },
+      { id: 'sunday', label: 'الأحد' },
+      { id: 'monday', label: 'الإثنين' },
+    ],
+    times: [
+      { id: '09:00', label: '٩:٠٠ ص' },
+      { id: '09:30', label: '٩:٣٠ ص' },
+      { id: '10:00', label: '١٠:٠٠ ص' },
+      { id: '11:00', label: '١١:٠٠ ص' },
+      { id: '12:00', label: '١٢:٠٠ م' },
+      { id: '16:00', label: '٤:٠0 م' },
+      { id: '17:00', label: '٥:٠٠ م' },
+    ],
+    seedPatients: [
+      { id: 1, name: 'أحمد حسن', phone: '01012345678' },
+      { id: 2, name: 'فاطمة علي', phone: '01123456789' },
+      { id: 3, name: 'محمود سعيد', phone: '01234567890' },
+    ],
+  },
+  en: {
+    pageTitle: 'Book & Manage Appointments',
+    pageSubtitle: 'Book, edit, or cancel a patient appointment',
+    addPatientTitle: 'Add New Patient',
+    nameLabel: 'Name',
+    namePlaceholder: 'Enter patient name...',
+    phoneLabel: 'Phone Number',
+    phonePlaceholder: '01xxxxxxxxx',
+    addPatientBtn: 'Add Patient',
+    bookingTitle: 'Book New Appointment',
+    patientLabel: 'Patient',
+    dayLabel: 'Day',
+    timeLabel: 'Time',
+    confirmBtn: 'Confirm Booking',
+    confirming: 'Confirming booking...',
+    notAvailable: 'N/A',
+    notArrived: 'Not arrived',
+    errNameRequired: 'Please enter the patient name at least',
+    errSelectPatient: 'Please select a patient first',
+    patientAdded: (name) => `Patient (${name}) added successfully!`,
+    bookingConfirmed: 'Appointment confirmed and added to the reception queue!',
+    days: [
+      { id: 'today', label: 'Today' },
+      { id: 'tomorrow', label: 'Tomorrow' },
+      { id: 'sunday', label: 'Sunday' },
+      { id: 'monday', label: 'Monday' },
+    ],
+    times: [
+      { id: '09:00', label: '9:00 AM' },
+      { id: '09:30', label: '9:30 AM' },
+      { id: '10:00', label: '10:00 AM' },
+      { id: '11:00', label: '11:00 AM' },
+      { id: '12:00', label: '12:00 PM' },
+      { id: '16:00', label: '4:00 PM' },
+      { id: '17:00', label: '5:00 PM' },
+    ],
+    seedPatients: [
+      { id: 1, name: 'Ahmed Hassan', phone: '01012345678' },
+      { id: 2, name: 'Fatma Ali', phone: '01123456789' },
+      { id: 3, name: 'Mahmoud Said', phone: '01234567890' },
+    ],
+  },
+};
+
+const readLang = () => (localStorage.getItem('reception_lang') === 'en' ? 'en' : 'ar');
+const readDark = () => localStorage.getItem('reception_theme') === 'dark';
+
+
 export default function AppointmentsManager() {
-  const [selectedDay, setSelectedDay] = useState('اليوم');
-  const [selectedTime, setSelectedTime] = useState('٩:٠٠ ص');
-  
+  const [lang, setLang] = useState(readLang);
+  const [isDark, setIsDark] = useState(readDark);
+
+  const t = TRANSLATIONS[lang];
+  const dir = lang === 'ar' ? 'rtl' : 'ltr';
+
+  const [selectedDayId, setSelectedDayId] = useState('today');
+  const [selectedTimeId, setSelectedTimeId] = useState('09:00');
+
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const [isDark, setIsDark] = useState(() => {
-    return localStorage.getItem('reception_theme') === 'dark';
-  });
+  const toastTimer = useRef(null);
 
   useEffect(() => {
-    const checkTheme = () => {
-      setIsDark(localStorage.getItem('reception_theme') === 'dark');
+    const sync = () => {
+      setIsDark(readDark());
+      setLang(readLang());
     };
-    window.addEventListener('storage', checkTheme);
-    const interval = setInterval(checkTheme, 300);
+    window.addEventListener('storage', sync);
+    const interval = setInterval(sync, 300);
     return () => {
-      window.removeEventListener('storage', checkTheme);
+      window.removeEventListener('storage', sync);
       clearInterval(interval);
     };
   }, []);
 
+  useEffect(() => () => clearTimeout(toastTimer.current), []);
+
   const [patients, setPatients] = useState(() => {
-    const savedPatients = localStorage.getItem('reception_patients_list');
-    if (savedPatients) {
-      try { return JSON.parse(savedPatients); } catch (e) { console.error(e); }
+    const saved = localStorage.getItem('reception_patients_list');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error(e);
+      }
     }
-    return [
-      { id: 1, name: 'أحمد حسن', phone: '01012345678' },
-      { id: 2, name: 'فاطمة علي', phone: '01123456789' },
-      { id: 3, name: 'محمود سعيد', phone: '01234567890' },
-    ];
+    return TRANSLATIONS[readLang()].seedPatients;
   });
 
   const [newName, setNewName] = useState('');
   const [newPhone, setNewPhone] = useState('');
-
   const [selectedPatientName, setSelectedPatientName] = useState('');
-  const [selectedDoctor, setSelectedDoctor] = useState('د. أحمد سمير · باطنة');
 
   useEffect(() => {
     localStorage.setItem('reception_patients_list', JSON.stringify(patients));
     if (patients.length > 0 && !selectedPatientName) {
       setSelectedPatientName(patients[0].name);
     }
-  }, [patients]);
+  }, [patients, selectedPatientName]);
 
   const showToast = (message, type = 'success') => {
+    clearTimeout(toastTimer.current);
     setNotification({ show: true, message, type });
-    setTimeout(() => {
+    toastTimer.current = setTimeout(() => {
       setNotification({ show: false, message: '', type: 'success' });
     }, 3500);
   };
@@ -59,105 +156,121 @@ export default function AppointmentsManager() {
   const handleAddPatient = (e) => {
     e.preventDefault();
     if (!newName.trim()) {
-      showToast('يرجى كتابة اسم المريض على الأقل', 'error');
+      showToast(t.errNameRequired, 'error');
       return;
     }
 
     const newPatientObj = {
       id: Date.now(),
       name: newName.trim(),
-      phone: newPhone.trim() || 'غير متوفر',
+      phone: newPhone.trim() || t.notAvailable,
     };
 
-    setPatients(prev => [...prev, newPatientObj]);
+    setPatients((prev) => [...prev, newPatientObj]);
     setSelectedPatientName(newPatientObj.name);
     setNewName('');
     setNewPhone('');
-    
-    showToast(`تم إضافة المريض (${newPatientObj.name}) بنجاح! `);
+
+    showToast(t.patientAdded(newPatientObj.name));
   };
 
   const handleConfirmBooking = () => {
-    if (isSubmitting) return; 
+    if (isSubmitting) return;
 
     if (!selectedPatientName) {
-      showToast('الرجاء اختيار مريض أولاً', 'error');
+      showToast(t.errSelectPatient, 'error');
       return;
     }
 
     setIsSubmitting(true);
 
-    const currentPatientObj = patients.find(p => p.name === selectedPatientName);
-    const patientPhone = currentPatientObj ? currentPatientObj.phone : 'غير متوفر';
+    const currentPatientObj = patients.find((p) => p.name === selectedPatientName);
+    const patientPhone = currentPatientObj ? currentPatientObj.phone : t.notAvailable;
 
-    const existingQueue = JSON.parse(localStorage.getItem('reception_queue_data') || '[]');
-    
+    const dayLabel = t.days.find((d) => d.id === selectedDayId)?.label ?? '';
+    const timeLabel = t.times.find((x) => x.id === selectedTimeId)?.label ?? '';
+
+    let existingQueue = [];
+    try {
+      existingQueue = JSON.parse(localStorage.getItem('reception_queue_data') || '[]');
+    } catch (e) {
+      console.error(e);
+    }
+
     const newQueueItem = {
       id: Date.now(),
       name: selectedPatientName,
       phone: patientPhone,
-      doctor: selectedDoctor,
-      time: `${selectedDay} · ${selectedTime}`,
+      time: `${dayLabel} · ${timeLabel}`,
       status: 'not-arrived',
-      label: 'لم يصل',
-      initial: selectedPatientName.charAt(0)
+      label: t.notArrived,
+      initial: selectedPatientName.charAt(0),
     };
 
     localStorage.setItem('reception_queue_data', JSON.stringify([newQueueItem, ...existingQueue]));
-    showToast(`تم تأكيد حجز الميعاد وإضافته لطابور الاستقبال بنجاح! `);
+    showToast(t.bookingConfirmed);
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-    }, 2000);
+    setTimeout(() => setIsSubmitting(false), 2000);
   };
 
   return (
-    <div className={`reception-container appointments-page-wrapper ${isDark ? 'dark-mode' : ''}`} dir="rtl">
+    <div
+      className={`reception-container appointments-page-wrapper ${isDark ? 'dark-mode' : ''}`}
+      dir={dir}
+      lang={lang}
+    >
       {notification.show && (
-        <div className={`notification-toast ${notification.type}`}>
+        <div className={`notification-toast ${notification.type}`} role="status">
           <span>{notification.message}</span>
         </div>
       )}
 
       <header className="page-header">
-        <h1>حجز وتعديل المواعيد</h1>
-        <p>احجزي أو عدّلي أو ألغي ميعاد لمريض</p>
+        <h1>{t.pageTitle}</h1>
+        <p>{t.pageSubtitle}</p>
       </header>
 
       <div className="appointments-grid">
         <div className="add-patient-card">
-          <h2>إضافة مريض جديد</h2>
+          <h2>{t.addPatientTitle}</h2>
           <form onSubmit={handleAddPatient}>
             <div className="form-group">
-              <label>الاسم</label>
+              <label htmlFor="new-patient-name">{t.nameLabel}</label>
               <input
+                id="new-patient-name"
                 type="text"
+                dir={dir}
                 className="form-input"
-                placeholder="اكتب اسم المريض..."
+                placeholder={t.namePlaceholder}
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
               />
             </div>
             <div className="form-group">
-              <label>رقم الهاتف</label>
+              <label htmlFor="new-patient-phone">{t.phoneLabel}</label>
               <input
-                type="text"
-                className="form-input"
-                placeholder="01xxxxxxxxx"
+                id="new-patient-phone"
+                type="tel"
+                inputMode="tel"
+                dir="ltr"
+                className="form-input phone-input"
+                placeholder={t.phonePlaceholder}
                 value={newPhone}
                 onChange={(e) => setNewPhone(e.target.value)}
               />
             </div>
-            <button type="submit" className="submit-btn">إضافة مريض</button>
+            <button type="submit" className="submit-btn">{t.addPatientBtn}</button>
           </form>
         </div>
 
         <div className="booking-form-card">
-          <h2>حجز ميعاد جديد</h2>
-          
+          <h2>{t.bookingTitle}</h2>
+
           <div className="form-group">
-            <label>المريض</label>
-            <select 
+            <label htmlFor="booking-patient">{t.patientLabel}</label>
+            <select
+              id="booking-patient"
+              dir={dir}
               className="form-select"
               value={selectedPatientName}
               onChange={(e) => setSelectedPatientName(e.target.value)}
@@ -171,57 +284,44 @@ export default function AppointmentsManager() {
           </div>
 
           <div className="form-group">
-            <label>الدكتور</label>
-            <select 
-              className="form-select"
-              value={selectedDoctor}
-              onChange={(e) => setSelectedDoctor(e.target.value)}
-            >
-              <option>د. أحمد سمير · باطنة</option>
-              <option>د. سارة علي · قلب</option>
-              <option>د. مها خالد · أطفال</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label>اليوم</label>
+            <label>{t.dayLabel}</label>
             <div className="days-selector">
-              {['اليوم', 'بكرة', 'الأحد', 'الإثنين'].map((day) => (
+              {t.days.map((day) => (
                 <button
                   type="button"
-                  key={day}
-                  className={`day-btn ${selectedDay === day ? 'active' : ''}`}
-                  onClick={() => setSelectedDay(day)}
+                  key={day.id}
+                  className={`day-btn ${selectedDayId === day.id ? 'active' : ''}`}
+                  onClick={() => setSelectedDayId(day.id)}
                 >
-                  {day}
+                  {day.label}
                 </button>
               ))}
             </div>
           </div>
 
           <div className="form-group">
-            <label>الوقت</label>
+            <label>{t.timeLabel}</label>
             <div className="times-grid">
-              {['٩:٠٠ ص', '٩:٣٠ ص', '١٠:٠٠ ص', '١١:٠٠ ص', '١٢:٠٠ م', '٤:٠٠ م', '٥:٠٠ م'].map((time) => (
+              {t.times.map((time) => (
                 <button
                   type="button"
-                  key={time}
-                  className={`time-btn ${selectedTime === time ? 'active' : ''}`}
-                  onClick={() => setSelectedTime(time)}
+                  key={time.id}
+                  className={`time-btn ${selectedTimeId === time.id ? 'active' : ''}`}
+                  onClick={() => setSelectedTimeId(time.id)}
                 >
-                  {time}
+                  {time.label}
                 </button>
               ))}
             </div>
           </div>
 
-          <button 
-            type="button" 
+          <button
+            type="button"
             className={`confirm-booking-btn ${isSubmitting ? 'disabled-btn' : ''}`}
             onClick={handleConfirmBooking}
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'جاري تأكيد الحجز...' : 'تأكيد الحجز '}
+            {isSubmitting ? t.confirming : t.confirmBtn}
           </button>
         </div>
       </div>
