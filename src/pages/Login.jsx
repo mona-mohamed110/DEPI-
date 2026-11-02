@@ -7,7 +7,35 @@ import "../components/Style/Login.css";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-export default function Login({ onSuccess }) {
+const roles = {
+  lab: {
+    id: "lab",
+    title: "مختبر",
+    path: "/lab",
+  },
+  patient: {
+    id: "patient",
+    title: "مريض",
+    path: "/patient",
+  },
+  doctor: {
+    id: "doctor",
+    title: "طبيب",
+    path: "/doctor",
+  },
+  admin: {
+    id: "admin",
+    title: "مدير",
+    path: "/admin",
+  },
+  receptionist: {
+    id: "receptionist",
+    title: "موظف استقبال",
+    path: "/receptionist",
+  },
+};
+
+export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const justRegistered = location.state?.registered;
@@ -32,8 +60,16 @@ export default function Login({ onSuccess }) {
     setError("");
     try {
       await login({ email: form.email.trim(), password: form.password });
+
+      let userData = {
+        name: "John Doe",
+        email: form.email.trim(),
+        role: "lab", // This should be set based on the actual user role from the login response
+      };
+
+      localStorage.setItem("userData", JSON.stringify(userData));
       // غيّر المسار حسب صفحتك الرئيسية، أو مرّر onSuccess
-      onSuccess ? onSuccess() : navigate("/");
+      navigate(`${roles[userData.role].path}`);
     } catch (err) {
       setError(err.message || "حدث خطأ، حاول مرة أخرى.");
     } finally {
@@ -70,7 +106,11 @@ export default function Login({ onSuccess }) {
           value={form.email}
           onChange={handleChange}
           onBlur={() => setEmailTouched(true)}
-          error={emailTouched && form.email && !emailValid ? "بريد إلكتروني غير صحيح" : ""}
+          error={
+            emailTouched && form.email && !emailValid
+              ? "بريد إلكتروني غير صحيح"
+              : ""
+          }
         />
 
         <Field
@@ -93,7 +133,11 @@ export default function Login({ onSuccess }) {
           className={`auth-btn${loading ? " auth-btn--loading" : ""}`}
           disabled={!canSubmit}
         >
-          {loading ? <span className="auth-spinner" aria-label="جارٍ الدخول" /> : "دخول"}
+          {loading ? (
+            <span className="auth-spinner" aria-label="جارٍ الدخول" />
+          ) : (
+            "دخول"
+          )}
         </button>
 
         <p className="auth-switch">

@@ -53,6 +53,7 @@ import ReceptionDashboard from "./pages/reception/ReceptionDashboard";
 import AppointmentsManager from "./pages/reception/AppointmentsManager";
 import PatientsDataPage from "./pages/reception/PatientsDataPage";
 import ReceptionProfile from "./pages/reception/ReceptionProfile";
+import RoleProvider from "./context/RoleProvider";
 
 const labRoutes = {
   path: "/lab",
@@ -89,7 +90,11 @@ export const router = createBrowserRouter([
 
   {
     path: "/patient",
-    element: <PatientLayout />,
+    element: (
+      <RoleProvider role="patient">
+        <PatientLayout />
+      </RoleProvider>
+    ),
     children: [
       { index: true, element: <Dashboard /> },
       { path: "medical-file", element: <MedicalFile /> },
@@ -106,7 +111,11 @@ export const router = createBrowserRouter([
 
   {
     path: "/admin",
-    element: <AdminLayout />,
+    element: (
+      <RoleProvider role="admin">
+        <AdminLayout />
+      </RoleProvider>
+    ),
     children: [
       { index: true, element: <Monitoring /> },
       { path: "licenses", element: <Licenses /> },
@@ -117,7 +126,11 @@ export const router = createBrowserRouter([
 
   {
     path: "/doctor",
-    element: <DoctorLayout />,
+    element: (
+      <RoleProvider role="doctor">
+        <DoctorLayout />
+      </RoleProvider>
+    ),
     children: [
       { index: true, element: <DoctorDashboard /> },
       { path: "patients", element: <Patients /> },
@@ -135,7 +148,11 @@ export const router = createBrowserRouter([
 
   {
     path: "/reception",
-    element: <ReceptionLayout />,
+    element: (
+      <RoleProvider role="reception">
+        <ReceptionLayout />
+      </RoleProvider>
+    ),
     children: [
       { index: true, element: <ReceptionDashboard /> },
       { path: "appointments", element: <AppointmentsManager /> },
