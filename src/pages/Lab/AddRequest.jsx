@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useLab } from "../../context/LabContext";
-import { TEST_CATALOG } from "../../data/labData";
+import { useLab } from "./LabContext.jsx";
+import { TEST_CATALOG } from "../../config/catalog.js";
+import ConfirmForm from "../../components/ui/ConfirmForm.jsx";
 
 const norm = (s) => s.replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
 
@@ -11,6 +12,7 @@ export default function AddRequest() {
   const [f, setF] = useState({ name: "", sex: "male", age: "", phone: "", test: "" });
   const [err, setErr] = useState({});
   const [busy, setBusy] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const set = (k, v) => setF((p) => ({ ...p, [k]: v }));
 
   const validate = () => {
@@ -23,36 +25,40 @@ export default function AddRequest() {
     return e;
   };
 
-  const submit = async (ev) => {
+  // الخطوة الأولى: فحص البيانات وإظهار رسالة التأكيد. الخطوة الثانية: الإرسال الفعلي
+  const submit = (ev) => {
     ev.preventDefault();
     const e = validate();
     setErr(e);
     if (Object.keys(e).length) return;
+    setConfirming(true);
+  };
+  const send = async () => {
     setBusy(true);
     const kind = TEST_CATALOG.find((x) => x.ar === f.test)?.kind || "lab";
     const r = await addRequest({ name: f.name.trim(), sex: f.sex, age: Number(norm(f.age)), phone: norm(f.phone.trim()), test: f.test, kind });
-    setBusy(false);
+    setBusy(false); setConfirming(false);
     if (r) nav("/lab");
   };
 
   const label = (x) => (lang === "ar" ? x.ar : x.en);
-  const Err = ({ k }) => (err[k] ? <div className="lb-err">{t(err[k])}</div> : null);
+  const Err = ({ k }) => (err[k] ? <div className="err">{t(err[k])}</div> : null);
 
   return (
     <section>
       <h1>{t("addTitle")}</h1>
-      <p className="lb-sub">{t("addSub")}</p>
-      <form className="lb-card lb-form" onSubmit={submit} noValidate>
-        <div className="lb-full">
+      <p className="sub">{t("addSub")}</p>
+      <form className="card form" onSubmit={submit} noValidate>
+        <div className="full">
           <label>{t("fName")}</label>
           <input value={f.name} onChange={(e) => set("name", e.target.value)} placeholder={t("namePh")} />
           <Err k="name" />
         </div>
         <div>
           <label>{t("fSex")}</label>
-          <div className="lb-chips">
+          <div className="chips">
             {["male", "female"].map((s) => (
-              <button type="button" key={s} className={`lb-chip ${f.sex === s ? "on" : ""}`} onClick={() => set("sex", s)}>{t(s)}</button>
+              <button type="button" key={s} className={`chip ${f.sex === s ? "on" : ""}`} onClick={() => set("sex", s)}>{t(s)}</button>
             ))}
           </div>
         </div>
@@ -79,8 +85,9 @@ export default function AddRequest() {
           </select>
           <Err k="test" />
         </div>
-        <div className="lb-full" style={{ marginTop: 18 }}>
-          <button type="submit" className="lb-btn" disabled={busy}>{busy ? t("loading") : t("submitAdd")}</button>
+        <div className="full" style={{ marginTop: 18 }}>
+          <button type="submit" className="btn" disabled={busy || confirming}>{busy ? t("loading") : t("submitAdd")}</button>
+          {confirming && <ConfirmForm danger={false} message={t("confirm_msg")} confirmLabel={t("confirm_yes")} cancelLabel={t("confirm_review")} busy={busy} onConfirm={send} onCancel={() => setConfirming(false)} />}
         </div>
       </form>
     </section>

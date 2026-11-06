@@ -1,0 +1,266 @@
+/* ======================================================================
+   ملف الستايل الوحيد لقسم admin — كل الكلاسات محصورة داخل .admin-app
+   الألوان والوضع الداكن كلها من الملف المشترك: src/styles/theme.css
+   ====================================================================== */
+
+.app-root.admin-app{position:fixed;inset:0;display:flex;overflow:hidden;background:var(--bg);color:var(--tx);line-height:1.6}
+.app-root.admin-app[dir="rtl"]{direction:rtl;text-align:right}
+.app-root.admin-app[dir="ltr"]{direction:ltr;text-align:left}
+.app-root.admin-app *{box-sizing:border-box}
+.app-root.admin-app *:not([dir]){direction:inherit}
+.app-root.admin-app h1{font-size:26px;margin:0 0 4px}
+.app-root.admin-app h2{font-size:17px;margin:0 0 12px}
+.app-root.admin-app .ic{flex-shrink:0}
+.app-root.admin-app :focus-visible{outline:2px solid var(--pr);outline-offset:2px}
+.app-root.admin-app .side{width:260px;flex-shrink:0;background:var(--side);border-inline-end:1px solid var(--bd);padding:0 12px 16px;
+  height:100%;display:flex;flex-direction:column}
+.app-root.admin-app .logo{padding:18px 8px 14px;border-bottom:1px solid var(--bd);margin-bottom:16px;text-align:center}
+.app-root.admin-app .logo img{max-width:100%;height:60px;object-fit:contain;padding:4px;}
+.app-root.admin-app .user{margin-top:10px;padding:0 6px;font-size:14px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app-root.admin-app .nav{display:flex;flex-direction:column;gap:4px;overflow-y:auto}
+.app-root.admin-app .nav a{display:flex;align-items:center;gap:12px;height:46px;padding:0 14px;border-radius:12px;color:var(--tx);text-decoration:none;font-size:15px;transition:background .15s}
+.app-root.admin-app .nav a:hover{background:var(--pr2)}
+.app-root.admin-app .nav a.on{background:var(--pr2);color:var(--pr);font-weight:700}
+.app-root.admin-app .tag{margin-inline-start:auto;background:var(--pr);color:var(--pr-ink);font-size:11px;border-radius:20px;padding:0 8px;min-width:22px;text-align:center}
+.app-root.admin-app .side-foot{margin-top:auto;border-top:1px solid var(--bd);padding-top:14px}
+.app-root.admin-app .set{position:relative}
+.app-root.admin-app .set-btn{width:100%;display:flex;align-items:center;gap:12px;height:50px;padding:0 14px;border-radius:12px;border:1px solid var(--bd);
+  background:var(--pr2);color:var(--pr);font:inherit;font-size:14px;cursor:pointer}
+.app-root.admin-app .set-btn .chev{margin-inline-start:auto;display:flex}
+.app-root.admin-app .menu{position:absolute;bottom:calc(100% + 8px);inset-inline:0;background:var(--card);border:1px solid var(--bd);border-radius:14px;
+  padding:6px;box-shadow:0 12px 32px rgba(15,27,45,.18);z-index:30}
+.app-root.admin-app .menu-h{font-size:12px;color:var(--mu);padding:8px 12px 6px}
+.app-root.admin-app .mi{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border-radius:10px;color:var(--tx);text-decoration:none;
+  background:none;border:0;font:inherit;font-size:14px;cursor:pointer;text-align:start}
+.app-root.admin-app .mi:hover{background:var(--pr2)}
+.app-root.admin-app .mi em{font-style:normal;color:var(--mu);font-size:12px;margin-inline-start:auto}
+.app-root.admin-app .mi em + .ic{color:var(--mu)}
+.app-root.admin-app .mi .sw{margin-inline-start:auto}
+.app-root.admin-app .mi.danger{color:var(--dg)}
+.app-root.admin-app .hr{border:0;border-top:1px solid var(--bd);margin:6px 0}
+.app-root.admin-app .mi.active{background:var(--pr2)}
+.app-root.admin-app .lchev{display:flex;color:var(--mu);transition:transform .2s}
+.app-root.admin-app .lchev.open{transform:rotate(-90deg)}
+.app-root.admin-app[dir="ltr"] .lchev.open{transform:rotate(90deg)}
+.app-root.admin-app .langs{padding:4px 0}
+.app-root.admin-app .lang{display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 14px 10px 44px;border:0;background:none;
+  color:var(--tx);font:inherit;font-size:14px;cursor:pointer;border-radius:10px;text-align:start}
+.app-root.admin-app[dir="rtl"] .lang{padding:10px 44px 10px 14px}
+.app-root.admin-app .lang:hover{background:var(--pr2)}
+.app-root.admin-app .lang.on{color:var(--pr);font-weight:700}
+.app-root.admin-app .dp{position:relative}
+.app-root.admin-app .dp-btn{display:flex;align-items:center;gap:10px;min-width:210px;height:100%;padding:10px 14px;border:1px solid var(--bd);border-radius:10px;
+  background:var(--input);color:var(--tx);font:inherit;cursor:pointer}
+.app-root.admin-app .dp-btn .x{margin-inline-start:auto;color:var(--mu);display:flex;padding:0 2px}
+.app-root.admin-app .cal{position:absolute;top:calc(100% + 8px);inset-inline-end:0;width:330px;max-width:92vw;background:var(--card);border:1px solid var(--bd);
+  border-radius:16px;box-shadow:0 16px 40px rgba(15,27,45,.22);z-index:40;overflow:hidden}
+.app-root.admin-app .cal-top{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--bd);font-weight:500}
+.app-root.admin-app .cal-top button{font:inherit;font-size:13px;border:0;background:none;color:var(--pr);cursor:pointer}
+.app-root.admin-app .cal-nav{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 6px}
+.app-root.admin-app .cal-nav b{font-size:16px}
+.app-root.admin-app .cal-nav div{display:flex;gap:6px}
+.app-root.admin-app .cal-nav button{width:32px;height:32px;border:0;border-radius:8px;background:none;color:var(--mu);cursor:pointer;display:grid;place-items:center}
+.app-root.admin-app .cal-nav button:hover{background:var(--pr2);color:var(--pr)}
+.app-root.admin-app .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:6px 14px 16px;text-align:center}
+.app-root.admin-app .cal-wd{font-size:13px;color:var(--mu);padding:8px 0}
+.app-root.admin-app .cal-d{height:38px;border:0;border-radius:50%;background:none;color:var(--tx);font:inherit;font-size:14px;cursor:pointer;position:relative;aspect-ratio:1;width:100%;max-width:38px;margin:auto}
+.app-root.admin-app .cal-d:disabled{color:var(--mu);opacity:.35;cursor:default}
+.app-root.admin-app .cal-d.out:not(:disabled){opacity:.7}
+.app-root.admin-app .cal-d.has::after{content:"";position:absolute;bottom:4px;inset-inline:0;margin:auto;width:4px;height:4px;border-radius:50%;background:var(--pr)}
+.app-root.admin-app .cal-d:not(:disabled):hover{background:var(--pr2)}
+.app-root.admin-app .cal-d.sel{background:var(--pr);color:var(--pr-ink);font-weight:700}
+.app-root.admin-app .cal-d.sel::after{background:#fff}
+.app-root.admin-app .cal-d.sel:hover{background:var(--pr)}
+.app-root.admin-app .main{flex:1;min-width:0;height:100%;overflow-y:auto;overflow-x:hidden;padding:36px 44px;scrollbar-gutter:stable}
+.app-root.admin-app .main > *{max-width:1160px}
+.app-root.admin-app[dir="rtl"] .main{direction:ltr}
+.app-root.admin-app[dir="rtl"] .main > *{direction:rtl;margin-left:auto;margin-right:0}
+.app-root.admin-app[dir="ltr"] .main{direction:rtl}
+.app-root.admin-app[dir="ltr"] .main > *{direction:ltr;margin-left:0;margin-right:auto}
+.app-root.admin-app .sub{color:var(--mu);margin:0 0 22px}
+.app-root.admin-app .grid{display:grid;gap:16px}
+.app-root.admin-app .g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.app-root.admin-app .g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.app-root.admin-app .narrow{max-width:90%}
+.app-root.admin-app .card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:22px;box-shadow:var(--shadow)}
+.app-root.admin-app .stat{display:flex;flex-direction:column;gap:4px}
+.app-root.admin-app .stat span{color:var(--mu);font-size:13px}
+.app-root.admin-app .stat b{font-size:26px;line-height:1.2}
+.app-root.admin-app .tile{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;margin-bottom:10px;background:var(--pr2);color:var(--pr)}
+.app-root.admin-app .tile.wn{background:var(--wn2);color:var(--wn)}
+.app-root.admin-app .tile.ok{background:var(--ok2);color:var(--ok)}
+.app-root.admin-app .tile.mu{background:var(--bg);color:var(--mu)}
+.app-root.admin-app .row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--bd);flex-wrap:wrap}
+.app-root.admin-app .row:last-child{border-bottom:0}
+.app-root.admin-app .m{flex:1;min-width:140px}
+.app-root.admin-app .m b{display:block}
+.app-root.admin-app .row small{color:var(--mu);display:block}
+.app-root.admin-app .ty{color:var(--pr);width:44px;height:44px;border-radius:12px;background:var(--pr2);display:grid;place-items:center;font-size:20px;flex-shrink:0}
+.app-root.admin-app .badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:2px 12px;border-radius:20px;background:var(--pr2);color:var(--pr);white-space:nowrap}
+.app-root.admin-app .badge.ok{background:var(--ok2);color:var(--ok)}
+.app-root.admin-app .badge.wn{background:var(--wn2);color:var(--wn)}
+.app-root.admin-app .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:inherit;border:0;border-radius:10px;padding:10px 20px;background:var(--pr);color:var(--pr-ink);cursor:pointer;font-weight:500;transition:filter .15s}
+.app-root.admin-app .btn:hover{filter:brightness(.93)}
+.app-root.admin-app .btn:disabled{opacity:.6;cursor:not-allowed}
+.app-root.admin-app .btn.o{background:transparent;border:1px solid var(--bd);color:var(--tx)}
+.app-root.admin-app .btn.s{padding:6px 14px;font-size:13px}
+.app-root.admin-app .tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.app-root.admin-app .tabs button,
+.app-root.admin-app .chip{font:inherit;border:1px solid var(--bd);background:var(--card);color:var(--tx);cursor:pointer}
+.app-root.admin-app .tabs button{padding:6px 16px;border-radius:20px}
+.app-root.admin-app .chip{padding:7px 16px;border-radius:10px}
+.app-root.admin-app .tabs button.on,
+.app-root.admin-app .chip.on{background:var(--pr);color:var(--pr-ink);border-color:var(--pr)}
+.app-root.admin-app .chips{display:flex;flex-wrap:wrap;gap:8px}
+.app-root.admin-app label{display:block;font-size:13px;color:var(--mu);margin:14px 0 5px}
+.app-root.admin-app label.first{margin-top:0}
+.app-root.admin-app input:not([type=file]),
+.app-root.admin-app select,
+.app-root.admin-app textarea{font:inherit;width:100%;border:1px solid var(--bd);background:var(--input);color:var(--tx);border-radius:10px;padding:10px 12px}
+.app-root.admin-app input:focus,
+.app-root.admin-app select:focus,
+.app-root.admin-app textarea:focus{outline:2px solid var(--pr2);border-color:var(--pr)}
+.app-root.admin-app input:disabled{opacity:.5}
+.app-root.admin-app .form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px;width:90%}
+.app-root.admin-app .form label{margin-top:12px}
+.app-root.admin-app .full{grid-column:1/-1}
+.app-root.admin-app .err{color:var(--dg);font-size:12px;margin-top:4px}
+.app-root.admin-app .note{display:flex;align-items:flex-start;gap:10px;background:var(--pr2);color:var(--pr);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:14px}
+.app-root.admin-app .drop{display:block;border:2px dashed var(--pr);border-radius:14px;background:var(--pr2);text-align:center;padding:28px 10px;cursor:pointer;color:var(--pr);margin:0!important}
+.app-root.admin-app .drop input{display:none}
+.app-root.admin-app .drop b{display:block;font-size:16px}
+.app-root.admin-app .drop small{color:var(--mu)}
+.app-root.admin-app .sw{position:relative;display:inline-block;width:40px;height:22px;border-radius:20px;background:var(--bd);flex-shrink:0;border:0;padding:0;cursor:pointer;transition:background .2s}
+.app-root.admin-app .sw::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:inset-inline-start .2s;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.app-root.admin-app .sw.on{background:var(--pr)}
+.app-root.admin-app .sw.on::after{inset-inline-start:21px}
+.app-root.admin-app .filters{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.app-root.admin-app .filters select{width:auto;min-width:200px}
+.app-root.admin-app .search{flex:1;min-width:220px;display:flex;align-items:center;gap:8px;border:1px solid var(--bd);background:var(--input);border-radius:10px;padding:0 12px;color:var(--mu)}
+.app-root.admin-app .search input{border:0!important;outline:0!important;padding:10px 0!important;background:transparent!important}
+.app-root.admin-app .scroll{overflow-x:auto}
+.app-root.admin-app table{width:100%;border-collapse:collapse;min-width:620px}
+.app-root.admin-app th,
+.app-root.admin-app td{text-align:start;padding:12px 10px;border-bottom:1px solid var(--bd);font-size:14px}
+.app-root.admin-app th{color:var(--mu);font-weight:500}
+.app-root.admin-app .map{height:170px;border-radius:14px;background:var(--map-bg);overflow:hidden;border:1px solid var(--bd);margin-top:14px}
+.app-root.admin-app .day-name{width:76px}
+.app-root.admin-app input.time{width:auto}
+.app-root.admin-app .opt{display:flex;align-items:center;gap:14px;padding:18px;border-radius:16px;border:2px solid var(--bd);background:var(--card);color:var(--tx);font:inherit;font-size:16px;cursor:pointer;text-align:start}
+.app-root.admin-app .opt.on{border-color:var(--pr);background:var(--pr2)}
+.app-root.admin-app .opt-ic{width:46px;height:46px;border-radius:12px;background:var(--pr2);color:var(--pr);display:grid;place-items:center;font-weight:700}
+.app-root.admin-app .opt.on .opt-ic{background:var(--pr);color:var(--pr-ink)}
+.app-root.admin-app .avatar{width:64px;height:64px;border-radius:50%;background:var(--pr2);color:var(--pr);display:grid;place-items:center;font-size:26px;font-weight:700;margin-bottom:4px}
+.app-root.admin-app .toast{position:fixed;bottom:24px;inset-inline:0;margin:auto;width:max-content;max-width:90%;background:var(--tx);color:var(--bg);padding:10px 20px;border-radius:12px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:50}
+.app-root.admin-app .toast.show{opacity:1}
+@media (max-width:860px){.app-root.admin-app{flex-direction:column}
+.app-root.admin-app .side{width:100%;height:auto;flex-direction:row;align-items:center;gap:8px;padding:8px 12px;z-index:20;border-inline-end:0;border-bottom:1px solid var(--bd)}
+.app-root.admin-app .logo{padding:0;border:0;margin:0}
+.app-root.admin-app .logo img{height:38px}
+.app-root.admin-app .user{display:none}
+.app-root.admin-app .nav{flex-direction:row;flex:1;overflow-x:auto}
+.app-root.admin-app .nav a{white-space:nowrap;height:40px;padding:0 12px}
+.app-root.admin-app .tag{display:none}
+.app-root.admin-app .side-foot{margin:0;border:0;padding:0}
+.app-root.admin-app .set-btn{width:44px;padding:0;justify-content:center}
+.app-root.admin-app .set-btn span{display:none}
+.app-root.admin-app .menu{position:fixed;top:62px;bottom:auto;inset-inline:auto 12px;width:min(300px,92vw)}
+.app-root.admin-app .main{padding:20px 16px;height:auto;min-height:0}
+.app-root.admin-app .form{grid-template-columns:1fr;width: 100%;}
+.app-root.admin-app .narrow{max-width:100%}
+
+}
+@media (prefers-reduced-motion:reduce){.app-root.admin-app *{transition:none!important}}
+.app-root.admin-app .sub{color:var(--mu);margin:0 0 22px}
+.app-root.admin-app .btn.dg{background:var(--dg);color:#fff}
+.app-root.admin-app .btn.o.dg{background:transparent;color:var(--dg);border:1px solid var(--bd)}
+.app-root.admin-app .btn.o.dg:hover{background:var(--dg2)}
+.app-root.admin-app .btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.app-root.admin-app .badge.dg{background:var(--dg2);color:var(--dg)}
+.app-root.admin-app .badge.mu{background:var(--bg);color:var(--mu);border:1px solid var(--bd)}
+.app-root.admin-app .stat-link{cursor:pointer}
+.app-root.admin-app .ic{vertical-align:middle}
+.app-root.admin-app .first{margin-top:0}
+.app-root.admin-app .narrow{max-width:620px}
+.app-root.admin-app .inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.app-root.admin-app .inline > input,
+.app-root.admin-app .inline > select{flex:1;min-width:140px;width:auto}
+.app-root.admin-app .confirm-form{display:flex;align-items:center;gap:12px;flex-wrap:wrap;width:100%;margin-top:8px;padding:12px 14px;border-radius:12px;background:var(--dg2);border:1px solid var(--dg);color:var(--tx)}
+.app-root.admin-app .confirm-msg{flex:1;min-width:180px;font-size:14px;font-weight:500}
+.app-root.admin-app .confirm-actions{display:flex;gap:8px}
+.app-root.admin-app .confirm-form textarea,
+.app-root.admin-app .confirm-form input{flex-basis:100%}
+.app-root.admin-app .state{padding:28px 10px;text-align:center;color:var(--mu)}
+.app-root.admin-app .state.err{color:var(--dg)}
+.app-root.admin-app .av{width:42px;height:42px;border-radius:50%;background:var(--pr2);color:var(--pr);display:grid;place-items:center;font-weight:700;flex-shrink:0}
+.app-root.admin-app .profile-head{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.app-root.admin-app .profile-head b{display:block;font-size:18px}
+.app-root.admin-app .avatar{margin-bottom:0}
+.app-root.admin-app .map{border-radius:14px;background:var(--map-bg);overflow:hidden;border:1px solid var(--bd);margin-top:14px}
+.app-root.admin-app .map-road{stroke:var(--map-road);fill:none}
+.app-root.admin-app .map-block{fill:var(--map-block)}
+.app-root.admin-app .map-pin{fill:var(--pr)}
+.app-root.admin-app .map-dot{fill:var(--pr-ink)}
+.app-root.admin-app .days{display:flex;gap:10px;flex-wrap:wrap}
+.app-root.admin-app .day{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:74px;padding:10px 12px;border-radius:14px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font:inherit;cursor:pointer}
+.app-root.admin-app .day small{color:var(--mu)}
+.app-root.admin-app .day b{font-size:20px}
+.app-root.admin-app .day:hover{border-color:var(--pr)}
+.app-root.admin-app .day.on{background:var(--pr);border-color:var(--pr);color:var(--pr-ink)}
+.app-root.admin-app .day.on small{color:inherit;opacity:.85}
+.app-root.admin-app .slots{display:flex;gap:8px;flex-wrap:wrap}
+.app-root.admin-app .slot{padding:8px 16px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font:inherit;cursor:pointer}
+.app-root.admin-app .slot:hover{border-color:var(--pr)}
+.app-root.admin-app .slot.on{background:var(--pr);border-color:var(--pr);color:var(--pr-ink)}
+.app-root.admin-app .viewer{margin-top:14px;border:1px solid var(--bd);border-radius:14px;overflow:hidden;background:var(--bg)}
+.app-root.admin-app .viewer-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-bottom:1px solid var(--bd);background:var(--card)}
+.app-root.admin-app .viewer iframe{width:100%;height:480px;border:0;background:#fff;display:block}
+.app-root.admin-app .viewer img{max-width:100%;max-height:480px;display:block;margin:auto}
+.app-root.admin-app .icon-btn{border:0;background:none;color:var(--mu);cursor:pointer;display:grid;place-items:center;padding:4px;border-radius:8px}
+.app-root.admin-app .icon-btn:hover{background:var(--pr2);color:var(--pr)}
+.app-root.admin-app .chip.sm,
+.app-root.admin-app .chips.sm .chip{padding:4px 12px;font-size:13px}
+.app-root.admin-app .link-btn{background:none;border:0;color:var(--pr);cursor:pointer;font:inherit;padding:0}
+.app-root.admin-app .wide{width:100%}
+.app-root.admin-app .hide{display:none}
+.app-root.admin-app .g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.app-root.admin-app .act-group{display:flex;gap:6px;flex-wrap:wrap}
+.app-root.admin-app .file-chip{display:inline-flex;align-items:center;gap:8px}
+.app-root.admin-app a.card{color:inherit;text-decoration:none}
+.app-root.admin-app a.card:hover{border-color:var(--pr)}
+.app-root.admin-app a.btn{text-decoration:none}
+.app-root.admin-app .rx-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px}
+.app-root.admin-app .rx-card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.app-root.admin-app .rx-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.app-root.admin-app .rx-head .m{flex:1;min-width:160px}
+.app-root.admin-app .rx-dx{margin:0;color:var(--mu);font-size:14px}
+.app-root.admin-app .rx-dx span{color:var(--tx);font-weight:600}
+.app-root.admin-app .rx-items{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.app-root.admin-app .rx-item{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:6px 12px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--bg);border:1px solid var(--bd);font-size:14px}
+.app-root.admin-app .rx-item em{font-style:normal;color:var(--mu)}
+@media (max-width:560px){.app-root.admin-app .rx-item{grid-template-columns:1fr}}
+.app-root.admin-app .card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.app-root.admin-app .card-head h2{margin:0}
+.app-root.admin-app .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:4px 24px}
+.app-root.admin-app .info-grid .row{border:0;padding:8px 0}
+.app-root.admin-app .err-text{color:var(--dg);font-size:13px}
+.app-root.admin-app .pw{position:relative}
+.app-root.admin-app .pw input{padding-inline-end:44px}
+.app-root.admin-app .pw-eye{position:absolute;top:50%;inset-inline-end:8px;transform:translateY(-50%);border:0;background:none;color:var(--mu);cursor:pointer;padding:6px;border-radius:8px;display:grid;place-items:center}
+.app-root.admin-app .pw-eye:hover{color:var(--pr);background:var(--pr2)}
+.app-root.admin-app .res-icon{width:46px;height:46px;border-radius:12px;background:var(--pr2);color:var(--pr);display:grid;place-items:center;flex-shrink:0}
+.app-root.admin-app .svc{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bd)}
+.app-root.admin-app .svc:last-child{border-bottom:0}
+.app-root.admin-app .dot{width:10px;height:10px;border-radius:50%;background:var(--ok);flex-shrink:0}
+.app-root.admin-app .dot.bad{background:var(--wn)}
+.app-root.admin-app .chart-box{height:260px;direction:ltr}
+.app-root.admin-app .donut-wrap{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.app-root.admin-app .legend{display:grid;gap:8px;min-width:150px}
+.app-root.admin-app .legend span{display:flex;align-items:center;gap:8px;font-size:14px}
+.app-root.admin-app .legend i{width:12px;height:12px;border-radius:4px;display:inline-block}
+.app-root.admin-app .reject-form{display:grid;gap:8px;width:100%}
+.app-root.admin-app .preview{margin-top:10px;border:1px dashed var(--bd);border-radius:12px;padding:16px;text-align:center;color:var(--mu);background:var(--bg)}
+.app-root.admin-app .bar-row{display:flex;align-items:center;gap:10px;margin:8px 0}
+.app-root.admin-app .bar-row .bar{flex:1;height:10px;border-radius:10px;background:var(--bd);overflow:hidden}
+.app-root.admin-app .bar-row .bar i{display:block;height:100%;background:var(--pr);border-radius:10px}
+

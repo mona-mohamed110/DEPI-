@@ -1,0 +1,40 @@
+/* ======================================================================
+   ملف الستايل الوحيد لصفحات الدخول والتسجيل ونسيت كلمة المرور
+   (النافبار والأزرار والحقول من home.css، والألوان من theme.css)
+   ====================================================================== */
+.home-app.auth-app .auth-main { display: grid; place-items: center; padding: 40px 16px 60px; background: var(--hero); }
+.home-app .auth-card { width: min(720px, 100%); background: var(--card); border: 1px solid var(--bd); border-radius: 22px; padding: 34px 30px; box-shadow: var(--shadow-lg); }
+.home-app .auth-card h1 { font-size: 26px; margin-bottom: 6px; }
+.home-app .auth-sub { color: var(--mu); margin: 0 0 18px; font-size: 15px; }
+.home-app .auth-row { display: flex; justify-content: flex-end; margin: 8px 0 14px; font-size: 14px; }
+.home-app .auth-foot { text-align: center; color: var(--mu); margin: 20px 0 0; font-size: 14px; }
+.home-app .auth-card .btn.wide { margin-top: 18px; }
+.home-app .auth-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+.home-app .auth-grid .full { grid-column: 1 / -1; }
+.home-app .pw { position: relative; }
+.home-app .pw input { padding-inline-end: 44px; }
+.home-app .pw-eye { position: absolute; top: 50%; inset-inline-end: 8px; transform: translateY(-50%); border: 0; background: none; color: var(--mu); cursor: pointer; padding: 6px; border-radius: 8px; display: grid; place-items: center; }
+.home-app .pw-eye:hover { color: var(--pr); background: var(--pr2); }
+.home-app .role-pick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 4px; }
+.home-app .role-card { display: grid; justify-items: center; gap: 6px; padding: 14px 8px; border: 1px solid var(--bd); background: var(--card); color: var(--tx); border-radius: 14px; cursor: pointer; font: inherit; font-size: 14px; }
+.home-app .role-card:hover { border-color: var(--pr); }
+.home-app .role-card.on { background: var(--pr2); border-color: var(--pr); color: var(--pr); font-weight: 700; }
+.home-app .check { display: flex; align-items: center; gap: 10px; margin: 16px 0 0; color: var(--tx); cursor: pointer; }
+.home-app .check input { width: 18px; height: 18px; accent-color: var(--pr); }
+.home-app .note-line { display: flex; align-items: center; gap: 8px; margin-top: 14px; padding: 10px 12px; border-radius: 12px; background: var(--pr2); color: var(--pr); font-size: 13px; }
+.home-app .demo { margin-top: 22px; padding: 14px; border: 1px dashed var(--bd); border-radius: 14px; background: var(--bg); display: grid; gap: 4px; }
+.home-app .demo small { color: var(--mu); }
+.home-app .demo-list { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.home-app .code-input { text-align: center; letter-spacing: 12px; font-size: 24px; font-weight: 700; }
+.home-app .center-link { display: block; margin: 14px auto 0; }
+.home-app .center-col { display: grid; justify-items: center; text-align: center; gap: 6px; }
+.home-app .big-ic { width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center; margin-bottom: 8px; }
+.home-app .big-ic.ok { background: var(--ok2); color: var(--ok); }
+@media (max-width: 560px) { .home-app .auth-grid { grid-template-columns: 1fr; } .home-app .auth-card { padding: 26px 18px; } }
+.home-app .health-box { margin: 16px 0 0; padding: 4px 14px 16px; border: 1px solid var(--bd); border-radius: 14px; background: var(--bg); }
+.home-app .health-box legend { padding: 0 8px; color: var(--pr); font-weight: 700; font-size: 14px; }
+.home-app .cert-box { margin-top: 6px; display: grid; gap: 6px; }
+.home-app .cert-box small { color: var(--mu); }
+.home-app .cert-pick { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 14px; border: 1.5px dashed var(--bd); border-radius: 12px; background: var(--input); color: var(--tx); font: inherit; cursor: pointer; text-align: start; }
+.home-app .cert-pick:hover { border-color: var(--pr); color: var(--pr); }
+.home-app .auth-card { width: min(720px, 100%); }
