@@ -30,7 +30,7 @@ export default function Patients() {
             <tbody>{list.map((p) => (
               <Fragment key={p.id}>
                 <tr>
-                  <td><b>{L(p.name)}</b></td><td dir="ltr">{p.phone || '—'}</td><td>{L(p.doctor)}</td><td>{fmtTime(p.time)}</td>
+                  <td><b>{L(p.name)}</b></td><td>{p.phone || '—'}</td><td>{L(p.doctor)}</td><td>{fmtTime(p.time)}</td>
                   <td><button type="button" className="btn s o dg" onClick={() => setConfirm(p.id)}><Icon name="trash" size={15} />{t('delete')}</button></td>
                 </tr>
                 {confirm === p.id && <tr><td colSpan={5}><ConfirmForm message={t('rec_del_q', { name: L(p.name) })} busy={busy} onConfirm={() => remove(p.id)} onCancel={() => setConfirm(null)} /></td></tr>}
