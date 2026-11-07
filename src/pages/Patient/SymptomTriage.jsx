@@ -1,118 +1,56 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { useApp } from "../../context/AppContext.jsx";
-import "../../components/Style/Patient/SymptomTriage.css";
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import Icon from '../../components/Icon.jsx';
+import { useToast } from '../../components/ui/Toast.jsx';
+import { useI18n } from '../../context/I18nContext.jsx';
+import * as api from '../../api/patient.js';
 
-const CHIPS = [
-  "sym_chip_headache",
-  "sym_chip_fever",
-  "sym_chip_chest",
-  "sym_chip_cough",
-];
-
-const DOCTORS = [
-  { id: 1, nameKey: "sym_doc_1_name", initKey: "sym_doc_1_init", metaKey: "sym_doc_1_meta" },
-  { id: 2, nameKey: "sym_doc_2_name", initKey: "sym_doc_2_init", metaKey: "sym_doc_2_meta" },
-];
+const CHIPS = ['sym_chip_headache', 'sym_chip_fever', 'sym_chip_chest', 'sym_chip_cough'];
 
 export default function SymptomTriage() {
-  const { t, theme, lang, toast } = useApp();
-  const [text, setText] = useState("");
-  const [analyzed, setAnalyzed] = useState(false);
+  const { t, L, lang, num } = useI18n();
+  const { act, toast } = useToast();
+  const [text, setText] = useState('');
+  const [res, setRes] = useState(null);
+  const [busy, setBusy] = useState(false);
 
-  const handleChange = (event) => {
-    setText(event.target.value);
-  };
-
-  const handleChipClick = (event) => {
-    const symptom = event.currentTarget.dataset.symptom;
-    const separator = lang === "ar" ? "، " : ", ";
-    setText((prev) => (prev.trim() ? `${prev.trim()}${separator}${symptom}` : symptom));
-  };
-
-  const handleAnalyze = () => {
-    if (!text.trim()) {
-      toast(t("sym_empty"));
-      return;
-    }
-    setAnalyzed(true);
+  const addChip = (k) => { const sep = lang === 'ar' ? '، ' : ', '; setText((p) => (p.trim() ? `${p.trim()}${sep}${t(k)}` : t(k))); };
+  const analyze = async () => {
+    if (!text.trim()) return toast(t('sym_empty'));
+    setBusy(true);
+    const r = await act(() => api.triage(text));
+    setBusy(false);
+    if (r) setRes(r);
   };
 
   return (
-    <section className={`triage triage--${theme}`}>
-      <header className="triage__header">
-        <h1 className="triage__title">{t("sym_title")}</h1>
-        <p className="triage__subtitle">{t("sym_sub")}</p>
-      </header>
-
-      <div className="triage__warning" role="note">
-        <span aria-hidden="true">⚠️</span>
-        <span>{t("sym_warning")}</span>
-      </div>
-
-      <div className="triage__card">
-        <textarea
-          className="triage__textarea"
-          value={text}
-          onChange={handleChange}
-          placeholder={t("sym_placeholder")}
-        />
-
-        <div className="triage__chips">
-          {CHIPS.map((key) => (
-            <button
-              type="button"
-              className="triage__chip"
-              key={key}
-              data-symptom={t(key)}
-              onClick={handleChipClick}
-            >
-              {t(key)}
-            </button>
-          ))}
+    <section>
+      <h1>{t('sym_title')}</h1>
+      <p className="sub">{t('sym_sub')}</p>
+      <div className="note"><Icon name="alert" size={18} /><span>{t('sym_warning')}</span></div>
+      <div className="card triage-box">
+        <textarea value={text} maxLength={1000} onChange={(e) => setText(e.target.value)} placeholder={t('sym_placeholder')} />
+        <div className="chips" style={{ margin: '12px 0' }}>
+          {CHIPS.map((k) => <button type="button" key={k} className="chip" onClick={() => addChip(k)}>{t(k)}</button>)}
         </div>
-
-        <button type="button" className="triage__primary" onClick={handleAnalyze}>
-          {t("sym_analyze")}
-        </button>
+        <button type="button" className="btn" onClick={analyze} disabled={busy}><Icon name="bot" size={18} />{busy ? t('loading') : t('sym_analyze')}</button>
       </div>
 
-      {analyzed && (
-        <div className="triage__card triage__card--result">
-          <h2 className="triage__heading">{t("sym_result_title")}</h2>
-
-          <div className="triage__result">
-            <span className="triage__result-icon" aria-hidden="true">
-              🧠
-            </span>
-            <div className="triage__result-text">
-              <p className="triage__result-title">{t("sym_likely")}</p>
-              <p className="triage__result-meta">{t("sym_severity")}</p>
-            </div>
-            <span className="triage__badge">{t("sym_medium")}</span>
+      {res && (
+        <div className="card" style={{ marginTop: 16 }}>
+          <h2>{t('sym_result_title')}</h2>
+          <div className="row">
+            <div className="res-icon"><Icon name="bot" size={22} /></div>
+            <div className="m"><b>{t(res.likely)}</b><small>{t('sym_severity')}: <span className={`sev ${res.severity}`}>{t(`sev_${res.severity}`)}</span></small></div>
           </div>
-
-          <h2 className="triage__heading triage__heading--doctors">
-            {t("sym_doctors_title")}
-          </h2>
-
-          <ul className="triage__doctors">
-            {DOCTORS.map((doc) => (
-              <li className="triage__doctor" key={doc.id}>
-                <span className="triage__avatar" aria-hidden="true">
-                  {t(doc.initKey)}
-                </span>
-                <div className="triage__doctor-text">
-                  <p className="triage__doctor-name">{t(doc.nameKey)}</p>
-                  <p className="triage__doctor-meta">{t(doc.metaKey)}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          <Link className="triage__primary triage__primary--link" to="/patient/booking">
-            {t("sym_book")}
-          </Link>
+          <h2 style={{ marginTop: 18 }}>{t('sym_doctors_title')}</h2>
+          {res.doctors.map((d) => (
+            <div className="row" key={d.id}>
+              <div className="av">{L(d.name).replace(/^(د\.|Dr\.)\s*/, '').charAt(0)}</div>
+              <div className="m"><b>{L(d.name)}</b><small>{L(d.specialty)} · <Icon name="star" size={13} /> {num(d.rating)}</small></div>
+              <Link className="btn s" to="/patient/booking" state={{ selectedDoctor: d }}>{t('sym_book_one')}</Link>
+            </div>
+          ))}
         </div>
       )}
     </section>

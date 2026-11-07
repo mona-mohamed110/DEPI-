@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useLab } from "../../context/LabContext";
-import Icon from "../../components/Lab/Icon";
+import { useLab } from "./LabContext.jsx";
+import Icon from "../../components/Icon.jsx";
 
 const STATUS = { new: { k: "stNew", c: "wn" }, progress: { k: "stProg", c: "" }, done: { k: "stDone", c: "ok" } };
 const FILTERS = [["all", "fAll"], ["new", "fNew"], ["progress", "fProg"], ["done", "fDone"]];
@@ -22,38 +22,38 @@ export default function LabDashboard() {
   return (
     <section>
       <h1>{t("incoming")}</h1>
-      <p className="lb-sub">{t("incomingSub")}</p>
+      <p className="sub">{t("incomingSub")}</p>
 
-      <div className="lb-grid lb-g4">
+      <div className="grid g4">
         {stats.map((s) => (
-          <div className="lb-card lb-stat" key={s.k}>
-            <div className={`lb-tile ${s.tone}`}><Icon name={s.icon} size={22} /></div>
+          <div className="card stat" key={s.k}>
+            <div className={`tile ${s.tone}`}><Icon name={s.icon} size={22} /></div>
             <span>{t(s.k)}</span>
             <b>{num(s.v)}</b>
           </div>
         ))}
       </div>
 
-      <div className="lb-card" style={{ marginTop: 16 }}>
-        <div className="lb-tabs">
+      <div className="card" style={{ marginTop: 16 }}>
+        <div className="tabs">
           {FILTERS.map(([v, k]) => (
             <button key={v} type="button" className={f === v ? "on" : ""} onClick={() => setF(v)}>{t(k)}</button>
           ))}
         </div>
 
-        {loading ? <p className="lb-sub">{t("loading")}</p> : list.length === 0 ? <p className="lb-sub">{t("noRequests")}</p> : list.map((r) => {
+        {loading ? <p className="sub">{t("loading")}</p> : list.length === 0 ? <p className="sub">{t("noRequests")}</p> : list.map((r) => {
           const st = STATUS[r.status];
           return (
-            <div className="lb-row" key={r.id}>
-              <div className="lb-ty"><Icon name={r.kind === "xray" ? "scan" : "tube"} size={22} /></div>
-              <div className="lb-m">
+            <div className="row" key={r.id}>
+              <div className="ty"><Icon name={r.kind === "xray" ? "scan" : "tube"} size={22} /></div>
+              <div className="m">
                 <b>{r.name}</b>
                 <small>{testName(r.test)} · {fmtDateTime(r.createdAt)}</small>
               </div>
-              <span className={`lb-badge ${st.c}`}>{t(st.k)}</span>
-              {r.status === "new" && <button type="button" className="lb-btn lb-s" onClick={() => startRequest(r.id)}>{t("start")}</button>}
-              {r.status === "progress" && <button type="button" className="lb-btn lb-s" onClick={() => nav(`/lab/upload/${r.id}`)}>{t("uploadBtn")}</button>}
-              <button type="button" className="lb-btn lb-o lb-s" onClick={() => nav(`/lab/details/${r.id}`)}>{t("details")}</button>
+              <span className={`badge ${st.c}`}>{t(st.k)}</span>
+              {r.status === "new" && <button type="button" className="btn s" onClick={() => startRequest(r.id)}>{t("start")}</button>}
+              {r.status === "progress" && <button type="button" className="btn s" onClick={() => nav(`/lab/upload/${r.id}`)}>{t("uploadBtn")}</button>}
+              <button type="button" className="btn o s" onClick={() => nav(`/lab/details/${r.id}`)}>{t("details")}</button>
             </div>
           );
         })}

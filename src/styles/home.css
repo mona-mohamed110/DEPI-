@@ -1,0 +1,193 @@
+/* ======================================================================
+   ملف الستايل الوحيد للصفحة الرئيسية (نافبار، هيرو، خدمات، ... ، فوتر، البحث، اعرف المزيد)
+   الألوان والوضع الداكن من src/styles/theme.css — والاتجاه (يمين/شمال) بالـ logical properties
+   ====================================================================== */
+.app-root.home-app { min-height: 100vh; background: var(--bg); color: var(--tx); line-height: 1.75; display: flex; flex-direction: column; }
+.home-app *, .home-app *::before, .home-app *::after { box-sizing: border-box; }
+.home-app main { flex: 1; }
+.home-app h1, .home-app h2, .home-app h3, .home-app h4 { margin: 0; line-height: 1.35; }
+.home-app a { color: inherit; text-decoration: none; }
+.home-app img { max-width: 100%; }
+.home-app .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+.home-app .center { text-align: center; }
+.home-app .hl { color: var(--pr); }
+.home-app .sec { padding: 72px 0; }
+.home-app .sec-title { font-size: clamp(26px, 4vw, 38px); text-align: center; font-weight: 700; margin-bottom: 14px; }
+.home-app .sec-sub { text-align: center; color: var(--mu); max-width: 720px; margin: 0 auto 36px; }
+.home-app .state { padding: 26px; text-align: center; color: var(--mu); }
+
+/* ---------- أزرار وحقول ---------- */
+.home-app .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: inherit; font-weight: 600; border: 1px solid var(--pr); border-radius: 12px; padding: 9px 22px; background: var(--pr); color: var(--pr-ink); cursor: pointer; transition: filter .15s, transform .15s; }
+.home-app .btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.home-app .btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+.home-app .btn.o { background: transparent; color: var(--pr); }
+.home-app .btn.o:hover { background: var(--pr2); }
+.home-app .btn.lg { padding: 13px 30px; font-size: 16px; border-radius: 14px; }
+.home-app .btn.s { padding: 6px 14px; font-size: 13px; }
+.home-app .btn.wide { width: 100%; }
+.home-app label { display: block; margin: 14px 0 6px; font-size: 14px; color: var(--mu); }
+.home-app input:not([type="checkbox"]), .home-app select, .home-app textarea { width: 100%; font: inherit; color: var(--tx); background: var(--input); border: 1px solid var(--bd); border-radius: 12px; padding: 11px 14px; outline: none; transition: border-color .15s, box-shadow .15s; }
+.home-app input:focus, .home-app select:focus, .home-app textarea:focus { border-color: var(--pr); box-shadow: 0 0 0 3px var(--pr2); }
+.home-app textarea { resize: vertical; }
+.home-app .chip { display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: 14px; border: 1px solid var(--bd); background: var(--card); color: var(--tx); border-radius: 20px; padding: 6px 16px; cursor: pointer; }
+.home-app .chip.on { background: var(--pr); border-color: var(--pr); color: var(--pr-ink); }
+.home-app .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.home-app .err { color: var(--dg); font-size: 13px; margin-top: 6px; }
+.home-app .ok-msg { background: var(--ok2); color: var(--ok); border-radius: 12px; padding: 10px 14px; margin: 10px 0; font-size: 14px; }
+.home-app .link { color: var(--pr); font-weight: 600; }
+.home-app .link-btn { background: none; border: 0; color: var(--pr); font: inherit; cursor: pointer; }
+.home-app .sw { position: relative; width: 38px; height: 22px; flex-shrink: 0; border-radius: 22px; background: var(--bd); display: inline-block; transition: background .2s; }
+.home-app .sw::after { content: ""; position: absolute; top: 3px; inset-inline-start: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: inset-inline-start .2s; }
+.home-app .sw.on { background: var(--pr); }
+.home-app .sw.on::after { inset-inline-start: 19px; }
+
+/* ---------- النافبار ---------- */
+.home-app .navbar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; gap: 18px; padding: 10px 28px; background: var(--side); border-bottom: 1px solid var(--bd); }
+.home-app .nav-brand img { height: 55px; width: auto; display: block; padding:4px;}
+.home-app .nav-content { display: flex; align-items: center; justify-content: space-between; flex: 1; gap: 20px; }
+.home-app .nav-links { display: flex; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.home-app .nav-links a { display: block; padding: 8px 14px; border-radius: 10px; color: var(--tx); font-weight: 500; }
+.home-app .nav-links a:hover { background: var(--pr2); color: var(--pr); }
+.home-app .nav-actions { display: flex; gap: 10px; }
+.home-app .nav-tools { display: flex; align-items: center; gap: 8px; }
+.home-app .menu-toggle { display: none; border: 1px solid var(--bd); background: var(--card); color: var(--tx); border-radius: 10px; width: 40px; height: 40px; cursor: pointer; place-items: center; }
+.home-app .prefs { position: relative; }
+.home-app .prefs-btn { border: 1px solid var(--bd); background: var(--card); color: var(--tx); width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; cursor: pointer; }
+.home-app .prefs-btn:hover, .home-app .prefs-btn[aria-expanded="true"] { background: var(--pr2); color: var(--pr); border-color: var(--pr); }
+.home-app .prefs-menu { position: absolute; top: calc(100% + 8px); inset-inline-end: 0; width: 230px; background: var(--card); border: 1px solid var(--bd); border-radius: 14px; box-shadow: var(--shadow-lg); padding: 8px; z-index: 60; animation: pm-in .14s ease-out; }
+@keyframes pm-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.home-app .prefs-h { font-size: 12px; color: var(--mu); padding: 6px 10px; }
+.home-app .prefs-label { display: flex; align-items: center; gap: 8px; padding: 6px 10px; font-size: 13px; color: var(--mu); }
+.home-app .prefs-item { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; background: none; border: 0; color: var(--tx); font: inherit; padding: 9px 12px; border-radius: 10px; cursor: pointer; text-align: start; }
+.home-app .prefs-item:hover { background: var(--pr2); }
+.home-app .prefs-item.on { color: var(--pr); font-weight: 600; }
+.home-app .prefs-row { display: inline-flex; align-items: center; gap: 8px; }
+.home-app .prefs-menu hr { border: 0; border-top: 1px solid var(--bd); margin: 6px 0; }
+
+/* ---------- الهيرو ---------- */
+.home-app .hero { background: var(--hero); padding: 56px 0 36px; }
+.home-app .hero-grid { max-width: 1180px; margin: 0 auto; padding: 0 24px; display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: center; }
+.home-app .hero h1 { font-size: clamp(30px, 4.6vw, 52px); font-weight: 800; }
+.home-app .hero p { color: var(--mu); font-size: 17px; margin: 18px 0 28px; max-width: 560px; }
+.home-app .hero-art { position: relative; min-height: 420px; display: grid; place-items: center; }
+.home-app .hero-circle { position: absolute; width: min(380px, 80%); aspect-ratio: 1; border-radius: 50%; background: var(--pr2); border: 1px solid var(--bd); }
+.home-app .hero-doc { position: relative; width: min(540px, 90%); height: auto; z-index: 1; }
+.home-app .float { position: absolute; z-index: 2; background: var(--card); border: 1px solid var(--bd); border-radius: 14px; padding: 10px 14px; box-shadow: var(--shadow-lg); display: flex; flex-direction: column; gap: 2px; font-size: 13px; max-width: 220px; }
+.home-app .float b { font-size: 20px; color: var(--pr); }
+.home-app .float small { color: var(--mu); }
+.home-app .f-book { top: 10%; inset-inline-start: 0; flex-direction: row; align-items: center; gap: 8px; color: var(--pr); font-weight: 600; }
+.home-app .f-cust { bottom: 12%; inset-inline-start: 2%; }
+.home-app .f-quote { top: 36%; inset-inline-end: 0; }
+.home-app .f-quote p { margin: 0; font-size: 12px; color: var(--mu); }
+.home-app .f-quote .q { font-size: 28px; line-height: 1; color: var(--pr); }
+.home-app .hero-search { display: flex; justify-content: center; padding: 28px 24px 0; }
+
+/* ---------- الخدمات ---------- */
+.home-app .sv-grid, .home-app .lm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 18px; }
+.home-app .sv-card { background: var(--card); border: 1px solid var(--bd); border-radius: 18px; padding: 24px; text-align: start; box-shadow: var(--shadow); transition: transform .2s, border-color .2s; }
+.home-app .sv-card:hover { transform: translateY(-4px); border-color: var(--pr); }
+.home-app .sv-ic { display: inline-grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; background: var(--pr2); color: var(--pr); margin-bottom: 14px; }
+.home-app .sv-card h3 { font-size: 18px; margin-bottom: 8px; }
+.home-app .sv-card p { margin: 0; color: var(--mu); font-size: 15px; }
+
+/* ---------- عن شفاء ---------- */
+.home-app .about-box { background: var(--card); border: 1px solid var(--bd); border-radius: 24px; padding: 44px 32px; max-width: 1100px; }
+.home-app .about-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 34px; align-items: center; }
+.home-app .about-grid p { color: var(--mu); margin: 0 0 20px; font-size: 16px; }
+.home-app .about-img { width: 100%; border-radius: 18px; display: block; }
+
+/* ---------- كيف تعمل المنصة ---------- */
+.home-app .how-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 36px; align-items: center; }
+.home-app .steps { display: grid; gap: 16px; }
+.home-app .step { display: flex; gap: 16px; background: var(--card); border: 1px solid var(--bd); border-radius: 18px; padding: 20px; }
+.home-app .step-n { flex-shrink: 0; width: 42px; height: 42px; border-radius: 50%; background: var(--pr); color: var(--pr-ink); display: grid; place-items: center; font-weight: 800; }
+.home-app .step h3 { font-size: 18px; margin-bottom: 4px; }
+.home-app .step p { margin: 0; color: var(--mu); font-size: 15px; }
+.home-app .how-art { position: relative; text-align: center; }
+.home-app .how-art img { width: min(360px, 90%); border-radius: 22px; }
+.home-app .how-badge { position: absolute; bottom: 16px; inset-inline-start: 8%; background: var(--card); border: 1px solid var(--bd); color: var(--pr); font-weight: 600; font-size: 13px; padding: 8px 14px; border-radius: 12px; box-shadow: var(--shadow-lg); }
+.home-app .ts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; margin: 22px 0; }
+.home-app .ts-card { display: flex; gap: 16px; align-items: center; background: var(--card); border: 1px solid var(--bd); border-radius: 18px; padding: 20px; }
+.home-app .ts-av { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.home-app .ts-card p { margin: 0; color: var(--mu); font-size: 17px; }
+.home-app .ts-card strong { color: var(--tx); }
+.home-app .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; text-align: center;  color: var(--pr); border-radius: 22px; padding: 30px 20px; margin: 26px 0; }
+.home-app .stat-number { font-size: 45px; font-weight: 800; }
+.home-app .stat-label { opacity: .9; font-size: 16px; }
+
+/* ---------- الدعم + الفوتر + نافذة التواصل ---------- */
+.home-app .helpdesk { background: var(--pr2); }
+.home-app .helpdesk .btn { margin-top: 4px; }
+.home-app .footer { background: var(--side); border-top: 1px solid var(--bd); margin-top: 0; }
+.home-app .footer-top { display: flex; justify-content: space-between; gap: 36px; flex-wrap: wrap; padding-top: 44px; padding-bottom: 28px; }
+.home-app .footer-brand img { height: 150px; display: flex; justify-content: center; margin: 0 auto; margin-bottom: 14px; padding: 5px;}
+.home-app .socials { display: flex; gap: 10px; }
+.home-app .socials a { width: 38px; height: 38px; border-radius: 50%; background: var(--pr2); color: var(--pr); display: grid; place-items: center; }
+.home-app .socials a:hover { background: var(--pr); color: var(--pr-ink); }
+.home-app .footer-cols { display: grid; grid-template-columns: repeat(3, minmax(130px, 1fr)); gap: 30px; }
+.home-app .footer h4 { font-size: 15px; margin-bottom: 12px; }
+.home-app .footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.home-app .footer li a { color: var(--mu); font-size: 14px; }
+.home-app .footer li a:hover { color: var(--pr); }
+.home-app .footer-bottom { text-align: center; color: var(--mu); font-size: 13px; padding: 16px; border-top: 1px solid var(--bd); }
+.home-app .cm-overlay { position: fixed; inset: 0; background: var(--overlay); display: none; place-items: center; z-index: 100; padding: 16px; }
+.home-app .cm-overlay.open { display: grid; }
+.home-app .cm-modal { position: relative; width: min(560px, 100%); max-height: 92vh; overflow-y: auto; background: var(--card); border: 1px solid var(--bd); border-radius: 20px; padding: 30px; box-shadow: var(--shadow-lg); }
+.home-app .cm-modal h2 { font-size: 24px; margin-bottom: 4px; }
+.home-app .cm-close { position: absolute; top: 14px; inset-inline-end: 14px; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--bd); background: var(--card); color: var(--tx); display: grid; place-items: center; cursor: pointer; }
+.home-app .cm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+.home-app .cm-grid .full { grid-column: 1 / -1; }
+.home-app .cm-modal .btn.wide { margin-top: 16px; }
+
+/* ---------- البحث عن طبيب أو معمل ---------- */
+.home-app .sr-bar { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; justify-content: space-between; margin-bottom: 22px; }
+.home-app .sr-input { position: relative; flex: 1; min-width: 240px; }
+.home-app .sr-input svg { position: absolute; top: 50%; inset-inline-start: 14px; transform: translateY(-50%); color: var(--mu); }
+.home-app .sr-input input { padding-inline-start: 42px; }
+.home-app .sr-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px; align-items: start; }
+.home-app .sr-list { display: grid; gap: 12px; max-height: 620px; overflow-y: auto; padding: 2px; }
+.home-app .sr-card { display: flex; gap: 14px; align-items: center; background: var(--card); border: 1px solid var(--bd); border-radius: 16px; padding: 14px; cursor: pointer; transition: border-color .15s; }
+.home-app .sr-card:hover, .home-app .sr-card.on { border-color: var(--pr); }
+.home-app .sr-ic { width: 46px; height: 46px; border-radius: 12px; background: var(--pr2); color: var(--pr); display: grid; place-items: center; flex-shrink: 0; }
+.home-app .sr-info { flex: 1; display: grid; gap: 2px; }
+.home-app .sr-info span { color: var(--pr); font-size: 14px; }
+.home-app .sr-info small { color: var(--mu); }
+.home-app .sr-side { display: grid; gap: 8px; justify-items: end; }
+.home-app .rate { display: inline-flex; align-items: center; gap: 4px; background: var(--wn2); color: var(--wn); border-radius: 20px; padding: 2px 10px; font-size: 13px; }
+.home-app .map-view { position: relative; height: 560px; overflow: hidden; border-radius: 18px; border: 1px solid var(--bd); background: var(--map-bg); cursor: grab; touch-action: none; direction: ltr; }
+.home-app .map-view:active { cursor: grabbing; }
+.home-app .map-layer { position: absolute; inset: 0; transform-origin: center; transition: transform .08s linear; }
+.home-app .map-svg { position: absolute; inset: 0; }
+.home-app .m-bg { fill: var(--map-bg); }
+.home-app .m-park { fill: var(--ok2); }
+.home-app .m-water { fill: var(--pr2); }
+.home-app .m-road { stroke: var(--map-road); }
+.home-app .pin { position: absolute; border: 0; background: none; padding: 0; cursor: pointer; transform-origin: bottom center; }
+.home-app .pin-svg .pin-body { fill: var(--pr); stroke: var(--card); }
+.home-app .pin-svg.lab .pin-body { fill: #7c3aed; }
+.home-app .pin-svg .pin-hole { fill: var(--card); }
+.home-app .pin-svg path.pin-body:last-child { stroke: none; }
+.home-app .me-dot { position: absolute; left: 50%; top: 52%; width: 14px; height: 14px; border-radius: 50%; background: var(--ok); border: 3px solid var(--card); box-shadow: 0 0 0 6px color-mix(in srgb, var(--ok) 25%, transparent); }
+.home-app .zoom-box { position: absolute; top: 12px; inset-inline-end: 12px; display: grid; gap: 6px; }
+.home-app .zoom-btn { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--bd); background: var(--card); color: var(--tx); font-size: 18px; cursor: pointer; display: grid; place-items: center; }
+.home-app .map-legend { display: flex; gap: 18px; justify-content: center; margin-top: 10px; color: var(--mu); font-size: 13px; }
+.home-app .map-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-inline-end: 6px; }
+.home-app .d-doc { background: var(--pr); } .home-app .d-lab { background: #7c3aed; }
+
+/* ---------- موبايل ---------- */
+@media (max-width: 900px) {
+  .home-app .hero-grid, .home-app .about-grid, .home-app .how-grid, .home-app .sr-grid { grid-template-columns: 1fr; }
+  .home-app .hero-art { min-height: 360px; }
+  .home-app .menu-toggle { display: grid; }
+  .home-app .navbar { flex-wrap: wrap; }
+  .home-app .nav-brand { order: 1; margin-inline-end: auto; }
+  .home-app .nav-tools { order: 2; }
+  .home-app .nav-content { order: 3; flex: 0 0 100%; display: none; flex-direction: column; align-items: stretch; padding-top: 10px; }
+  .home-app .nav-content.active { display: flex; }
+  .home-app .nav-links { flex-direction: column; }
+  .home-app .nav-actions { flex-direction: column; }
+  .home-app .nav-actions .btn { width: 100%; }
+  .home-app .footer-cols { grid-template-columns: 1fr 1fr; }
+  .home-app .cm-grid { grid-template-columns: 1fr; }
+  .home-app .map-view { height: 420px; }
+}

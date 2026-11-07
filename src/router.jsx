@@ -1,146 +1,132 @@
-import { createBrowserRouter } from "react-router-dom";
-import Layout from "./Layout";
-import Home from "./pages/Home";
-import LearnMore from "./pages/LearnMore";
-import ClinicLabSearch from "./pages/ClinicLabSearch";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import ForgotPasswordPage from "./pages/Forget Password/ForgotPasswordPage";
+import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
+import ScrollToHash from './components/home/ScrollToHash.jsx';
+import RequireRole from './components/shell/RequireRole.jsx';
+import { AccountPage, ProfilePage } from './components/shell/AccountPages.jsx';
 
-import PatientLayout from "./components/Patient/PatientLayout";
-import Dashboard from "./pages/Patient/Dashboard";
-import MedicalFile from "./pages/Patient/MedicalFile";
-import Prescriptions from "./pages/Patient/Prescriptions";
-import Results from "./pages/Patient/Results";
-import SymptomTriage from "./pages/Patient/SymptomTriage";
-import Booking from "./pages/Patient/Booking";
-import Appointments from "./pages/Patient/Appointments";
-import Permissions from "./pages/Patient/Permissions";
-import Profile from "./pages/Patient/Profile";
-import AccountSettings from "./pages/Patient/AccountSettings";
+import Home from './pages/home/Home.jsx';
+import LearnMore from './pages/home/LearnMore.jsx';
+import ClinicLabSearch from './pages/home/ClinicLabSearch.jsx';
+import Login from './pages/auth/Login.jsx';
+import Register from './pages/auth/Register.jsx';
+import ForgotPassword from './pages/auth/ForgotPassword.jsx';
 
-import AdminLayout from "./components/Admin/AdminLayout";
-import Accounts from "./pages/Admin/Accounts";
-import Licenses from "./pages/Admin/Licenses";
-import Monitoring from "./pages/Admin/Monitoring";
-import AdminProfile from "./pages/Admin/Profile";
+import PatientLayout from './pages/patient/PatientLayout.jsx';
+import PtDashboard from './pages/patient/Dashboard.jsx';
+import MedicalFile from './pages/patient/MedicalFile.jsx';
+import Prescriptions from './pages/patient/Prescriptions.jsx';
+import Results from './pages/patient/Results.jsx';
+import SymptomTriage from './pages/patient/SymptomTriage.jsx';
+import Booking from './pages/patient/Booking.jsx';
+import PtAppointments from './pages/patient/Appointments.jsx';
+import Permissions from './pages/patient/Permissions.jsx';
+import PtProfile from './pages/patient/Profile.jsx';
 
-import DoctorLayout from "./components/Doctor/DoctorLayout";
-import DoctorDashboard from "./pages/Doctor/DoctorDashboard";
-import Patients from "./pages/Doctor/Patients";
-import PatientFile from "./pages/Doctor/PatientFile";
-import Exam from "./pages/Doctor/Exam";
-import Team from "./pages/Doctor/Team";
-import ProfessionalProfile from "./pages/Doctor/ProfessionalProfile";
-import Schedule from "./pages/Doctor/Schedule";
-import DoctorProfile from "./pages/Doctor/DoctorProfile";
-import DoctorAccountSettings from "./pages/Doctor/DoctorAccountSettings";
+import DoctorLayout from './pages/doctor/DoctorLayout.jsx';
+import DrDashboard from './pages/doctor/Dashboard.jsx';
+import DrPatients from './pages/doctor/Patients.jsx';
+import PatientFile from './pages/doctor/PatientFile.jsx';
+import Exam from './pages/doctor/Exam.jsx';
+import Schedule from './pages/doctor/Schedule.jsx';
+import Team from './pages/doctor/Team.jsx';
+import Professional from './pages/doctor/Professional.jsx';
 
-import LabLayout from "./components/Lab/LabLayout";
-import LabDashboard from "./pages/Lab/LabDashboard";
-import AddRequest from "./pages/Lab/AddRequest";
-import RequestDetails from "./pages/Lab/RequestDetails";
-import UploadResult from "./pages/Lab/UploadResult";
-import ResultsLog from "./pages/Lab/ResultsLog";
-import LabProfile from "./pages/Lab/LabProfile";
-import LabLanguage from "./pages/Lab/LabLanguage";
-import LabAppearance from "./pages/Lab/LabAppearance";
-import LabPersonal from "./pages/Lab/LabPersonal";
-import LabAccount from "./pages/Lab/LabAccount";
+import LabLayout from './pages/lab/LabLayout.jsx';
+import LabDashboard from './pages/lab/LabDashboard.jsx';
+import AddRequest from './pages/lab/AddRequest.jsx';
+import RequestDetails from './pages/lab/RequestDetails.jsx';
+import UploadResult from './pages/lab/UploadResult.jsx';
+import ResultsLog from './pages/lab/ResultsLog.jsx';
+import LabProfile from './pages/lab/LabProfile.jsx';
 
-import ReceptionLayout from "./pages/reception/ReceptionLayout";
-import ReceptionDashboard from "./pages/reception/ReceptionDashboard";
-import AppointmentsManager from "./pages/reception/AppointmentsManager";
-import PatientsDataPage from "./pages/reception/PatientsDataPage";
-import ReceptionProfile from "./pages/reception/ReceptionProfile";
+import ReceptionLayout from './pages/reception/ReceptionLayout.jsx';
+import RcDashboard from './pages/reception/Dashboard.jsx';
+import RcAppointments from './pages/reception/Appointments.jsx';
+import RcPatients from './pages/reception/Patients.jsx';
 
-const labRoutes = {
-  path: "/lab",
-  element: <LabLayout />,
-  children: [
-    { index: true, element: <LabDashboard /> },
-    { path: "add", element: <AddRequest /> },
-    { path: "details", element: <RequestDetails /> },
-    { path: "details/:id", element: <RequestDetails /> },
-    { path: "upload", element: <UploadResult /> },
-    { path: "upload/:id", element: <UploadResult /> },
-    { path: "results", element: <ResultsLog /> },
-    { path: "settings/profile", element: <LabProfile /> },
-    { path: "settings/language", element: <LabLanguage /> },
-    { path: "settings/appearance", element: <LabAppearance /> },
-    { path: "settings/personal", element: <LabPersonal /> },
-    { path: "settings/account", element: <LabAccount /> },
-  ],
-};
+import AdminLayout from './pages/admin/AdminLayout.jsx';
+import Monitoring from './pages/admin/Monitoring.jsx';
+import Licenses from './pages/admin/Licenses.jsx';
+import Accounts from './pages/admin/Accounts.jsx';
+
+const Root = () => (<><ScrollToHash /><Outlet /></>);
+const guard = (role, el) => <RequireRole role={role}>{el}</RequireRole>;
 
 export const router = createBrowserRouter([
   {
-    path: "/",
-    element: <Layout />,
+    element: <Root />,
     children: [
-      { index: true, element: <Home /> },
-      { path: "learn-more", element: <LearnMore /> },
-      { path: "ClinicLabSearch", element: <ClinicLabSearch /> },
-      { path: "login", element: <Login /> },
-      { path: "register", element: <Register /> },
-      { path: "forgot-password", element: <ForgotPasswordPage /> },
-    ],
-  },
+      { path: '/', element: <Home /> },
+      { path: '/learn-more', element: <LearnMore /> },
+      { path: '/ClinicLabSearch', element: <ClinicLabSearch /> },
+      { path: '/login', element: <Login /> },
+      { path: '/register', element: <Register /> },
+      { path: '/forgot-password', element: <ForgotPassword /> },
 
-  {
-    path: "/patient",
-    element: <PatientLayout />,
-    children: [
-      { index: true, element: <Dashboard /> },
-      { path: "medical-file", element: <MedicalFile /> },
-      { path: "prescriptions", element: <Prescriptions /> },
-      { path: "results", element: <Results /> },
-      { path: "symptom-triage", element: <SymptomTriage /> },
-      { path: "book", element: <Booking /> },
-      { path: "appointments", element: <Appointments /> },
-      { path: "permissions", element: <Permissions /> },
-      { path: "profile", element: <Profile /> },
-      { path: "account-settings", element: <AccountSettings /> },
-    ],
-  },
-
-  {
-    path: "/admin",
-    element: <AdminLayout />,
-    children: [
-      { index: true, element: <Monitoring /> },
-      { path: "licenses", element: <Licenses /> },
-      { path: "accounts", element: <Accounts /> },
-      { path: "profile", element: <AdminProfile /> },
-    ],
-  },
-
-  {
-    path: "/doctor",
-    element: <DoctorLayout />,
-    children: [
-      { index: true, element: <DoctorDashboard /> },
-      { path: "patients", element: <Patients /> },
-      { path: "patient-file", element: <PatientFile /> },
-      { path: "exam", element: <Exam /> },
-      { path: "team", element: <Team /> },
-      { path: "professional-profile", element: <ProfessionalProfile /> },
-      { path: "schedule", element: <Schedule /> },
-      { path: "profile", element: <DoctorProfile /> },
-      { path: "account-settings", element: <DoctorAccountSettings /> },
-    ],
-  },
-
-  labRoutes,
-
-  {
-    path: "/reception",
-    element: <ReceptionLayout />,
-    children: [
-      { index: true, element: <ReceptionDashboard /> },
-      { path: "appointments", element: <AppointmentsManager /> },
-      { path: "patients", element: <PatientsDataPage /> },
-      { path: "profile", element: <ReceptionProfile /> },
+      {
+        path: '/patient', element: guard('patient', <PatientLayout />),
+        children: [
+          { index: true, element: <PtDashboard /> },
+          { path: 'file', element: <MedicalFile /> },
+          { path: 'prescriptions', element: <Prescriptions /> },
+          { path: 'results', element: <Results /> },
+          { path: 'triage', element: <SymptomTriage /> },
+          { path: 'booking', element: <Booking /> },
+          { path: 'appointments', element: <PtAppointments /> },
+          { path: 'permissions', element: <Permissions /> },
+          { path: 'profile', element: <PtProfile /> },
+          { path: 'account', element: <AccountPage notifs={['notifEmail', 'notifAppt', 'notifMeds', 'notifAccess']} /> },
+        ],
+      },
+      {
+        path: '/doctor', element: guard('doctor', <DoctorLayout />),
+        children: [
+          { index: true, element: <DrDashboard /> },
+          { path: 'patients', element: <DrPatients /> },
+          { path: 'patient-file', element: <PatientFile /> },
+          { path: 'exam', element: <Exam /> },
+          { path: 'schedule', element: <Schedule /> },
+          { path: 'team', element: <Team /> },
+          { path: 'professional', element: <Professional /> },
+          { path: 'profile', element: <ProfilePage /> },
+          { path: 'account', element: <AccountPage notifs={['notifEmail', 'notifAppt', 'notifAccess']} /> },
+        ],
+      },
+      {
+        path: '/lab', element: guard('lab', <LabLayout />),
+        children: [
+          { index: true, element: <LabDashboard /> },
+          { path: 'add', element: <AddRequest /> },
+          { path: 'details', element: <RequestDetails /> },
+          { path: 'details/:id', element: <RequestDetails /> },
+          { path: 'upload', element: <UploadResult /> },
+          { path: 'upload/:id', element: <UploadResult /> },
+          { path: 'results', element: <ResultsLog /> },
+          { path: 'settings/profile', element: <LabProfile /> },
+          { path: 'settings/personal', element: <ProfilePage /> },
+          { path: 'settings/account', element: <AccountPage notifs={['notifEmail', 'notifNew']} /> },
+        ],
+      },
+      {
+        path: '/reception', element: guard('reception', <ReceptionLayout />),
+        children: [
+          { index: true, element: <RcDashboard /> },
+          { path: 'appointments', element: <RcAppointments /> },
+          { path: 'patients', element: <RcPatients /> },
+          { path: 'profile', element: <ProfilePage /> },
+          { path: 'account', element: <AccountPage notifs={['notifEmail', 'notifAppt']} /> },
+        ],
+      },
+      {
+        path: '/admin', element: guard('admin', <AdminLayout />),
+        children: [
+          { index: true, element: <Monitoring /> },
+          { path: 'licenses', element: <Licenses /> },
+          { path: 'accounts', element: <Accounts /> },
+          { path: 'profile', element: <ProfilePage /> },
+          { path: 'account', element: <AccountPage notifs={['notifEmail']} /> },
+        ],
+      },
+      { path: '*', element: <Navigate to="/" replace /> },
     ],
   },
 ]);

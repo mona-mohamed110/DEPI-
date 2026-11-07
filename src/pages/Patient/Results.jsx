@@ -1,89 +1,36 @@
-import { useApp } from "../../context/AppContext.jsx";
-import "../../components/Style/Patient/Results.css";
+import Icon from '../../components/Icon.jsx';
+import { Async } from '../../components/ui/States.jsx';
+import { useAsync } from '../../components/ui/hooks.js';
+import { useToast } from '../../components/ui/Toast.jsx';
+import { useI18n } from '../../context/I18nContext.jsx';
+import { safeUrl } from '../../api/security.js';
+import * as api from '../../api/patient.js';
 
-const STATUS_KEYS = {
-  normal: "res_normal",
-  low: "res_low",
-  followup: "res_followup",
-};
-
-const RESULTS = [
-  {
-    id: 1,
-    icon: "🧪",
-    titleKey: "res_1_title",
-    metaKey: "res_1_meta",
-    status: "normal",
-    pdfUrl: "/sample.pdf",
-  },
-  {
-    id: 2,
-    icon: "🧪",
-    titleKey: "res_2_title",
-    metaKey: "res_2_meta",
-    status: "low",
-    pdfUrl: "/sample.pdf",
-  },
-  {
-    id: 3,
-    icon: "🩻",
-    titleKey: "res_3_title",
-    metaKey: "res_3_meta",
-    status: "normal",
-    pdfUrl: "/sample.pdf",
-  },
-  {
-    id: 4,
-    icon: "🫀",
-    titleKey: "res_4_title",
-    metaKey: "res_4_meta",
-    status: "followup",
-    pdfUrl: "/sample.pdf",
-  },
-];
+const ICON = { lab: 'tube', xray: 'scan', ecg: 'activity' };
+const TONE = { normal: ['ok', 'res_normal'], low: ['wn', 'res_low'], followup: ['dg', 'res_followup'] };
 
 export default function Results() {
-  const { t, theme } = useApp();
-
+  const { t, L, fmtDate } = useI18n();
+  const { toast } = useToast();
+  const state = useAsync(() => api.getResults(), []);
   return (
-    <section className={`results results--${theme}`}>
-      <header className="results__header">
-        <h1 className="results__title">{t("res_title")}</h1>
-        <p className="results__subtitle">{t("res_sub")}</p>
-      </header>
-
-      <div className="results__card">
-        <ul className="results__list">
-          {RESULTS.map((item) => (
-            <li className="results__row" key={item.id}>
-              <div className="results__info">
-                <span className="results__icon" aria-hidden="true">
-                  {item.icon}
-                </span>
-                <div className="results__text">
-                  <h2 className="results__name">{t(item.titleKey)}</h2>
-                  <p className="results__meta">{t(item.metaKey)}</p>
-                </div>
-              </div>
-
-              <div className="results__actions">
-                <span
-                  className={`results__badge results__badge--${item.status}`}
-                >
-                  {t(STATUS_KEYS[item.status])}
-                </span>
-                <a
-                  className="results__view"
-                  href={item.pdfUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {t("res_view")}
-                </a>
-              </div>
-            </li>
-          ))}
-        </ul>
+    <section>
+      <h1>{t('res_title')}</h1>
+      <p className="sub">{t('res_sub')}</p>
+      <div className="card">
+        <Async state={state}>{(list) => list.length === 0 ? <div className="state">{t('no_results')}</div> : list.map((r) => {
+          const url = safeUrl(r.fileUrl);
+          const [tone, label] = TONE[r.status] || TONE.normal;
+          return (
+            <div className="row" key={r.id}>
+              <div className="res-icon"><Icon name={ICON[r.kind] || 'file'} size={22} /></div>
+              <div className="m"><b>{L(r.title)}</b><small>{L(r.source)} · {fmtDate(r.date)}</small></div>
+              <span className={`badge ${tone}`}>{t(label)}</span>
+              {url ? <a className="btn s o" href={url} target="_blank" rel="noopener noreferrer">{t('view')}</a>
+                : <button type="button" className="btn s o" onClick={() => toast(t('res_nofile'))}>{t('view')}</button>}
+            </div>
+          );
+        })}</Async>
       </div>
     </section>
   );
