@@ -1,0 +1,56 @@
+// نصوص صفحات المريض الجديدة (متصلة بالـ API)
+import { homeDict } from './home.js';
+
+const pick = (d, lang) => Object.fromEntries(Object.entries(d[lang]).filter(([k]) => k.startsWith('sr_')));
+export const extra = {
+  ar: {
+    ...pick(homeDict, 'ar'),
+    d_meds: 'روشتات حالية', d_meds_n: '{n} روشتات', d_pending: 'أذونات نشطة', d_pending_n: '{n} أذونات',
+    mf_add: 'إضافة', mf_form_add: 'إضافة حالة مرضية', mf_form_edit: 'تعديل الحالة المرضية', mf_save_add: 'إضافة', mf_save_edit: 'تعديل', mf_added: 'تمت إضافة الحالة للتاريخ المرضي', mf_updated: 'تم تعديل الحالة', mf_birth: 'تاريخ الميلاد', mf_edit: 'تعديل', mf_err: 'اكتب الحالة المرضية',
+    rx_cards_current: 'الروشتات الحالية', rx_move_past: 'نقل للسابقة', rx_move_current: 'إعادة للحالية', rx_moved: 'تم تحديث الروشتة', rx_empty_current: 'لا توجد روشتات حالية', rx_empty_past: 'لا توجد روشتات سابقة',
+    bk_close_search: 'إغلاق البحث', bk_lab_test: 'اختر التحليل أو الأشعة', bk_note_doctor: 'سيصل طلب الحجز لموظف استقبال الدكتور، وسيظهر ردّه في صفحة المواعيد. عند القبول يُمنح الدكتور إذن الاطلاع على ملفك لمدة ٣٠ يوماً ويمكنك سحبه من صفحة الأذونات.', bk_note_lab: 'سيصل طلبك مباشرة للمعمل، وستصلك النتيجة في صفحة النتائج.', bk_sent: 'تم إرسال طلب الحجز', bk_need_test: 'اختر التحليل أو الأشعة المطلوبة',
+    ap_confirmed: 'مؤكد', ap_pending: 'بانتظار الرد', ap_rejected: 'مرفوض', ap_done: 'تم', ap_lab: 'معمل', ap_test: 'الفحص',
+    pf_birth: 'تاريخ الميلاد', pf_chronic: 'الأمراض المزمنة', pf_personal: 'البيانات الشخصية',
+
+    sym_severity: 'مستوى الخطورة', greeting: 'أهلاً يا {name}', dash_sub: 'ده ملخص حالتك الصحية النهاردة', d_next: 'أقرب موعد', d_none: 'لا يوجد',
+    d_upcoming: 'المواعيد القادمة',
+    d_alerts: 'تنبيهات', d_no_alerts: 'لا توجد تنبيهات', d_alert_result: 'نتيجة {title} جاهزة', d_alert_access: '{name} طلب الوصول لملفك', d_last_rx: 'آخر روشتة',
+    ap_cancelled: 'تم إلغاء الموعد',
+    mf_title: 'ملفي الطبي', mf_sub: 'بياناتك الصحية في مكان واحد', mf_personal: 'البيانات الشخصية والمزمنة', mf_chronic: 'الأمراض المزمنة', mf_history: 'التاريخ المرضي',
+    mf_cond: 'الحالة المرضية', mf_date: 'التاريخ', mf_notes: 'ملاحظات', mf_attach: 'إرفاق تقارير أو أشعة جديدة', mf_drop: 'اضغط هنا لرفع ملف أو اسحب الصورة / ملف الـ PDF هنا',
+    mf_types: 'PDF · صور (حتى ٥ ميجا)', mf_reports: 'التقارير والأشعة المرفوعة', mf_empty: 'لا توجد أي تقارير مرفوعة حالياً.', mf_file: 'اسم الملف', mf_up_date: 'تاريخ الرفع', mf_size: 'الحجم',
+    mf_uploaded: 'تم رفع الملف', mf_deleted: 'تم حذف الملف', mf_demo: 'ده ملف تجريبي بدون محتوى، ارفع ملف حقيقي لمعاينته.', mf_del_q: 'هل أنت متأكد من حذف «{name}»؟',
+    years: '{n} سنة', cm: 'سم', kg: 'كجم', height: 'الطول (سم)', weight: 'الوزن (كجم)', pf_health: 'البيانات الصحية',
+    rx_title: 'الروشتات والأدوية', rx_sub: 'أدويتك الحالية والسابقة', rx_current: 'الحالية', rx_past: 'السابقة', rx_drug: 'الدواء', rx_dose: 'الجرعة', rx_doctor: 'الدكتور', rx_date: 'التاريخ',
+    res_nofile: 'لا يوجد ملف مرفوع لهذه النتيجة',
+    sym_l_general: 'الاحتمال الأقرب: عدوى بسيطة / إجهاد', sym_l_chest: 'الاحتمال الأقرب: مشكلة في القلب أو الصدر — يفضل الكشف سريعاً', sym_l_head: 'الاحتمال الأقرب: إجهاد / ارتفاع ضغط',
+    sym_l_flu: 'الاحتمال الأقرب: نزلة برد أو إنفلونزا', sev_low: 'منخفضة', sev_medium: 'متوسطة', sev_high: 'عالية', sym_book_one: 'احجز',
+    noSlots: 'لا توجد مواعيد متاحة اليوم', ap_confirmed_x: '', pm_revoked: 'تم سحب الإذن', pm_approved: 'تمت الموافقة', pm_rejected: 'تم رفض الطلب',
+    nav_book: 'حجز موعد ( طبيب - معمل )',
+  },
+  en: {
+    ...pick(homeDict, 'en'),
+    d_meds: 'Current prescriptions', d_meds_n: '{n} prescriptions', d_pending: 'Active permissions', d_pending_n: '{n} permissions',
+    mf_add: 'Add', mf_form_add: 'Add a medical condition', mf_form_edit: 'Edit the medical condition', mf_save_add: 'Add', mf_save_edit: 'Save changes', mf_added: 'Condition added to your history', mf_updated: 'Condition updated', mf_birth: 'Date of birth', mf_edit: 'Edit', mf_err: 'Enter the medical condition',
+    rx_cards_current: 'Current prescriptions', rx_move_past: 'Move to past', rx_move_current: 'Move to current', rx_moved: 'Prescription updated', rx_empty_current: 'No current prescriptions', rx_empty_past: 'No past prescriptions',
+    bk_close_search: 'Close search', bk_lab_test: 'Choose the test or scan', bk_note_doctor: 'Your request goes to the doctor’s receptionist and the reply appears on the appointments page. When accepted, the doctor gets access to your file for 30 days — you can revoke it from the Permissions page.', bk_note_lab: 'Your request goes straight to the lab and the result will arrive on the Results page.', bk_sent: 'Booking request sent', bk_need_test: 'Choose the test or scan',
+    ap_confirmed: 'Confirmed', ap_pending: 'Awaiting reply', ap_rejected: 'Rejected', ap_done: 'Done', ap_lab: 'Lab', ap_test: 'Test',
+    pf_birth: 'Date of birth', pf_chronic: 'Chronic diseases', pf_personal: 'Personal data',
+
+    sym_severity: 'Severity', greeting: 'Welcome, {name}', dash_sub: 'Here is your health summary today', d_next: 'Next appointment', d_none: 'None',
+    d_upcoming: 'Upcoming appointments',
+    d_alerts: 'Alerts', d_no_alerts: 'No alerts', d_alert_result: '{title} result is ready', d_alert_access: '{name} requested access to your file', d_last_rx: 'Latest prescription',
+    ap_cancelled: 'Appointment cancelled',
+    mf_title: 'My medical file', mf_sub: 'Your health records in one place', mf_personal: 'Personal & chronic data', mf_chronic: 'Chronic diseases', mf_history: 'Medical history',
+    mf_cond: 'Condition', mf_date: 'Date', mf_notes: 'Notes', mf_attach: 'Attach new reports or scans', mf_drop: 'Click to upload a file or drag an image / PDF here',
+    mf_types: 'PDF · Images (up to 5 MB)', mf_reports: 'Uploaded reports & scans', mf_empty: 'No reports uploaded yet.', mf_file: 'File name', mf_up_date: 'Upload date', mf_size: 'Size',
+    mf_uploaded: 'File uploaded', mf_deleted: 'File deleted', mf_demo: 'This is a demo entry with no content, upload a real file to preview it.', mf_del_q: 'Are you sure you want to delete "{name}"?',
+    years: '{n} years', cm: 'cm', kg: 'kg', height: 'Height (cm)', weight: 'Weight (kg)', pf_health: 'Health data',
+    rx_title: 'Prescriptions & medications', rx_sub: 'Your current and past medications', rx_current: 'Current', rx_past: 'Past', rx_drug: 'Medication', rx_dose: 'Dosage', rx_doctor: 'Doctor', rx_date: 'Date',
+    res_nofile: 'No file was uploaded for this result',
+    sym_l_general: 'Most likely: a mild infection / fatigue', sym_l_chest: 'Most likely: a heart or chest problem — see a doctor soon', sym_l_head: 'Most likely: stress / high blood pressure',
+    sym_l_flu: 'Most likely: a cold or flu', sev_low: 'Low', sev_medium: 'Medium', sev_high: 'High', sym_book_one: 'Book',
+    noSlots: 'No slots available today', ap_confirmed_x: '', pm_revoked: 'Permission revoked', pm_approved: 'Request approved', pm_rejected: 'Request rejected',
+    nav_book: 'Book (doctor - lab)',
+  },
+};

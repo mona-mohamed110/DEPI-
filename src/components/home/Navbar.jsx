@@ -1,44 +1,40 @@
-import { useState } from "react";
-import "../Style/Nav.css";
-import logo from "../../assets/logo.png";
-import { Link } from "react-router-dom";
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import Icon from '../Icon.jsx';
+import PrefsMenu from './PrefsMenu.jsx';
+import { useI18n } from '../../context/I18nContext.jsx';
+import { useAuth } from '../../context/AuthContext.jsx';
+import { ROLE_HOME } from '../../config/env.js';
+import BrandLogo from '../BrandLogo.jsx';
 
-function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
-  const close = () => setIsOpen(false);
-
+export default function Navbar() {
+  const { t } = useI18n();
+  const { user } = useAuth();
+  const [open, setOpen] = useState(false);
+  const close = () => setOpen(false);
   return (
     <nav className="navbar">
-      <div className="nav-brand">
-        <Link to="/" onClick={close}>
-          <img className="logo" src={logo} alt="الشعار" />
-        </Link>
-      </div>
-
-      <button
-        className="menu-toggle"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label="القائمة"
-        aria-expanded={isOpen}
-      >
-        <span className={`hamburger ${isOpen ? "open" : ""}`}></span>
-      </button>
-
-      <div className={`nav-content ${isOpen ? "active" : ""}`}>
+      <Link to="/" className="nav-brand" onClick={close}><BrandLogo /></Link>
+      <div className={`nav-content ${open ? 'active' : ''}`}>
         <ul className="nav-links">
-          <li><Link to="/" onClick={close}>الرئيسية</Link></li>
-          <li><Link to="/#services" onClick={close}>خدماتنا</Link></li>
-          <li><Link to="/#how-it-works" onClick={close}>كيف نعمل</Link></li>
-          <li><Link to="/#about" onClick={close}>من نحن</Link></li>
+          <li><Link to="/" onClick={close}>{t('nav_home')}</Link></li>
+          <li><Link to="/#services" onClick={close}>{t('nav_services')}</Link></li>
+          <li><Link to="/#about" onClick={close}>{t('nav_about')}</Link></li>
+          <li><Link to="/#how-it-works" onClick={close}>{t('nav_how')}</Link></li>
         </ul>
-
         <div className="nav-actions">
-          <Link to="/login" className="btn btn-primary" onClick={close}>دخول</Link>
-          <Link to="/register" className="btn btn-ghost" onClick={close}>تسجيل جديد</Link>
+          {user ? <Link to={ROLE_HOME[user.role]} className="btn" onClick={close}>{t('nav_dashboard')}</Link> : (
+            <>
+              <Link to="/login" className="btn" onClick={close}>{t('nav_login')}</Link>
+              <Link to="/register" className="btn o" onClick={close}>{t('nav_register')}</Link>
+            </>
+          )}
         </div>
+      </div>
+      <div className="nav-tools">
+        <PrefsMenu />
+        <button type="button" className="menu-toggle" aria-label={t('nav_menu')} aria-expanded={open} onClick={() => setOpen((o) => !o)}><Icon name={open ? 'x' : 'menu'} size={22} /></button>
       </div>
     </nav>
   );
 }
-
-export default Navbar;

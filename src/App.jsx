@@ -1,13 +1,14 @@
-import { RouterProvider } from "react-router-dom";
-import { router } from "./router";
-import { AppProvider } from "./context/AppContext";
+import { RouterProvider } from 'react-router-dom';
+import { PrefsProvider } from './context/PrefsContext.jsx';
+import { AuthProvider } from './context/AuthContext.jsx';
+import { router } from './router.jsx';
 
-function App() {
+export default function App() {
   return (
-    <AppProvider>
-      <RouterProvider router={router} />
-    </AppProvider>
+    <PrefsProvider>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </PrefsProvider>
   );
 }
-
-export default App;

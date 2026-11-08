@@ -1,77 +1,85 @@
-import { useEffect, useState } from "react";
-import { request, extractList } from "./request";
-import ActivePermissions from "./ActivePermissions";
-import PendingRequests from "./PendingRequests";
-import AccessLog from "./AccessLog";
-import "../../components/Style/Patient/Permissions.css";
-import usePatientPrefs from "../../components/Patient/usePatientPrefs";
+import { useState } from 'react';
+import Icon from '../../components/Icon.jsx';
+import ConfirmForm from '../../components/ui/ConfirmForm.jsx';
+import { Async } from '../../components/ui/States.jsx';
+import { useAsync } from '../../components/ui/hooks.js';
+import { useToast } from '../../components/ui/Toast.jsx';
+import { useI18n } from '../../context/I18nContext.jsx';
+import { usePatient } from './PatientContext.jsx';
+import * as api from '../../api/patient.js';
 
-const TABS = [
-  { id: "active", labelKey: "pm_tab_active", Component: ActivePermissions },
-  { id: "pending", labelKey: "pm_tab_pending", Component: PendingRequests },
-  { id: "log", labelKey: "pm_tab_log", Component: AccessLog },
-];
+const KIND = { doctor: 'stethoscope', lab: 'flask' };
 
-// نفس الـ endpoint بتاع تاب الطلبات المعلقة — بنستخدمه هنا علشان عدّاد الدايرة الحمرا
-const PENDING_ENDPOINT = "/permissions/requests?status=pending";
+function Active() {
+  const { t, L, fmtDate } = useI18n();
+  const { act } = useToast();
+  const { refreshPerms } = usePatient();
+  const state = useAsync(() => api.getActivePermissions(), []);
+  const [confirm, setConfirm] = useState(null); // id | 'all'
+  const [busy, setBusy] = useState(false);
 
-export default function Permissions() {
-  const prefs = usePatientPrefs();
-  const { t: tr } = prefs;
-  const [tab, setTab] = useState("active");
-  const [pendingCount, setPendingCount] = useState(0);
-
-  // عدد الطلبات المعلقة أول ما الصفحة تفتح (حتى لو التاب المفتوح هو الأذونات النشطة)
-  useEffect(() => {
-    let ignore = false;
-    request(PENDING_ENDPOINT)
-      .then((res) => {
-        if (!ignore) setPendingCount(extractList(res).length);
-      })
-      .catch(() => {
-        /* لو فشل، الدايرة ببساطة مش هتظهر */
-      });
-    return () => {
-      ignore = true;
-    };
-  }, []);
-
-  const ActiveTab = TABS.find((t) => t.id === tab).Component;
+  const revoke = async (id) => {
+    setBusy(true);
+    const ok = await act(() => (id === 'all' ? api.revokeAllPermissions() : api.revokePermission(id)), 'pm_revoked');
+    setBusy(false);
+    if (ok) { state.setData((l) => (id === 'all' ? [] : l.filter((x) => x.id !== id))); setConfirm(null); refreshPerms(); }
+  };
 
   return (
-    <main className="pm" dir={prefs.dir} data-theme={prefs.theme}>
-      <header className="pm-head">
-        <h1>🔐 {tr("pm_title")}</h1>
-        <p>{tr("pm_sub")}</p>
-      </header>
+    <Async state={state}>{(list) => (
+      <>
+        <div className="card">
+          {list.length === 0 ? <div className="state">{t('pm_active_empty')}</div> : list.map((g) => (
+            <div className="row" key={g.id}>
+              <div className="res-icon"><Icon name={KIND[g.kind] || 'user'} size={22} /></div>
+              <div className="m"><b>{L(g.grantee)}</b><small>{L(g.scope)} · {g.until ? t('pm_until', { date: fmtDate(g.until) }) : t('pm_forever')}</small></div>
+              <span className="badge ok">{t('pm_active_pill')}</span>
+              <button type="button" className="btn s o dg" onClick={() => setConfirm(g.id)}>{t('pm_revoke')}</button>
+              {confirm === g.id && <ConfirmForm message={t('pm_dlg_one_msg', { name: L(g.grantee) })} confirmLabel={t('pm_dlg_one_ok')} busy={busy} onConfirm={() => revoke(g.id)} onCancel={() => setConfirm(null)} />}
+            </div>
+          ))}
+        </div>
+        {list.length > 0 && (
+          <div className="card danger-card" style={{ marginTop: 16 }}>
+            <div className="row" style={{ border: 0, padding: 0 }}>
+              <Icon name="alert" size={22} />
+              <div className="m"><b>{t('pm_revoke_all_title')}</b><small>{t('pm_revoke_all_desc')}</small></div>
+              <button type="button" className="btn dg" onClick={() => setConfirm('all')}>{t('pm_revoke_now')}</button>
+            </div>
+            {confirm === 'all' && <ConfirmForm message={t('pm_dlg_all_msg', { n: list.length })} confirmLabel={t('pm_dlg_all_ok')} busy={busy} onConfirm={() => revoke('all')} onCancel={() => setConfirm(null)} />}
+          </div>
+        )}
+      </>
+    )}</Async>
+  );
+}
 
-      <div className="pm-tabs" role="tablist" aria-label={tr("pm_tabs_label")}>
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            id={`pm-tab-${t.id}`}
-            role="tab"
-            type="button"
-            aria-selected={tab === t.id}
-            aria-controls="pm-panel"
-            className={`pm-tab${tab === t.id ? " pm-tab--active" : ""}`}
-            onClick={() => setTab(t.id)}
-          >
-            {tr(t.labelKey)}
-            {t.id === "pending" && pendingCount > 0 && (
-              <span className="pm-badge" aria-label={tr("pm_requests_n", { n: pendingCount })}>
-                {pendingCount}
-              </span>
-            )}
-          </button>
-        ))}
+function Log() {
+  const { t, L, fmtDateTime } = useI18n();
+  const state = useAsync(() => api.getAccessLog(), []);
+  return (
+    <div className="card"><Async state={state}>{(list) => list.length === 0 ? <div className="state">{t('pm_log_empty')}</div> : list.map((l) => (
+      <div className="row" key={l.id}>
+        <div className="res-icon"><Icon name="eye" size={20} /></div>
+        <div className="m"><b>{L(l.who)}</b><small>{L(l.action)}</small></div>
+        <small>{fmtDateTime(l.at)}</small>
       </div>
+    ))}</Async></div>
+  );
+}
 
-      {/* key بيخلّي كل تاب يجيب بياناته من الـ API من جديد كل ما تفتحه
-          (فالطلب اللي اتوافق عليه يظهر في الأذونات النشطة فورًا) */}
-      <div id="pm-panel" role="tabpanel" aria-labelledby={`pm-tab-${tab}`}>
-        <ActiveTab key={tab} onPendingCountChange={setPendingCount} />
+export default function Permissions() {
+  const { t } = useI18n();
+  const [tab, setTab] = useState('active');
+  const TABS = [['active', 'pm_tab_active'], ['log', 'pm_tab_log']];
+  return (
+    <section>
+      <h1>{t('pm_title')}</h1>
+      <p className="sub">{t('pm_sub')}</p>
+      <div className="perm-tabs" role="tablist" aria-label={t('pm_tabs_label')}>
+        {TABS.map(([k, label]) => <button key={k} type="button" role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{t(label)}</button>)}
       </div>
-    </main>
+      {tab === 'active' ? <Active /> : <Log />}
+    </section>
   );
 }

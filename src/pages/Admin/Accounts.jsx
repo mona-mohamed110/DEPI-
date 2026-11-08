@@ -1,149 +1,56 @@
-import { useState } from "react";
-import { useApp } from "../../context/AppContext.jsx";
-import "../../components/Style/Admin/Accounts.css";
+import { useMemo, useState } from 'react';
+import Icon from '../../components/Icon.jsx';
+import ConfirmForm from '../../components/ui/ConfirmForm.jsx';
+import Switch from '../../components/ui/Switch.jsx';
+import { Async } from '../../components/ui/States.jsx';
+import { useAsync } from '../../components/ui/hooks.js';
+import { useToast } from '../../components/ui/Toast.jsx';
+import { useI18n } from '../../context/I18nContext.jsx';
+import * as api from '../../api/admin.js';
 
-function Accounts() {
-  const { t, lang } = useApp();
+const TABS = [['all', 'adm_tab_all'], ['patient', 'adm_tab_pt'], ['doctor', 'adm_tab_dr'], ['lab', 'adm_tab_lab'], ['reception', 'adm_tab_rc']];
+const ROLE = { patient: 'adm_role_pt', doctor: 'adm_role_dr', lab: 'adm_role_lab', reception: 'adm_role_rc' };
 
-  const [users, setUsers] = useState([
-    { id: 1, name: "منى محمد", email: "mona@example.com", role: "pt", active: true },
-    { id: 2, name: "أحمد حسن", email: "ahmed.h@example.com", role: "pt", active: true },
-    { id: 3, name: "نورا إبراهيم", email: "noura@example.com", role: "pt", active: false },
-    { id: 4, name: "د. أحمد سمير", email: "dr.ahmed@clinic.com", role: "dr", active: true },
-    { id: 5, name: "د. مها خالد", email: "dr.maha@clinic.com", role: "dr", active: false },
-    { id: 6, name: "معمل الأمل", email: "alamal@lab.com", role: "lab", active: true },
-    { id: 7, name: "سلمى أحمد", email: "salma@clinic.com", role: "rc", active: true },
-  ]);
-  const [search, setSearch] = useState("");
-  const [role, setRole] = useState("all");
-  const [toast, setToast] = useState("");
-  const [confirmUser, setConfirmUser] = useState(null);
+export default function Accounts() {
+  const { t, L, num } = useI18n();
+  const { act, toast } = useToast();
+  const state = useAsync(() => api.getAccounts(), []);
+  const [tab, setTab] = useState('all');
+  const [q, setQ] = useState('');
+  const [confirm, setConfirm] = useState(null);
+  const [busy, setBusy] = useState(false);
 
-  function showToast(text) {
-    setToast(text);
-    setTimeout(function () {
-      setToast("");
-    }, 2200);
-  }
-
-  function changeUser(id) {
-    let message = "";
-    const newUsers = users.map(function (u) {
-      if (u.id === id) {
-        if (u.active) {
-          message = t("adm_toast_stopped") + " " + u.name;
-        } else {
-          message = t("adm_toast_activated") + " " + u.name;
-        }
-        return { ...u, active: !u.active };
-      }
-      return u;
-    });
-    setUsers(newUsers);
-    showToast(message);
-  }
-
-  function toggleUser(u) {
-    if (u.active) {
-      setConfirmUser(u);
-    } else {
-      changeUser(u.id);
-    }
-  }
-
-  function confirmStop() {
-    changeUser(confirmUser.id);
-    setConfirmUser(null);
-  }
-
-  const filteredUsers = users.filter(function (u) {
-    const matchRole = role === "all" || u.role === role;
-    const matchSearch = u.name.includes(search) || u.email.includes(search);
-    return matchRole && matchSearch;
-  });
-
-  const activeCount = users.filter(function (u) {
-    return u.active;
-  }).length;
-
-  const questionMark = lang === "ar" ? "؟" : "?";
+  const set = async (acc, active) => {
+    setBusy(true);
+    const r = await act(() => api.setAccountActive(acc.id, active));
+    setBusy(false);
+    if (r) { state.setData((l) => l.map((x) => (x.id === acc.id ? r : x))); setConfirm(null); toast(`${t(active ? 'adm_toast_activated' : 'adm_toast_stopped')} ${L(acc.name)}`); }
+  };
+  const list = useMemo(() => (state.data || []).filter((a) => (tab === 'all' || a.role === tab) && `${L(a.name)} ${a.email}`.toLowerCase().includes(q.trim().toLowerCase())), [state.data, tab, q, L]);
+  const all = state.data || [];
 
   return (
-    <div className="accounts">
-      <h1>{t("adm_acc_title")}</h1>
-      <p className="accounts-sub">{t("adm_acc_sub")}</p>
-
-      <div className="accounts-stats">
-        <div className="accounts-card">
-          <span>{t("adm_acc_total")}</span>
-          <b>{users.length}</b>
-        </div>
-        <div className="accounts-card">
-          <span>{t("adm_acc_active")}</span>
-          <b>{activeCount}</b>
-        </div>
-        <div className="accounts-card">
-          <span>{t("adm_acc_stopped")}</span>
-          <b>{users.length - activeCount}</b>
-        </div>
+    <section>
+      <h1>{t('adm_acc_title')}</h1>
+      <p className="sub">{t('adm_acc_sub')}</p>
+      <div className="grid g3">
+        {[['adm_acc_total', all.length, 'users', ''], ['adm_acc_active', all.filter((a) => a.active).length, 'checkc', 'ok'], ['adm_acc_stopped', all.filter((a) => !a.active).length, 'lock', 'wn']].map(([k, v, ic, tone]) => (
+          <div className="card stat" key={k}><div className={`tile ${tone}`}><Icon name={ic} size={22} /></div><span>{t(k)}</span><b>{num(v)}</b></div>
+        ))}
       </div>
-
-      <div className="accounts-card">
-        <input
-          className="accounts-search"
-          type="text"
-          placeholder={t("adm_acc_search")}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-
-        <div className="accounts-tabs">
-          <button className={role === "all" ? "on" : ""} onClick={() => setRole("all")}>{t("adm_tab_all")}</button>
-          <button className={role === "pt" ? "on" : ""} onClick={() => setRole("pt")}>{t("adm_tab_pt")}</button>
-          <button className={role === "dr" ? "on" : ""} onClick={() => setRole("dr")}>{t("adm_tab_dr")}</button>
-          <button className={role === "lab" ? "on" : ""} onClick={() => setRole("lab")}>{t("adm_tab_lab")}</button>
-          <button className={role === "rc" ? "on" : ""} onClick={() => setRole("rc")}>{t("adm_tab_rc")}</button>
-        </div>
-
-        {filteredUsers.map(function (u) {
-          return (
-            <div className="accounts-row" key={u.id}>
-              <div className="accounts-avatar">{u.name.replace("د. ", "").charAt(0)}</div>
-              <div className="accounts-info">
-                <b>{u.name}</b>
-                <small dir="ltr" style={{ textAlign: "start" }}>{u.email}</small>
-              </div>
-              <span className="accounts-badge">{t("adm_role_" + u.role)}</span>
-              <span className={u.active ? "accounts-badge ok" : "accounts-badge stop"}>
-                {u.active ? t("adm_on") : t("adm_off")}
-              </span>
-              <button
-                className={u.active ? "accounts-switch on" : "accounts-switch"}
-                onClick={() => toggleUser(u)}
-              ></button>
-            </div>
-          );
-        })}
-
-        {filteredUsers.length === 0 && <p>{t("adm_none")}</p>}
-      </div>
-
-      {confirmUser && (
-        <div className="admin-overlay" onClick={() => setConfirmUser(null)}>
-          <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>{t("adm_stop_title")}</h2>
-            <p>{t("adm_stop_ask")} {confirmUser.name}{questionMark}</p>
-            <div className="admin-modal-actions">
-              <button className="licenses-btn danger" onClick={confirmStop}>{t("adm_stop_yes")}</button>
-              <button className="licenses-btn outline" onClick={() => setConfirmUser(null)}>{t("adm_cancel")}</button>
-            </div>
+      <div className="card" style={{ marginTop: 16 }}>
+        <div className="filters"><div className="search"><Icon name="search" size={18} /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('adm_acc_search')} /></div></div>
+        <div className="tabs">{TABS.map(([k, label]) => <button type="button" key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{t(label)}</button>)}</div>
+        <Async state={state}>{() => list.length === 0 ? <div className="state">{t('adm_none')}</div> : list.map((a) => (
+          <div className="row" key={a.id}>
+            <div className="av">{L(a.name).replace(/^(د\.|Dr\.)\s*/, '').charAt(0)}</div>
+            <div className="m"><b>{L(a.name)}</b><small><span dir="ltr">{a.email}</span> · {t(ROLE[a.role])}</small></div>
+            <span className={`badge ${a.active ? 'ok' : 'wn'}`}>{a.active ? t('adm_on') : t('adm_off')}</span>
+            <Switch on={a.active} label={L(a.name)} onChange={(v) => (v ? set(a, true) : setConfirm(a.id))} />
+            {confirm === a.id && <ConfirmForm message={`${t('adm_stop_ask')} ${L(a.name)}؟`} confirmLabel={t('adm_stop_yes')} busy={busy} onConfirm={() => set(a, false)} onCancel={() => setConfirm(null)} />}
           </div>
-        </div>
-      )}
-
-      {toast && <div className="admin-toast">{toast}</div>}
-    </div>
+        ))}</Async>
+      </div>
+    </section>
   );
 }
-
-export default Accounts;
