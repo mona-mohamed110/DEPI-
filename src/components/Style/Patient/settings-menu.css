@@ -1,0 +1,35 @@
+/* زر الحساب والإعدادات والقائمة المنبثقة */
+.patient .p-settings-wrap { position: relative; padding-top: 12px; border-top: 1px solid var(--bd); }
+.patient .p-settings-btn {
+  width: 100%; display: flex; align-items: center; gap: 10px; padding: 11px 14px;
+  border-radius: 12px; font-size: 14px; background: var(--pr2); color: var(--pr); border: 1px solid var(--bd);
+}
+.patient .p-settings-btn .p-chev { transition: transform 0.2s; }
+.patient .p-settings-btn.open .p-chev { transform: rotate(180deg); }
+.patient .p-menu {
+  position: absolute; bottom: calc(100% + 8px); inset-inline: 0; z-index: 30;
+  background: var(--card); border: 1px solid var(--bd); border-radius: 14px; box-shadow: var(--shadow); padding: 8px;
+}
+.patient .p-menu-title { color: var(--mu); font-size: 13px; padding: 8px 10px 6px; }
+.patient .p-menu hr { border: 0; border-top: 1px solid var(--bd); margin: 6px 0; }
+.patient .p-menu-item {
+  width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px;
+  border: 0; background: transparent; border-radius: 10px; font-size: 15px; font-weight: 500;
+}
+.patient button.p-menu-item:hover, .patient .p-menu-item.current { background: var(--pr2); }
+.patient .p-menu-item.current { color: var(--pr); }
+.patient .p-menu-item.is-static { cursor: default; }
+.patient .p-menu-item.is-danger { color: var(--dg); }
+.patient .p-menu-item.is-sub { padding-inline-start: 40px; font-size: 14px; }
+
+@media (max-width: 820px) {
+  .patient .p-settings-wrap { border: 0; padding: 0; flex-shrink: 0; position: static; }
+  .patient .p-settings-btn { padding: 9px 12px; }
+  .patient .p-settings-btn .p-grow, .patient .p-settings-btn .p-chev { display: none; }
+  .patient .p-menu { position: fixed; top: 62px; bottom: auto; inset-inline: 10px; max-height: calc(100vh - 80px); overflow-y: auto; }
+}
+
+/* عناصر مساعدة داخل القائمة */
+.patient .p-grow { flex: 1; text-align: start; }
+.patient .p-muted { color: var(--mu); font-size: 14px; }
+.patient .p-menu-item.is-static { background: transparent; }
