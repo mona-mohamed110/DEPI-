@@ -162,8 +162,9 @@
 .app-root.doctor-app .nav a{white-space:nowrap;height:40px;padding:0 12px}
 .app-root.doctor-app .tag{display:none}
 .app-root.doctor-app .side-foot{margin:0;border:0;padding:0}
-.app-root.doctor-app .set-btn{width:44px;padding:0;justify-content:center}
+.app-root.doctor-app .set-btn{width:55px;padding:0;justify-content:center}
 .app-root.doctor-app .set-btn span{display:none}
+.app-root.doctor-app .set-btn .chev{display:none}
 .app-root.doctor-app .menu{position:fixed;top:62px;bottom:auto;inset-inline:auto 12px;width:min(300px,92vw)}
 .app-root.doctor-app .main{padding:20px 16px;height:auto;min-height:0}
 .app-root.doctor-app .form{grid-template-columns:1fr;width: 100%;}
@@ -181,7 +182,7 @@
 .app-root.doctor-app .stat-link{cursor:pointer}
 .app-root.doctor-app .ic{vertical-align:middle}
 .app-root.doctor-app .first{margin-top:0}
-.app-root.doctor-app .narrow{max-width:700px}
+.app-root.doctor-app .narrow{max-width:900px}
 .app-root.doctor-app .inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .app-root.doctor-app .inline > input,
 .app-root.doctor-app .inline > select{flex:1;min-width:140px;width:auto}
