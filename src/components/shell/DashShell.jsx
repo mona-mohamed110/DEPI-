@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { I18nProvider, useI18n } from '../../context/I18nContext.jsx';
 import { usePrefs } from '../../context/PrefsContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -15,6 +15,7 @@ function Frame({ root, items, links, badges = {}, children }) {
   const { theme, lang } = usePrefs();
   const { user } = useAuth();
   const name = L(user?.name);
+  const { pathname } = useLocation();
   return (
     <div className={`app-root ${root}`} data-theme={theme} dir={lang === 'ar' ? 'rtl' : 'ltr'} lang={lang}>
       <aside className="side">
@@ -24,7 +25,7 @@ function Frame({ root, items, links, badges = {}, children }) {
         </div>
         <nav className="nav" aria-label="main">
           {items.map((i) => (
-            <NavLink key={i.to} to={i.to} end={i.end} className={({ isActive }) => (isActive ? 'on' : '')}>
+            <NavLink key={i.to} to={i.to} end={i.end} className={({ isActive }) => (isActive || (i.match && i.match.some((m) => pathname.startsWith(m))) ? 'on' : '')}>
               <Icon name={i.icon} /><span>{t(i.key)}</span>
               {badges[i.key] > 0 && <b className="tag">{num(badges[i.key])}</b>}
             </NavLink>

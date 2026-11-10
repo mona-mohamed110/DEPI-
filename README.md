@@ -29,7 +29,13 @@ npm run dev
 2. **موظف الاستقبال يقبل الطلب** (من لوحته، وعليها عدّاد في السايدبار) ← المريض بيدخل طابور الدكتور، والدكتور بياخد **إذن اطلاع على ملف المريض 30 يوم** (يظهر في صفحة الأذونات عند المريض وعليه عدّاد، ويقدر يسحبه).
 3. **الدكتور** بيشوف ملف المريض كامل (قراءة فقط) من `doctor/patient-file`، ويضيف **روشتة** (أدوية + جرعة + مدة) من `doctor/exam` بعد رسالة تأكيد "إرسال / تعديل" ← بتتضاف تلقائياً لروشتات المريض، والتحاليل بتروح للمعمل. **الروشتة والإذن الساري هما الرابط بين الدكتور والمريض** (من غير إذن ساري الـ API يرجّع 403).
 4. **الدكتور يضيف موظف استقبال** (اسم + إيميل + كلمة سر) ← الحساب بيتربط بالدكتور ده فقط (`doctorId`) ويدخل كـ reception يدير حجوزاته هو بس.
-5. **المريض يحجز عند معمل** (مع اختيار التحليل/الأشعة) ← الطلب بيوصل المعمل مباشرة، ولما المعمل يرفع النتيجة بتظهر عند المريض في صفحة النتائج وحالة الحجز بتتحدث.
+5. **التحاليل المطلوبة:** لما الدكتور يكتب تحاليل/أشعة في الكشف، بتتبعت للمريض كـ **طلب واحد** يظهر في `patient/results/requested` (كارت لكل طلب: اسم الدكتور + التحاليل، وكل تحليل عليه حالته). المريض بيضغط **حجز معمل** فيروح لـ `patient/booking` ويشوف كل المعامل، وبيقدر:
+   * يحجز **كل التحاليل في معمل واحد** (الافتراضي)، أو
+   * يختار تحاليل معينة ويحجزها عند معمل، ثم **يكمل باقي التحاليل عند معمل تاني** (كل تحليل له معمل خاص به: `lab_order_items.lab_id`).
+   * **يغيّر المعمل** لأي تحليل لسه المعمل ما بدأش فيه (زرار "تغيير المعمل" في الكارت أو إلغاء الحجز من صفحة المواعيد) فيرجع ضمن المطلوب.
+   
+   كل معمل بيشوف التحاليل المطلوبة منه بس (إذن على الطلب ده فقط). لما المعمل يبدأ ثم يرفع النتائج بتظهر في `patient/results` وحالة التحليل والطلب والحجز بتتحدث. حالة الطلب بتتحسب من تحاليله: `awaiting_lab` (فيه تحليل لسه ما اتحجزش) ← `assigned` ← `in_progress` ← `done`.
+   * المريض برضه يقدر يحجز عند معمل مباشرة (من غير طلب دكتور) باختيار التحليل بنفسه.
 
 ## هيكل الملفات
 ```
@@ -60,7 +66,7 @@ Base URL = `VITE_API_URL`. كل الردود JSON، والأخطاء بشكل `{
 | Auth | `POST /auth/login` `/auth/register` (multipart مع الشهادة للدكتور/المعمل) `/auth/logout` `/auth/forgot-password` `/auth/verify-code` `/auth/reset-password` `/auth/change-password` · `GET /auth/me` |
 | Account (كل الأدوار) | `GET/PUT /me` · `POST /me/logout-all` |
 | Public | `GET /public/places` · `POST /public/contact` · `GET /drugs/all` |
-| Patient | `/patient/dashboard` `profile` `medical-file` `history` (POST/PUT) `reports` `prescriptions` (+ PATCH current/past) `results` `triage` `appointments` (حجوزات) `permissions/{active,log}` |
+| Patient | `/patient/lab-orders` (GET + `/:id/assign` + `/:id/items/:itemId/unassign`) · `/patient/dashboard` `profile` `medical-file` `history` (POST/PUT) `reports` `prescriptions` (+ PATCH current/past) `results` `triage` `appointments` (حجوزات) `permissions/{active,log}` |
 | Doctor | `/doctor/dashboard` `patients` `patients/:id/file` `exams` `tests` `schedule` `professional` `license-file` `team` (name+email+password) |
 | Lab | `/lab/requests` `requests/:id/start` `requests/:id/result` `results` `results/dates` `profile` |
 | Reception | `/reception/requests` (+ `/:id/accept` `/:id/reject`) `queue` `queue/:id` `patients` `appointments` `records` |

@@ -15,6 +15,7 @@ import PtDashboard from './pages/Patient/Dashboard.jsx';
 import MedicalFile from './pages/Patient/MedicalFile.jsx';
 import Prescriptions from './pages/Patient/Prescriptions.jsx';
 import Results from './pages/Patient/Results.jsx';
+import LabRequests from './pages/Patient/LabRequests.jsx';
 import SymptomTriage from './pages/Patient/SymptomTriage.jsx';
 import Booking from './pages/Patient/Booking.jsx';
 import PtAppointments from './pages/Patient/Appointments.jsx';
@@ -69,6 +70,7 @@ export const router = createBrowserRouter([
           { path: 'file', element: <MedicalFile /> },
           { path: 'prescriptions', element: <Prescriptions /> },
           { path: 'results', element: <Results /> },
+          { path: 'results/requested', element: <LabRequests /> },
           { path: 'triage', element: <SymptomTriage /> },
           { path: 'booking', element: <Booking /> },
           { path: 'appointments', element: <PtAppointments /> },

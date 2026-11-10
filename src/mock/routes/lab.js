@@ -1,6 +1,6 @@
 import { r, fail } from '../router.js';
 import { bucket, save } from '../db.js';
-import { patientOf } from '../helpers.js';
+import { patientOf, syncOrder } from '../helpers.js';
 import { TEST_CATALOG } from '../../config/catalog.js';
 import { clean, isEgPhone } from '../../api/security.js';
 
@@ -27,7 +27,7 @@ r.post('/lab/requests', (ctx) => {
 r.patch('/lab/requests/:id/start', (ctx) => {
   const q = LB(ctx).requests.find((x) => String(x.id) === ctx.params.id); if (!q) fail(404, 'not_found');
   q.status = 'progress';
-  const bk = q.bookingId && ctx.db.bookings.find((x) => x.id === q.bookingId); if (bk) bk.status = 'confirmed'; // المريض يشوف إن المعمل استلم طلبه
+  syncOrder(ctx.db, ctx.user.id, q); // المريض يشوف إن المعمل استلم طلبه
   save(); return q;
 });
 // رفع النتيجة: بتتربط بملف المريض (لو عنده حساب بنفس رقم الهاتف)
@@ -41,7 +41,7 @@ r.post('/lab/requests/:id/result', (ctx) => {
     rec.results.unshift({ id: `x_${q.id}`, kind: q.kind, title: q.test, source: ctx.user.name, date: q.uploadedAt, status: 'normal', fileUrl: files[0].dataUrl || '' });
     rec.permissions.log.unshift({ id: `l_${q.id}`, who: ctx.user.name, action: { ar: 'رفع نتيجة', en: 'Uploaded a result' }, at: q.uploadedAt });
   }
-  const bk = q.bookingId && ctx.db.bookings.find((x) => x.id === q.bookingId); if (bk) bk.status = 'done';
+  syncOrder(ctx.db, ctx.user.id, q); // لما كل تحاليل الطلب تخلص: الطلب والحجز يبقوا done
   save(); return q;
 });
 r.get('/lab/results', (ctx) => {

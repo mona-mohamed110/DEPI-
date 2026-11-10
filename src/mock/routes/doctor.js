@@ -52,13 +52,11 @@ r.post('/doctor/exams', (ctx) => {
     });
   }
   rec.permissions.log.unshift({ id: uid('l'), who: user.name, action: { ar: 'أضاف كشف وروشتة جديدة', en: 'Added a new examination' }, at: new Date().toISOString() });
-  const labId = Object.keys(db.labs)[0];
-  if (labId && tests.length) {
-    const reqs = db.labs[labId].requests;
-    const age = ageFrom(rec.info.birthDate);
-    tests.forEach((name) => {
-      const cat = TEST_CATALOG.find((c) => c.ar === name || c.en === name);
-      reqs.unshift({ id: Math.max(1000, ...reqs.map((x) => x.id)) + 1, name: typeof pu.name === 'object' ? pu.name.ar : pu.name, patientId, age: age ?? 0, sex: 'male', phone: pu.phone || '', test: cat ? cat.ar : name, kind: cat?.kind || 'lab', doctor: user.name, status: 'new', createdAt: new Date().toISOString() });
+  // التحاليل المطلوبة: بتتحفظ كطلب "بانتظار المعمل" عند المريض، والمريض هو اللي يختار المعمل ويحجز
+  if (tests.length) {
+    db.labOrders.unshift({
+      id: uid('lo'), patientId, doctorId: user.id, doctor: user.name, specialty: { ar: sp.ar, en: sp.en }, labId: null, appointmentId: null, status: 'awaiting_lab', createdAt: new Date().toISOString(),
+      items: [...new Set(tests.map((n) => clean(n, 80)))].map((name) => { const cat = TEST_CATALOG.find((x) => x.ar === name || x.en === name); return { id: uid('li'), name: cat ? cat.ar : name, kind: cat?.kind || 'lab', status: 'awaiting_lab', labId: null, bookingId: null }; }),
     });
   }
   // إنهاء حجز اليوم لو موجود

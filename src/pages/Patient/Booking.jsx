@@ -5,6 +5,7 @@ import PlaceSearch from '../../components/home/PlaceSearch.jsx';
 import { useToast } from '../../components/ui/Toast.jsx';
 import { useI18n } from '../../context/I18nContext.jsx';
 import { TEST_CATALOG } from '../../config/catalog.js';
+import { usePatient } from './PatientContext.jsx';
 import * as api from '../../api/patient.js';
 
 const PENDING_KEY = 'shefaa_pending_booking';
@@ -21,9 +22,14 @@ function pickDoctor(state) {
 export default function Booking() {
   const { t, L, lang, num, locale } = useI18n();
   const { act, toast } = useToast();
+  const { refreshLabs, refreshPerms } = usePatient();
   const loc = useLocation();
-  const [doctor, setDoctor] = useState(() => pickDoctor(loc.state));
-  const [searching, setSearching] = useState(false);
+  // وضع "حجز التحاليل المطلوبة": جاي من صفحة التحاليل المطلوبة، والمريض يختار المعمل ويحجز
+  const [order, setOrder] = useState(() => loc.state?.labOrder || null);
+  const awaiting = (o) => (o ? o.items.filter((i) => i.status === 'awaiting_lab') : []);
+  const [picked, setPicked] = useState(() => awaiting(loc.state?.labOrder).map((i) => i.id));   // التحاليل اللي هتتحجز عند المعمل ده
+  const [doctor, setDoctor] = useState(() => (loc.state?.labOrder ? null : pickDoctor(loc.state)));
+  const [searching, setSearching] = useState(!!loc.state?.labOrder);
   const [day, setDay] = useState('');
   const [time, setTime] = useState('');
   const [test, setTest] = useState('');
@@ -51,21 +57,50 @@ export default function Booking() {
 
   const confirm = async () => {
     if (!doctor || !day || !time) return;
-    if (isLab && !test) return toast(t('bk_need_test'));
+    if (isLab && !order && !test) return toast(t('bk_need_test'));
+    if (order && !picked.length) return toast(t('bk_order_none'));
     setBusy(true);
-    const r = await act(() => api.bookAppointment({ doctorId: doctor.id, date: day, time, test: isLab ? test : undefined }));
+    const r = await act(() => (order
+      ? api.assignLabOrder(order.id, { labId: doctor.id, date: day, time, itemIds: picked })
+      : api.bookAppointment({ doctorId: doctor.id, date: day, time, test: isLab ? test : undefined })));
     setBusy(false);
-    if (r) { try { sessionStorage.removeItem(PENDING_KEY); } catch { /* ignore */ } setDone(true); }
+    if (r) {
+      try { sessionStorage.removeItem(PENDING_KEY); } catch { /* ignore */ }
+      if (order && r.order) setOrder(r.order);
+      setDone(true); refreshLabs(); refreshPerms();
+    }
   };
 
   return (
     <section>
-      <div className="hello"><h1>{t('title')}</h1>
+      <div className="hello"><h1>{t(order ? 'bk_order_title' : 'title')}</h1>
         <button type="button" className={`btn ${searching ? 'o' : ''}`} onClick={() => setSearching((s) => !s)}><Icon name={searching ? 'x' : 'search'} size={18} />{searching ? t('bk_close_search') : t('searchButton')}</button>
       </div>
-      <p className="hello-sub">{t('searchHint')}</p>
+      <p className="hello-sub">{t(order ? 'bk_order_pick' : 'searchHint')}</p>
 
-      {searching && <div className="search-wrap"><PlaceSearch title={false} onPick={choose} /></div>}
+      {order && (
+        <div className="card" style={{ marginBottom: 16 }}>
+          <div className="row" style={{ border: 0, padding: 0 }}>
+            <div className="res-icon"><Icon name="stethoscope" size={22} /></div>
+            <div className="m"><small>{t('bk_order_from')}</small><b>{L(order.doctor)}</b><small>{L(order.specialty)}</small></div>
+          </div>
+          <h3 style={{ margin: '14px 0 6px' }}>{t('bk_order_items')}</h3>
+          <div className="chips">
+            {order.items.map((it) => (it.status === 'awaiting_lab' ? (
+              <button type="button" key={it.id} className={`chip ${picked.includes(it.id) ? 'on' : ''}`} aria-pressed={picked.includes(it.id)} disabled={done}
+                onClick={() => setPicked((x) => (x.includes(it.id) ? x.filter((i) => i !== it.id) : [...x, it.id]))}>
+                <Icon name={it.kind === 'xray' ? 'scan' : 'tube'} size={15} />{it.name}
+              </button>
+            ) : (
+              <span key={it.id} className="chip" style={{ opacity: 0.6 }}><Icon name="check" size={14} />{it.name} · {L(it.lab) || t('lo_item_done')}</span>
+            )))}
+          </div>
+          <p className="sub" style={{ margin: '8px 0 0', fontSize: 13 }}>{t('bk_order_split')}</p>
+          <div className="note" style={{ marginTop: 12 }}><Icon name="info" size={18} /><span>{t('bk_order_note')}</span></div>
+        </div>
+      )}
+
+      {searching && <div className="search-wrap"><PlaceSearch title={false} onPick={choose} onlyType={order ? 'lab' : ''} /></div>}
 
       {!searching && !doctor && (
         <div className="card state">
@@ -84,11 +119,11 @@ export default function Booking() {
               {doctor.rating != null && <span className="badge"><Icon name="star" size={13} />{num(doctor.rating)}</span>}
               <button type="button" className="btn s o" onClick={() => setSearching(true)}>{t('changeDoctor')}</button>
             </div>
-            <div className="note" style={{ marginTop: 12 }}><Icon name="info" size={18} /><span>{t(isLab ? 'bk_note_lab' : 'bk_note_doctor')}</span></div>
+            {!order && <div className="note" style={{ marginTop: 12 }}><Icon name="info" size={18} /><span>{t(isLab ? 'bk_note_lab' : 'bk_note_doctor')}</span></div>}
           </div>
 
           <div className="card" style={{ marginTop: 16 }}>
-            {isLab && (
+            {isLab && !order && (
               <>
                 <h2>{t('bk_lab_test')}</h2>
                 <select value={test} onChange={(e) => { setTest(e.target.value); setDone(false); }}>
@@ -97,7 +132,7 @@ export default function Booking() {
                 </select>
               </>
             )}
-            <h2 style={isLab ? { marginTop: 20 } : undefined}>{t('stepDay')}</h2>
+            <h2 style={isLab && !order ? { marginTop: 20 } : undefined}>{t('stepDay')}</h2>
             {days.length === 0 ? <div className="state">{t('noDays')}</div> : (
               <div className="days">{days.map((d) => (
                 <button type="button" key={d.k} className={`day ${day === d.k ? 'on' : ''}`} aria-pressed={day === d.k} onClick={() => { setDay(d.k); setTime(''); setDone(false); }}>
@@ -119,7 +154,12 @@ export default function Booking() {
             {done && (
               <div className="note" style={{ marginTop: 14 }}>
                 <Icon name="checkc" size={18} />
-                <span>{t('bk_sent')} — <b>{L(doctor.name)}</b> · {days.find((x) => x.k === day)?.full} · {fmt(time)} · <Link className="link-btn" to="/patient/appointments">{t('nav_appts')}</Link></span>
+                <span>{t(order ? 'bk_order_sent' : 'bk_sent')} — <b>{L(doctor.name)}</b> · {days.find((x) => x.k === day)?.full} · {fmt(time)} · <Link className="link-btn" to="/patient/appointments">{t('nav_appts')}</Link>{order && <> · <Link className="link-btn" to="/patient/results">{t('bk_order_results')}</Link></>}</span>
+                {order && awaiting(order).length > 0 && (
+                  <button type="button" className="btn s" style={{ marginInlineStart: 12 }} onClick={() => { setPicked(awaiting(order).map((i) => i.id)); setDoctor(null); setDay(''); setTime(''); setDone(false); setSearching(true); }}>
+                    {t('bk_order_remaining')} ({t('bk_order_left', { n: num(awaiting(order).length) })})
+                  </button>
+                )}
               </div>
             )}
           </div>

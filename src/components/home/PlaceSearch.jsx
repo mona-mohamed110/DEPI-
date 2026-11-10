@@ -47,9 +47,9 @@ function MapView({ places, selected, onSelect }) {
 
 
 // بحث الأطباء والمعامل (قائمة + خريطة) — بيتستخدم في الصفحة العامة وجوه صفحة حجز المريض
-export default function PlaceSearch({ onPick, note, title = true }) {
+export default function PlaceSearch({ onPick, note, title = true, onlyType = '' }) {
   const { t, L, num } = useI18n();
-  const [type, setType] = useState('');
+  const [type, setType] = useState(onlyType);
   const [q, setQ] = useState('');
   const [places, setPlaces] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -70,7 +70,7 @@ export default function PlaceSearch({ onPick, note, title = true }) {
       {title && (<><h1 className="sec-title">{t('sr_title')}</h1><p className="sec-sub">{t('sr_sub')}</p></>)}
       <div className="sr-bar">
         <div className="sr-input"><Icon name="search" size={18} /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('sr_ph')} maxLength={80} /></div>
-        <div className="chips">{[['', 'sr_all'], ['doctor', 'sr_doctor'], ['lab', 'sr_lab']].map(([v, k]) => <button type="button" key={v} className={`chip ${type === v ? 'on' : ''}`} onClick={() => setType(v)}>{t(k)}</button>)}</div>
+        {!onlyType && <div className="chips">{[['', 'sr_all'], ['doctor', 'sr_doctor'], ['lab', 'sr_lab']].map(([v, k]) => <button type="button" key={v} className={`chip ${type === v ? 'on' : ''}`} onClick={() => setType(v)}>{t(k)}</button>)}</div>}
       </div>
       <div className="sr-grid">
         <div className="sr-list">

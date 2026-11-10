@@ -315,4 +315,12 @@
 @media (max-width:1100px){.app-root.patient-app .sr-grid{grid-template-columns:1fr}}
 .app-root.patient-app .map-view{height:520px}
 .app-root.patient-app .rate{display:inline-flex;align-items:center;gap:4px;background:var(--wn2);color:var(--wn);border-radius:20px;padding:2px 10px;font-size:13px}
-
+.app-root.patient-app .tabs button{display:inline-flex;align-items:center;gap:8px}
+.app-root.patient-app .tab-count{background:var(--pr);color:var(--pr-ink);font-size:11px;border-radius:20px;padding:0 8px;min-width:20px;text-align:center}
+.app-root.patient-app .tabs button.on .tab-count{background:var(--pr-ink);color:var(--pr)}
+.app-root.patient-app .lo-tests{margin:0}
+.app-root.patient-app .lo-test{display:flex;align-items:center;gap:10px;grid-template-columns:none}
+.app-root.patient-app .lo-test .ic{color:var(--pr)}
+.app-root.patient-app .lo-test{flex-wrap:wrap}
+.app-root.patient-app .lo-info{flex:1;display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:140px}
+.app-root.patient-app .chip:disabled{cursor:default;opacity:.7}

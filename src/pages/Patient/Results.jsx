@@ -4,6 +4,7 @@ import { useAsync } from '../../components/ui/hooks.js';
 import { useToast } from '../../components/ui/Toast.jsx';
 import { useI18n } from '../../context/I18nContext.jsx';
 import { safeUrl } from '../../api/security.js';
+import ResultsTabs from './ResultsTabs.jsx';
 import * as api from '../../api/patient.js';
 
 const ICON = { lab: 'tube', xray: 'scan', ecg: 'activity' };
@@ -17,6 +18,7 @@ export default function Results() {
     <section>
       <h1>{t('res_title')}</h1>
       <p className="sub">{t('res_sub')}</p>
+      <ResultsTabs />
       <div className="card">
         <Async state={state}>{(list) => list.length === 0 ? <div className="state">{t('no_results')}</div> : list.map((r) => {
           const url = safeUrl(r.fileUrl);

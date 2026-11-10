@@ -13,7 +13,7 @@
 // ======================================================================
 import { TEST_CATALOG } from '../config/catalog.js';
 export { TEST_CATALOG };
-export const SEED_VERSION = 4;
+export const SEED_VERSION = 5;
 
 const H = 3600 * 1000, D = 24 * H;
 const now = Date.now();
@@ -116,6 +116,15 @@ export function buildSeed() {
     ],
   };
 
+  // ---------------- طلبات التحاليل (يكتبها الدكتور، والمريض هو اللي يختار المعمل) ----------------
+  // الحالات: awaiting_lab (لسه المريض ما حجزش) ← assigned (اتحجز عند معمل) ← in_progress ← done
+  const labOrders = [
+    { id: 'lo_1', patientId: 'u_patient', doctorId: 'u_doctor', doctor: dr1, specialty: sp.internal, labId: null, appointmentId: null, status: 'awaiting_lab', createdAt: ago(20),
+      items: [{ id: 'li_1', name: 'HbA1c', kind: 'lab', status: 'awaiting_lab', labId: null, bookingId: null }, { id: 'li_2', name: 'صورة دم كاملة CBC', kind: 'lab', status: 'awaiting_lab', labId: null, bookingId: null }] },
+    { id: 'lo_2', patientId: 'u_patient', doctorId: 'u_doctor2', doctor: dr2, specialty: sp.cardio, labId: null, appointmentId: null, status: 'awaiting_lab', createdAt: ago(60),
+      items: [{ id: 'li_3', name: 'أشعة سينية على الصدر', kind: 'xray', status: 'awaiting_lab', labId: null, bookingId: null }] },
+  ];
+
   // ---------------- الأطباء ----------------
   const doctors = {
     u_doctor: {
@@ -187,5 +196,5 @@ export function buildSeed() {
     { id: 'pl_6', type: 'lab', name: ar('مركز النور للتحاليل', 'Al-Noor Lab Center'), specialty: ar('تحاليل وأشعة', 'Lab tests & imaging'), address: ar('١٠ شارع البحر', '10 Al-Bahr St.'), city: ar('طنطا', 'Tanta'), rating: 4.5, x: 80, y: 62, availableDays: [0, 1, 2, 3, 4, 6], timeSlots: ['08:00', '09:00', '10:00'] },
   ];
 
-  return { v: SEED_VERSION, users, patients, doctors, labs, bookings, clinicPatients, licenses, extraAccounts, monitoring, places, sessions: {}, resets: {}, contacts: [] };
+  return { v: SEED_VERSION, users, patients, doctors, labs, bookings, labOrders, clinicPatients, licenses, extraAccounts, monitoring, places, sessions: {}, resets: {}, contacts: [] };
 }

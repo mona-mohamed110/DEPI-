@@ -8,7 +8,7 @@ const ITEMS = [
   { to: '/patient', end: true, icon: 'dashboard', key: 'nav_dash' },
   { to: '/patient/file', icon: 'folder', key: 'nav_file' },
   { to: '/patient/prescriptions', icon: 'pill', key: 'nav_rx' },
-  { to: '/patient/results', icon: 'tube', key: 'nav_res' },
+  { to: '/patient/results/requested', icon: 'tube', key: 'nav_res', match: ['/patient/results'] },
   { to: '/patient/triage', icon: 'bot', key: 'nav_ai' },
   { to: '/patient/booking', icon: 'calendarPlus', key: 'nav_book' },
   { to: '/patient/appointments', icon: 'calendarCheck', key: 'nav_appts' },

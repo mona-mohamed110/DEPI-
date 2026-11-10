@@ -98,6 +98,7 @@ export default function Exam() {
             </div>
             <div className="card">
               <h2>{t('tests_title')}</h2>
+              <p className="sub" style={{ margin: '0 0 12px', fontSize: 13 }}>{t('tests_note')}</p>
               <Async state={tests}>{() => (
                 <div className="chips">
                   {all.map((x) => (

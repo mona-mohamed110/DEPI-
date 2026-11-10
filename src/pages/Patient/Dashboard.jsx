@@ -58,7 +58,7 @@ export default function Dashboard() {
               {d.alerts.length === 0 ? <div className="state">{t('d_no_alerts')}</div> : d.alerts.map((a, i) => (
                 <div className="alert-row" key={i}>
                   <Icon name="tube" size={20} />
-                  <span>{t('d_alert_result', { title: L(a.title) })}</span>
+                  <span>{a.kind === 'labs' ? t('d_alert_labs', { n: num(a.n) }) : t('d_alert_result', { title: L(a.title) })}</span>
                 </div>
               ))}
             </div>
