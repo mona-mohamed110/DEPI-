@@ -1,19 +1,25 @@
 <!doctype html>
-<html lang="ar" dir="rtl" >
+<html lang="ar" dir="rtl" data-theme="light">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <link rel="icon" type="image/png" href="/logo-darkMode.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta name="description" content="شفاء — منصة الرعاية الصحية الرقمية" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet" />
-
-  <style>
-  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&family=Cormorant+Upright:wght@300;400;500;600;700&family=Playwrite+CU+Guides&family=Roboto:ital,wght@0,100..900;1,100..900&family=Sacramento&family=Tajawal:wght@200;300;400;500;700;800;900&display=swap');
-  </style>
-
-
-    <title>shefaa</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+    
+    <title>شفاء | Shefaa</title>
+    <script>
+      try {
+        var t = localStorage.getItem('shefaa_theme'), l = localStorage.getItem('shefaa_lang');
+        var el = document.documentElement;
+        if (t === 'dark') el.setAttribute('data-theme', 'dark');
+        if (l === 'en') { el.setAttribute('lang', 'en'); el.setAttribute('dir', 'ltr'); }
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

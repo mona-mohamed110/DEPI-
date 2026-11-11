@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useLab } from "../../context/LabContext";
-import * as api from "../../services/labApi";
-import { fileType } from "../../data/labData";
-import Icon from "../../components/Lab/Icon";
+import { useLab } from "./LabContext.jsx";
+import * as api from "../../api/lab.js";
+const { fileType } = api;
+import Icon from "../../components/Icon.jsx";
 
 const key = (y, m, d) => `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
@@ -39,33 +39,33 @@ function DatePicker({ value, dates, onChange }) {
   const pick = (k) => { onChange(k === value ? "" : k); setOpen(false); };
 
   return (
-    <div className="lb-dp" ref={ref}>
-      <button type="button" className="lb-dp-btn" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
+    <div className="dp" ref={ref}>
+      <button type="button" className="dp-btn" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
         <Icon name="calendar" size={18} />
         <span>{value ? fmtDay(value) : t("allDays")}</span>
-        {value && <span className="lb-x" role="button" aria-label="clear" onClick={(e) => { e.stopPropagation(); onChange(""); }}><Icon name="x" size={16} /></span>}
+        {value && <span className="x" role="button" aria-label="clear" onClick={(e) => { e.stopPropagation(); onChange(""); }}><Icon name="x" size={16} /></span>}
       </button>
 
       {open && (
-        <div className="lb-cal">
-          <div className="lb-cal-top">
+        <div className="cal">
+          <div className="cal-top">
             <span>{value ? fmtDay(value) : new Date().toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" })}</span>
             {value && <button type="button" onClick={() => pick(value)}>{t("allDays")}</button>}
           </div>
-          <div className="lb-cal-nav">
+          <div className="cal-nav">
             <b>{title}</b>
             <div>
               <button type="button" onClick={() => move(-1)} aria-label="prev"><Icon name="chevU" size={18} /></button>
               <button type="button" onClick={() => move(1)} aria-label="next"><Icon name="chevD" size={18} /></button>
             </div>
           </div>
-          <div className="lb-cal-grid">
-            {weekdays.map((w, i) => <div key={i} className="lb-cal-wd">{w}</div>)}
+          <div className="cal-grid">
+            {weekdays.map((w, i) => <div key={i} className="cal-wd">{w}</div>)}
             {cells.map((c) => {
               const has = dates.includes(c.k);
               return (
                 <button type="button" key={c.k} disabled={!has} onClick={() => pick(c.k)}
-                  className={`lb-cal-d ${c.out ? "out" : ""} ${has ? "has" : ""} ${value === c.k ? "sel" : ""}`}>
+                  className={`cal-d ${c.out ? "out" : ""} ${has ? "has" : ""} ${value === c.k ? "sel" : ""}`}>
                   {c.n.toLocaleString(locale)}
                 </button>
               );
@@ -101,27 +101,27 @@ export default function ResultsLog() {
   return (
     <section>
       <h1>{t("logTitle")}</h1>
-      <p className="lb-sub">{t("logSub")}</p>
-      <div className="lb-card">
-        <div className="lb-filters">
-          <div className="lb-search">
+      <p className="sub">{t("logSub")}</p>
+      <div className="card">
+        <div className="filters">
+          <div className="search">
             <Icon name="search" size={18} />
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("searchPh")} />
           </div>
           <DatePicker value={day} dates={dates} onChange={setDay} />
         </div>
-        <div className="lb-scroll">
+        <div className="scroll">
           <table>
             <thead><tr>
               <th>{t("orderNo")}</th><th>{t("patient")}</th><th>{t("exam")}</th><th>{t("filesCol")}</th><th>{t("uploadDate")}</th><th>{t("statusCol")}</th>
             </tr></thead>
             <tbody>
-              {rows.length === 0 ? <tr><td colSpan={6} className="lb-sub">{t("noResults")}</td></tr> : rows.map((q) => (
+              {rows.length === 0 ? <tr><td colSpan={6} className="sub">{t("noResults")}</td></tr> : rows.map((q) => (
                 <tr key={q.id}>
                   <td>#{q.id}</td><td><b>{q.name}</b></td><td>{testName(q.test)}</td>
-                  <td>{(q.files || []).map((f) => <span key={f} className="lb-badge" style={{ margin: "0 2px" }}>{fileType(f)}</span>)}</td>
+                  <td>{(q.files || []).map((f) => <span key={f} className="badge" style={{ margin: "0 2px" }}>{fileType(f)}</span>)}</td>
                   <td>{fmtDateTime(q.uploadedAt)}</td>
-                  <td><span className="lb-badge ok"><Icon name="check" size={14} />{t("linked")}</span></td>
+                  <td><span className="badge ok"><Icon name="check" size={14} />{t("linked")}</span></td>
                 </tr>
               ))}
             </tbody>

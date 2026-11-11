@@ -1,227 +1,97 @@
-import {
-  AreaChart,
-  Area,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
-import { useApp } from "../../context/AppContext.jsx";
-import "../../components/Style/Admin/Monitoring.css";
+import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import Icon from '../../components/Icon.jsx';
+import { Async } from '../../components/ui/States.jsx';
+import { useAsync } from '../../components/ui/hooks.js';
+import { useI18n } from '../../context/I18nContext.jsx';
+import * as api from '../../api/admin.js';
 
-function ChartTooltip(props) {
-  if (!props.active || !props.payload || props.payload.length === 0) {
-    return null;
-  }
-  return (
-    <div className="chart-tooltip">
-      <span>{props.label}</span>
-      <b>{props.payload[0].value} {props.unit}</b>
-    </div>
-  );
-}
+const DAYS = ['sat', 'sun', 'mon', 'tue', 'wed', 'thu', 'fri'];
+const COLORS = ['var(--pr)', '#7c3aed', '#0ea5e9', '#94a3b8'];
+const ROLES = [['patient', 'adm_u_pt'], ['doctor', 'adm_u_dr'], ['lab', 'adm_u_lab'], ['reception', 'adm_u_rc']];
+const SVC = { api: 'adm_svc_api', db: 'adm_svc_db', notif: 'adm_svc_notif', files: 'adm_svc_files', ai: 'adm_svc_ai' };
+const tipStyle = { background: 'var(--card)', border: '1px solid var(--bd)', borderRadius: 10, color: 'var(--tx)' };
 
-function Monitoring() {
-  const { t, lang } = useApp();
+export default function Monitoring() {
+  const { t, num } = useI18n();
+  const state = useAsync(() => api.getMonitoring(), []);
 
-  const requests = [
-    { day: t("adm_d_sat"), count: 820 },
-    { day: t("adm_d_sun"), count: 910 },
-    { day: t("adm_d_mon"), count: 880 },
-    { day: t("adm_d_tue"), count: 1040 },
-    { day: t("adm_d_wed"), count: 990 },
-    { day: t("adm_d_thu"), count: 760 },
-    { day: t("adm_d_fri"), count: 700 },
-  ];
-
-  const services = [
-    { name: t("adm_svc_api"), ok: true },
-    { name: t("adm_svc_db"), ok: true },
-    { name: t("adm_svc_notif"), ok: true },
-    { name: t("adm_svc_files"), ok: true },
-    { name: t("adm_svc_ai"), ok: false },
-  ];
-
-  const users = [
-    { name: t("adm_u_pt"), count: 4 },
-    { name: t("adm_u_dr"), count: 3 },
-    { name: t("adm_u_lab"), count: 2 },
-    { name: t("adm_u_rc"), count: 1 },
-  ];
-
-  const colors = ["#2563eb", "#7c3aed", "#0ea5e9", "#94a3b8"];
-
-  const totalUsers = users.reduce(function (sum, u) {
-    return sum + u.count;
-  }, 0);
-
-  const isAr = lang === "ar";
+  const download = (m) => {
+    const rows = [['metric', 'value'], ['booked', m.report.booked], ['access', m.report.access], ['uploaded', m.report.uploaded], ['newAccounts', m.report.newAccounts]];
+    const url = URL.createObjectURL(new Blob([rows.map((r) => r.join(',')).join('\n')], { type: 'text/csv' }));
+    const a = Object.assign(document.createElement('a'), { href: url, download: 'shefaa-report.csv' });
+    a.click(); URL.revokeObjectURL(url);
+  };
 
   return (
-    <div className="monitoring">
-      <h1>{t("adm_mon_title")}</h1>
-      <p className="monitoring-sub">{t("adm_mon_sub")}</p>
-
-      <div className="monitoring-note">{t("adm_mon_note")}</div>
-
-      <div className="monitoring-stats">
-        <div className="monitoring-card">
-          <span>{t("adm_mon_online")}</span>
-          <b>248</b>
-          <small>{t("adm_mon_vs")}</small>
-        </div>
-        <div className="monitoring-card">
-          <span>{t("adm_mon_latency")}</span>
-          <b>180ms</b>
-          <small>{t("adm_mon_excellent")}</small>
-        </div>
-        <div className="monitoring-card">
-          <span>{t("adm_mon_errors")}</span>
-          <b>0.3%</b>
-          <small>{t("adm_mon_stable")}</small>
-        </div>
-        <div className="monitoring-card">
-          <span>{t("adm_mon_uptime")}</span>
-          <b>99.9%</b>
-          <small>{t("adm_mon_30d")}</small>
-        </div>
-      </div>
-
-      <div className="monitoring-grid">
-        <div className="monitoring-card">
-          <h2>{t("adm_mon_report")}</h2>
-          <div className="monitoring-row">
-            <div className="monitoring-name">{t("adm_mon_booked")}</div>
-            <b>3,420</b>
-          </div>
-          <div className="monitoring-row">
-            <div className="monitoring-name">{t("adm_mon_access")}</div>
-            <b>1,890</b>
-          </div>
-          <div className="monitoring-row">
-            <div className="monitoring-name">{t("adm_mon_uploaded")}</div>
-            <b>2,710</b>
-          </div>
-          <div className="monitoring-row">
-            <div className="monitoring-name">{t("adm_mon_newacc")}</div>
-            <b>312</b>
-          </div>
-          <button className="monitoring-btn">{t("adm_mon_download")}</button>
-        </div>
-
-        <div className="monitoring-card">
-          <h2>{t("adm_mon_services")}</h2>
-          {services.map(function (s, i) {
-            return (
-              <div className="monitoring-row" key={i}>
-                <span className={s.ok ? "monitoring-dot" : "monitoring-dot warn"}></span>
-                <div className="monitoring-name">{s.name}</div>
-                <span className={s.ok ? "monitoring-badge ok" : "monitoring-badge warn"}>
-                  {s.ok ? t("adm_svc_up") : t("adm_svc_slow")}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="monitoring-card monitoring-users">
-          <h2>{t("adm_mon_users_by")}</h2>
-
-          <div className="monitoring-donut" dir="ltr">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={users}
-                  dataKey="count"
-                  nameKey="name"
-                  innerRadius={55}
-                  outerRadius={80}
-                  paddingAngle={3}
-                >
-                  {users.map(function (u, i) {
-                    return <Cell key={i} fill={colors[i]} />;
-                  })}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    background: "#0f1b2d",
-                    border: "none",
-                    borderRadius: "10px",
-                    color: "#fff",
-                  }}
-                  itemStyle={{ color: "#fff" }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-
-            <div className="monitoring-donut-center">
-              <b>{totalUsers}</b>
-              <span>{t("adm_mon_users_word")}</span>
+    <section>
+      <h1>{t('adm_mon_title')}</h1>
+      <p className="sub">{t('adm_mon_sub')}</p>
+      <div className="note"><Icon name="info" size={18} /><span>{t('adm_mon_note')}</span></div>
+      <Async state={state}>{(m) => {
+        const users = ROLES.map(([k, label]) => ({ name: t(label), count: m.usersByRole[k] }));
+        const total = users.reduce((s, u) => s + u.count, 0);
+        const weekly = m.weekly.map((count, i) => ({ day: t(`adm_d_${DAYS[i]}`), count }));
+        return (
+          <>
+            <div className="grid g4">
+              {[['adm_mon_online', num(m.online), 'adm_mon_vs', 'users', ''], ['adm_mon_latency', `${num(m.latency)}ms`, 'adm_mon_excellent', 'clock', 'ok'], ['adm_mon_errors', `${num(m.errors)}%`, 'adm_mon_stable', 'alert', 'wn'], ['adm_mon_uptime', `${num(m.uptime)}%`, 'adm_mon_30d', 'activity', 'ok']].map(([k, v, sub, ic, tone]) => (
+                <div className="card stat" key={k}><div className={`tile ${tone}`}><Icon name={ic} size={22} /></div><span>{t(k)}</span><b>{v}</b><small className="sub" style={{ margin: 0 }}>{t(sub)}</small></div>
+              ))}
             </div>
-          </div>
 
-          {users.map(function (u, i) {
-            return (
-              <div className="monitoring-row" key={i}>
-                <span className="monitoring-legend-dot" style={{ background: colors[i] }}></span>
-                <div className="monitoring-name">{u.name}</div>
-                <b>{u.count}</b>
+            <div className="card" style={{ marginTop: 16 }}>
+              <h2>{t('adm_mon_weekly')}</h2>
+              <div className="chart-box">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={weekly} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                    <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--pr)" stopOpacity=".35" /><stop offset="100%" stopColor="var(--pr)" stopOpacity="0" /></linearGradient></defs>
+                    <CartesianGrid stroke="var(--bd)" vertical={false} />
+                    <XAxis dataKey="day" tick={{ fill: 'var(--mu)', fontSize: 12 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: 'var(--mu)', fontSize: 12 }} axisLine={false} tickLine={false} width={40} />
+                    <Tooltip contentStyle={tipStyle} formatter={(v) => [`${num(v)} ${t('adm_mon_requests')}`, '']} />
+                    <Area type="monotone" dataKey="count" stroke="var(--pr)" strokeWidth={2.5} fill="url(#g)" />
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
-            );
-          })}
-        </div>
-      </div>
+            </div>
 
-      <div className="monitoring-card monitoring-wide">
-        <h2>{t("adm_mon_weekly")}</h2>
-        <div className="monitoring-chart" dir="ltr">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={requests} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="requestsFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#2563eb" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="#2563eb" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-
-              <CartesianGrid vertical={false} stroke="var(--border)" />
-              <XAxis
-                dataKey="day"
-                reversed={isAr}
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: "var(--muted)", fontSize: 13 }}
-              />
-              <YAxis
-                orientation={isAr ? "right" : "left"}
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: "var(--muted)", fontSize: 12 }}
-                width={40}
-              />
-              <Tooltip
-                content={<ChartTooltip unit={t("adm_mon_requests")} />}
-                cursor={{ stroke: "#2563eb", strokeDasharray: "4 4" }}
-              />
-              <Area
-                type="monotone"
-                dataKey="count"
-                stroke="#2563eb"
-                strokeWidth={3}
-                fill="url(#requestsFill)"
-                dot={{ r: 4, fill: "#fff", stroke: "#2563eb", strokeWidth: 2 }}
-                activeDot={{ r: 7, fill: "#2563eb", stroke: "#fff", strokeWidth: 3 }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-    </div>
+            <div className="grid g3" style={{ marginTop: 16 }}>
+              <div className="card">
+                <h2>{t('adm_mon_report')}</h2>
+                {[['adm_mon_booked', m.report.booked], ['adm_mon_access', m.report.access], ['adm_mon_uploaded', m.report.uploaded], ['adm_mon_newacc', m.report.newAccounts]].map(([k, v]) => (
+                  <div className="row" key={k}><span className="m">{t(k)}</span><b>{num(v)}</b></div>
+                ))}
+                <div className="btn-row"><button type="button" className="btn o" onClick={() => download(m)}><Icon name="download" size={16} />{t('adm_mon_download')}</button></div>
+              </div>
+              <div className="card">
+                <h2>{t('adm_mon_services')}</h2>
+                {m.services.map((s) => (
+                  <div className="svc" key={s.key}>
+                    <span className={`dot ${s.ok ? '' : 'bad'}`} />
+                    <div className="m">{t(SVC[s.key])}</div>
+                    <span className={`badge ${s.ok ? 'ok' : 'wn'}`}>{s.ok ? t('adm_svc_up') : t('adm_svc_slow')}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="card">
+                <h2>{t('adm_mon_users_by')}</h2>
+                <div className="donut-wrap">
+                  <div style={{ position: 'relative', width: 170, height: 170, direction: 'ltr' }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={users} dataKey="count" nameKey="name" innerRadius={55} outerRadius={80} paddingAngle={3} stroke="none">{users.map((u, i) => <Cell key={u.name} fill={COLORS[i]} />)}</Pie>
+                        <Tooltip contentStyle={tipStyle} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div style={{ position: 'absolute', inset: 0, display: 'grid', placeContent: 'center', textAlign: 'center', pointerEvents: 'none' }}><b style={{ fontSize: 22 }}>{num(total)}</b><small className="sub" style={{ margin: 0 }}>{t('adm_mon_users_word')}</small></div>
+                  </div>
+                  <div className="legend">{users.map((u, i) => <span key={u.name}><i style={{ background: COLORS[i] }} />{u.name} <b>{num(u.count)}</b></span>)}</div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      }}</Async>
+    </section>
   );
 }
-
-export default Monitoring;

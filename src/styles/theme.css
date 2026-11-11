@@ -1,0 +1,41 @@
+/* ======================================================================
+   ملف الألوان والوضع الداكن — ملف واحد فقط للمشروع كله
+   (الصفحة الرئيسية + تسجيل الدخول + كل اللوحات). عدّل الألوان من هنا فقط.
+   ====================================================================== */
+
+/* ---------- الوضع الفاتح (الافتراضي) ---------- */
+.app-root {
+  --bg: #f6f8fd; --card: #ffffff; --side: #ffffff; --tx: #0f1b2d; --mu: #6b7a90; --bd: #e6ebf3; --input: #ffffff;
+  --pr: #2563eb; --pr2: #eef3ff; --pr-ink: #ffffff;
+  --ok: #15803d; --ok2: #ecfdf3; --wn: #b45309; --wn2: #fff6dd; --dg: #dc2626; --dg2: #fef2f2;
+  --shadow: 0 1px 2px rgba(15, 27, 45, .04); --shadow-lg: 0 12px 32px rgba(15, 27, 45, .18);
+  --map-bg: #eaf1fb; --map-road: #ffffff; --map-block: #d7e5f8;
+  --hero: linear-gradient(135deg, #eef3ff 0%, #f6f8fd 60%); --overlay: rgba(15, 27, 45, .45);
+  color-scheme: light;
+  font-family: Tajawal, Cairo, Tahoma, sans-serif;
+  color: var(--tx);
+}
+
+/* ---------- الوضع الداكن ---------- */
+.app-root[data-theme="dark"] {
+  --bg: #0b1220; --card: #121b2e; --side: #0f1729; --tx: #e7edf7; --mu: #93a1b8; --bd: #222e45; --input: #0f1729;
+  --pr: #5b93ff; --pr2: #16254a; --pr-ink: #06101f;
+  --ok: #4ade80; --ok2: #10291c; --wn: #fbbf24; --wn2: #2e2410; --dg: #f87171; --dg2: #2d1515;
+  --shadow: none; --shadow-lg: 0 12px 32px rgba(0, 0, 0, .5);
+  --map-bg: #16233d; --map-road: #2a3a58; --map-block: #1b2b4a;
+  --hero: linear-gradient(135deg, #101b34 0%, #0b1220 60%); --overlay: rgba(0, 0, 0, .6);
+  color-scheme: dark;
+}
+
+/* خلفية الصفحة قبل ما React يحمّل (بدون وميض) */
+html[data-theme="dark"], html[data-theme="dark"] body { background: #0b1220; }
+html[data-theme="light"], html[data-theme="light"] body { background: #f6f8fd; }
+body { margin: 0; }
+
+/* ---------- شريط التمرير بنفس ألوان الموقع ---------- */
+.app-root * { scrollbar-width: thin; scrollbar-color: var(--bd) transparent; }
+.app-root *::-webkit-scrollbar { width: 10px; height: 10px; }
+.app-root *::-webkit-scrollbar-track { background: transparent; }
+.app-root *::-webkit-scrollbar-thumb { background: var(--bd); border-radius: 10px; border: 2px solid transparent; background-clip: content-box; }
+.app-root *::-webkit-scrollbar-thumb:hover { background: var(--mu); background-clip: content-box; }
+

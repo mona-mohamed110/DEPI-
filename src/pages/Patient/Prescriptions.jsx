@@ -1,78 +1,54 @@
-import  { useState } from 'react';
-import '../../components/Style/Patient/prescriptions.css';
+import { useState } from 'react';
+import Icon from '../../components/Icon.jsx';
+import RxCard from '../../components/shell/RxCard.jsx';
+import { Async } from '../../components/ui/States.jsx';
+import { useAsync } from '../../components/ui/hooks.js';
+import { useToast } from '../../components/ui/Toast.jsx';
+import { useI18n } from '../../context/I18nContext.jsx';
+import * as api from '../../api/patient.js';
 
-const Prescriptions = () => {
-  const [activeTab, setActiveTab] = useState('current');
+export default function Prescriptions() {
+  const { t, num } = useI18n();
+  const { act } = useToast();
+  const [tab, setTab] = useState('current');
+  const state = useAsync(async () => { const [cur, past] = await Promise.all([api.getPrescriptions(true), api.getPrescriptions(false)]); return { cur, past }; }, []);
 
-  const currentMeds = [
-    { id: 1, name: 'ميتفورمين', dosage: '٥٠٠ مجم · مرتين يومياً', doctor: 'د. أحمد سمير', date: '٢٠ أكت ٢٠٢٦', status: 'مستمر' },
-    { id: 2, name: 'أملوديبين', dosage: '٥ مجم · مرة صباحاً', doctor: 'د. أحمد سمير', date: '٢٠ أكت ٢٠٢٦', status: 'مستمر' },
-    { id: 3, name: 'فيتامين د', dosage: '٥٠٠ وحدة · أسبوعياً', doctor: 'د. سارة علي', date: '١٠ أكت ٢٠٢٦', status: 'مستمر' },
-  ];
-
-  const pastMeds = [
-    { id: 1, name: 'أموكسيسيلين', dosage: '١ جم · ٣ مرات', doctor: 'د. هبة نبيل', date: '١٢ مارس ٢٠٢٦', status: 'منتهي' },
-    { id: 2, name: 'باراسيتامول', dosage: '٥٠٠ مجم · عند اللزوم', doctor: 'د. هبة نبيل', date: '١٢ مارس ٢٠٢٦', status: 'منتهي' },
-  ];
-
-  const dataToDisplay = activeTab === 'current' ? currentMeds : pastMeds;
+  // نقل روشتة بين الحالية والسابقة
+  const move = async (rx, toCurrent) => {
+    const r = await act(() => api.setPrescriptionCurrent(rx.id, toCurrent), 'rx_moved');
+    if (!r) return;
+    state.setData((d) => {
+      const all = [...d.cur, ...d.past].map((x) => (x.id === rx.id ? { ...x, current: toCurrent } : x)).sort((a, b) => new Date(b.date) - new Date(a.date));
+      return { cur: all.filter((x) => x.current), past: all.filter((x) => !x.current) };
+    });
+  };
 
   return (
-    <div className="prescriptions-wrapper" dir="rtl">
-      <div className="prescriptions-header">
-        <div className="header-text">
-          <h1 className="main-title">الروشتات والأدوية</h1>
-          {/* <p className="sub-title">الحالية والسابقة</p> */}
-        </div>
-
-        <div className="tab-buttons-group">
-          <button 
-            type="button"
-            className={`tab-btn ${activeTab === 'current' ? 'active' : ''}`}
-            onClick={() => setActiveTab('current')}
-          >
-            الحالية
-          </button>
-          <button 
-            type="button"
-            className={`tab-btn ${activeTab === 'past' ? 'active' : ''}`}
-            onClick={() => setActiveTab('past')}
-          >
-            السابقة
-          </button>
-        </div>
-      </div>
-
-      <div className="prescriptions-card">
-        <table className="prescriptions-table">
-          <thead>
-            <tr>
-              <th>الدواء</th>
-              <th>الجرعة</th>
-              <th>الدكتور</th>
-              <th>التاريخ</th>
-              {/* <th>الحالة</th> */}
-            </tr>
-          </thead>
-          <tbody>
-            {dataToDisplay.map((item) => (
-              <tr key={item.id}>
-                <td className="drug-name">{item.name}</td>
-                <td>{item.dosage}</td>
-                <td>{item.doctor}</td>
-                <td>{item.date}</td>
-                {/* <td>
-                  <span className={`status-tag ${item.status === 'مستمر' ? 'status-green' : 'status-blue'}`}>
-                    {item.status}
-                  </span>
-                </td> */}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <section>
+      <h1>{t('rx_title')}</h1>
+      <p className="sub">{t('rx_sub')}</p>
+      <Async state={state}>{(d) => {
+        const list = tab === 'current' ? d.cur : d.past;
+        return (
+          <>
+            <div className="tabs">
+              <button type="button" className={tab === 'current' ? 'on' : ''} onClick={() => setTab('current')}>{t('rx_current')} ({num(d.cur.length)})</button>
+              <button type="button" className={tab === 'past' ? 'on' : ''} onClick={() => setTab('past')}>{t('rx_past')} ({num(d.past.length)})</button>
+            </div>
+            {list.length === 0 ? <div className="card state">{t(tab === 'current' ? 'rx_empty_current' : 'rx_empty_past')}</div> : (
+              <div className="rx-grid">
+                {list.map((rx) => (
+                  <RxCard key={rx.id} rx={rx}>
+                    <button type="button" className="btn s o" onClick={() => move(rx, tab !== 'current')}>
+                      <Icon name={tab === 'current' ? 'clock' : 'check'} size={15} />{t(tab === 'current' ? 'rx_move_past' : 'rx_move_current')}
+                    </button>
+                  </RxCard>
+                ))}
+              </div>
+            )}
+          </>
+        );
+      }}</Async>
+    </section>
   );
-};
-
-export default Prescriptions;
+}

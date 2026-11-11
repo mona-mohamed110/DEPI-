@@ -24,16 +24,17 @@
 .patient .btn.o { background: transparent; border: 1px solid var(--bd); color: var(--tx); }
 .patient .btn.s { padding: 5px 11px; font-size: 13px; }
 
-.patient .switch {
+.patient .p-switch {
+  display: block; min-width: 0; margin: 0; padding: 0; box-shadow: none;
   position: relative; width: 42px; height: 24px; border: 0; padding: 0;
   background: var(--bd); border-radius: 20px; flex-shrink: 0; transition: background 0.2s;
 }
-.patient .switch::after {
+.patient .p-switch::after {
   content: ''; position: absolute; top: 3px; inset-inline-start: 3px;
   width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: inset-inline-start 0.2s;
 }
-.patient .switch.on { background: var(--pr); }
-.patient .switch.on::after { inset-inline-start: 21px; }
+.patient .p-switch.on { background: var(--pr); }
+.patient .p-switch.on::after { inset-inline-start: 21px; }
 
 .patient .toast {
   position: fixed; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); inset-inline: 0; margin: auto;

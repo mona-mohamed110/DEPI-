@@ -36,36 +36,36 @@ export default function SettingsMenu() {
   };
 
   return (
-    <div className="settings-wrap" ref={ref}>
+    <div className="p-settings-wrap" ref={ref}>
       {open && (
-        <div className="menu" role="menu">
-          <div className="menu-title">{t('preferred_settings')}</div>
+        <div className="p-menu" role="menu">
+          <div className="p-menu-title">{t('preferred_settings')}</div>
 
-          <button className="menu-item" onClick={() => setLangOpen((v) => !v)} aria-expanded={langOpen}>
+          <button className="p-menu-item" onClick={() => setLangOpen((v) => !v)} aria-expanded={langOpen}>
             <Languages size={18} />
-            <span className="grow">{t('language')}</span>
-            <span className="muted">{t('current_lang')}</span>
-            <Arrow size={16} className="muted" />
+            <span className="p-grow">{t('language')}</span>
+            <span className="p-muted">{t('current_lang')}</span>
+            <Arrow size={16} className="p-muted" />
           </button>
           {langOpen && (
-            <div className="submenu">
+            <div>
               {[
                 ['ar', 'العربية'],
                 ['en', 'English'],
               ].map(([code, label]) => (
-                <button key={code} className="menu-item sub" onClick={() => setLang(code)}>
-                  <span className="grow">{label}</span>
+                <button key={code} className="p-menu-item is-sub" onClick={() => setLang(code)}>
+                  <span className="p-grow">{label}</span>
                   {lang === code && <Check size={16} />}
                 </button>
               ))}
             </div>
           )}
 
-          <div className="menu-item static">
+          <div className="p-menu-item is-static">
             {theme === 'dark' ? <Moon size={18} /> : <Sun size={18} />}
-            <span className="grow">{theme === 'dark' ? t('dark_mode') : t('light_mode')}</span>
+            <span className="p-grow">{theme === 'dark' ? t('dark_mode') : t('light_mode')}</span>
             <button
-              className={`switch ${theme === 'dark' ? 'on' : ''}`}
+              className={`p-switch ${theme === 'dark' ? 'on' : ''}`}
               role="switch"
               aria-checked={theme === 'dark'}
               aria-label={t('dark_mode')}
@@ -74,26 +74,26 @@ export default function SettingsMenu() {
           </div>
 
           <hr />
-          <button className="menu-item" onClick={() => go('/patient/profile')}>
+          <button className="p-menu-item" onClick={() => go('/patient/profile')}>
             <User size={18} />
-            <span className="grow">{t('profile')}</span>
+            <span className="p-grow">{t('profile')}</span>
           </button>
-          <button className="menu-item" onClick={() => go('/patient/account-settings')}>
+          <button className="p-menu-item" onClick={() => go('/patient/account-settings')}>
             <SlidersHorizontal size={18} />
-            <span className="grow">{t('account_settings')}</span>
+            <span className="p-grow">{t('account_settings')}</span>
           </button>
           <hr />
-          <button className="menu-item danger" onClick={logout}>
+          <button className="p-menu-item is-danger" onClick={logout}>
             <LogOut size={18} />
-            <span className="grow">{t('logout')}</span>
+            <span className="p-grow">{t('logout')}</span>
           </button>
         </div>
       )}
 
-      <button className={`settings-btn ${open ? 'open' : ''}`} onClick={() => setOpen((v) => !v)} aria-haspopup="menu" aria-expanded={open}>
+      <button className={`p-settings-btn ${open ? 'open' : ''}`} onClick={() => setOpen((v) => !v)} aria-haspopup="menu" aria-expanded={open}>
         <SlidersHorizontal size={18} />
-        <span className="grow">{t('account_and_settings')}</span>
-        <ChevronUp size={16} className="chev" />
+        <span className="p-grow">{t('account_and_settings')}</span>
+        <ChevronUp size={16} className="p-chev" />
       </button>
     </div>
   );

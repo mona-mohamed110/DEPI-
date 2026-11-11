@@ -3,7 +3,7 @@ import { useApp } from '../../context/AppContext.jsx';
 
 function Switch({ defaultOn = false }) {
   const [on, setOn] = useState(defaultOn);
-  return <button className={`switch ${on ? 'on' : ''}`} role="switch" aria-checked={on} onClick={() => setOn((v) => !v)} />;
+  return <button className={`p-switch ${on ? 'on' : ''}`} role="switch" aria-checked={on} onClick={() => setOn((v) => !v)} />;
 }
 
 export default function AccountSettings() {

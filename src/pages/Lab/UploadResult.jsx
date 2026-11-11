@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useLab } from "../../context/LabContext";
-import * as api from "../../services/labApi";
-import { fileType } from "../../data/labData";
-import Icon from "../../components/Lab/Icon";
+import { useLab } from "./LabContext.jsx";
+import * as api from "../../api/lab.js";
+const { fileType } = api;
+import Icon from "../../components/Icon.jsx";
 
 export default function UploadResult() {
   const { id } = useParams();
@@ -39,33 +39,33 @@ export default function UploadResult() {
   return (
     <section>
       <h1>{t("upTitle")}</h1>
-      <p className="lb-sub">{t("upSub")}</p>
-      <div className="lb-card lb-narrow">
-        <label className="lb-first">{t("reqLabel")}</label>
+      <p className="sub">{t("upSub")}</p>
+      <div className="card narrow">
+        <label className="first">{t("reqLabel")}</label>
         <select value={sel} onChange={(e) => setSel(e.target.value)}>
           {pending.length === 0 && <option value="">{t("noPending")}</option>}
           {pending.map((r) => <option key={r.id} value={r.id}>#{r.id} · {r.name} · {testName(r.test)}</option>)}
         </select>
 
         <label>{t("files")}</label>
-        <label className="lb-drop">
+        <label className="drop">
           <input type="file" multiple accept=".pdf,.dcm,image/*" onChange={(e) => setFiles([...e.target.files])} />
           <Icon name="upload" size={32} />
           <b>{t("pickFiles")}</b>
           <small>{t("fileTypes")}</small>
         </label>
         {files.map((f) => (
-          <div className="lb-row" key={f.name + f.size} style={{ padding: "8px 0" }}>
+          <div className="row" key={f.name + f.size} style={{ padding: "8px 0" }}>
             <Icon name="clip" size={18} />
-            <div className="lb-m" dir="ltr" style={{ textAlign: "start" }}>{f.name}</div>
-            <span className="lb-badge">{fileType(f.name)}</span>
+            <div className="m" dir="ltr" style={{ textAlign: "start" }}>{f.name}</div>
+            <span className="badge">{fileType(f.name)}</span>
           </div>
         ))}
 
         <label>{t("notes")}</label>
         <textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t("notesPh")} />
         <div style={{ marginTop: 16 }}>
-          <button type="button" className="lb-btn" onClick={submit} disabled={busy}>{busy ? t("loading") : t("uploadSubmit")}</button>
+          <button type="button" className="btn" onClick={submit} disabled={busy}>{busy ? t("loading") : t("uploadSubmit")}</button>
         </div>
       </div>
     </section>

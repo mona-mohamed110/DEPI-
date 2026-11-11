@@ -1,131 +1,83 @@
-import { 
-  LuCalendarDays, 
-  LuPill, 
-  LuLock, 
-  LuTestTube 
-} from 'react-icons/lu';
-import '../../components/Style/Patient/dashboard.css';
+import { Link } from 'react-router-dom';
+import Icon from '../../components/Icon.jsx';
+import { Async } from '../../components/ui/States.jsx';
+import { useAsync } from '../../components/ui/hooks.js';
+import { useI18n } from '../../context/I18nContext.jsx';
+import { useAuth } from '../../context/AuthContext.jsx';
+import * as api from '../../api/patient.js';
 
-const MainDashboard = () => {
+const ST = { confirmed: ['ok', 'ap_confirmed'], pending: ['wn', 'ap_pending'], rejected: ['dg', 'ap_rejected'], done: ['', 'ap_done'] };
+
+export default function Dashboard() {
+  const { t, L, num, fmtDay, fmtTime } = useI18n();
+  const { user } = useAuth();
+  const state = useAsync(() => api.getDashboard(), []);
+  const first = L(user.name).split(' ')[0];
+
   return (
-    <div className="dashboard-wrapper" dir="rtl">
-      <header className="dashboard-header">
-        <div className="header-greeting">
-          <h1 className="greeting-title">
-            أهلاً يا منى <span className="hand-emoji">👋</span>
-          </h1>
-          <p className="greeting-subtitle">ده ملخص حالتك الصحية النهاردة</p>
-        </div>
-        <div className="user-avatar-badge">م</div>
-      </header>
-
-      <div className="dashboard-grid">
-        
-        <div className="card summary-card">
-          <div className="card-top-row">
-            <div className="icon-wrapper calendar-icon">
-              <LuCalendarDays />
-            </div>
-          </div>
-          <div className="card-bottom-content">
-            <span className="card-label">أقرب موعد</span>
-            <h2 className="card-main-value">بكرة ١٠:٣٠ ص</h2>
-          </div>
-        </div>
-
-        <div className="card summary-card">
-          <div className="card-top-row">
-            <div className="icon-wrapper medicine-icon">
-              <LuPill />
-            </div>
-          </div>
-          <div className="card-bottom-content">
-            <span className="card-label">أدوية حالية</span>
-            <h2 className="card-main-value">٣ أدوية</h2>
-          </div>
-        </div>
-
-        <div className="card summary-card">
-          <div className="card-top-row">
-            <div className="icon-wrapper lock-icon">
-              <LuLock />
-            </div>
-          </div>
-          <div className="card-bottom-content">
-            <span className="card-label">طلبات إذن معلقة</span>
-            <h2 className="card-main-value">٣ طلبات</h2>
-          </div>
-        </div>
-
-        <div className="card detail-card">
-          <h3 className="section-title">المواعيد القادمة</h3>
-          <div className="appointments-container">
-            
-            <div className="appointment-row">
-              <div className="doc-avatar-circle">أ</div>
-              <div className="doc-meta">
-                <h4 className="doc-name">د. أحمد سمير</h4>
-                <p className="doc-sub">باطنة · بكرة ١٠:٣٠ ص</p>
-              </div>
-              <span className="status-tag status-confirmed">مؤكد</span>
-            </div>
-
-            <div className="appointment-divider"></div>
-
-            <div className="appointment-row">
-              <div className="doc-avatar-circle">س</div>
-              <div className="doc-meta">
-                <h4 className="doc-name">د. سارة علي</h4>
-                <p className="doc-sub">قلب · الأحد ٤:٠٠ م</p>
-              </div>
-              <span className="status-tag status-pending">قيد التأكيد</span>
-            </div>
-
-          </div>
-        </div>
-
-        <div className="card detail-card">
-          <h3 className="section-title">تنبيهات</h3>
-          <div className="alerts-container">
-            
-            
-
-            <div className="alert-row">
-              <LuTestTube className="react-alert-icon lab-icon" />
-              <span className="alert-text">نتيجة تحليل السكر الصائم جاهزة</span>
-            </div>
-
-            <div className="alert-divider"></div>
-
-            <div className="alert-row">
-              <LuLock className="react-alert-icon lock-alert-icon" />
-              <span className="alert-text">معمل الأمل طلب الوصول لملفك</span>
-            </div>
-
-          </div>
-        </div>
-
-        <div className="card detail-card prescription-card">
-          <h3 className="section-title">آخر روشتة</h3>
-          
-          <div className="prescription-content">
-            <div className="prescription-meta">
-              <h4 className="prescription-doc">د. أحمد سمير</h4>
-              <span className="prescription-date">٢٠ أكتوبر ٢٠٢٦</span>
-            </div>
-            <button className="btn-show" type="button">عرض</button>
-          </div>
-
-          <div className="prescription-footer-divider"></div>
-
-          <p className="prescription-meds">
-            ٣ أدوية · ميتفورمين، أملوديبين، فيتامين د
-          </p>
-        </div>
-
+    <section>
+      <div className="hello">
+        <h1>{t('greeting', { name: first })}</h1>
+        <div className="avatar">{first.charAt(0)}</div>
       </div>
-    </div>
-  );
-};
+      <p className="hello-sub">{t('dash_sub')}</p>
+      <Async state={state}>{(d) => (
+        <>
+          <div className="grid g3">
+            <Link to="/patient/appointments" className="card stat">
+              <div className="tile"><Icon name="calendar" size={22} /></div>
+              <span>{t('d_next')}</span>
+              <b className="sm">{d.next ? `${fmtDay(d.next.date)} · ${fmtTime(d.next.time)}` : t('d_none')}</b>
+            </Link>
+            <Link to="/patient/prescriptions" className="card stat">
+              <div className="tile ok"><Icon name="pill" size={22} /></div>
+              <span>{t('d_meds')}</span>
+              <b>{t('d_meds_n', { n: num(d.rxCount) })}</b>
+            </Link>
+            <Link to="/patient/permissions" className="card stat">
+              <div className="tile wn"><Icon name="shield" size={22} /></div>
+              <span>{t('d_pending')}</span>
+              <b>{t('d_pending_n', { n: num(d.permCount) })}</b>
+            </Link>
+          </div>
 
-export default MainDashboard;
+          <div className="grid g2" style={{ marginTop: 16 }}>
+            <div className="card">
+              <h2>{t('d_upcoming')}</h2>
+              {d.upcoming.length === 0 ? <div className="state">{t('ap_empty')}</div> : d.upcoming.map((a) => (
+                <div className="row" key={a.id}>
+                  <div className="av">{L(a.doctor).replace(/^(د\.|Dr\.)\s*/, '').charAt(0)}</div>
+                  <div className="m"><b>{L(a.doctor)}</b><small>{L(a.specialty)} · {fmtDay(a.date)} {fmtTime(a.time)}</small></div>
+                  <span className={`badge ${ST[a.status]?.[0] || ''}`}>{t(ST[a.status]?.[1] || 'ap_pending')}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="card">
+              <h2>{t('d_alerts')}</h2>
+              {d.alerts.length === 0 ? <div className="state">{t('d_no_alerts')}</div> : d.alerts.map((a, i) => (
+                <div className="alert-row" key={i}>
+                  <Icon name="tube" size={20} />
+                  <span>{t('d_alert_result', { title: L(a.title) })}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="card">
+              <h2>{t('d_last_rx')}</h2>
+              {d.latestRx ? (
+                <>
+                  <div className="row" style={{ borderBottom: 0 }}>
+                    <div className="m"><b>{L(d.latestRx.doctor)}</b><small>{fmtDay(d.latestRx.date)}</small></div>
+                    <Link to="/patient/prescriptions" className="btn s o">{t('view')}</Link>
+                  </div>
+                  <p className="sub" style={{ margin: 0 }} dir="auto">{d.latestRx.meds.join(' · ')}</p>
+                </>
+              ) : <div className="state">{t('d_none')}</div>}
+            </div>
+          </div>
+        </>
+      )}</Async>
+    </section>
+  );
+}

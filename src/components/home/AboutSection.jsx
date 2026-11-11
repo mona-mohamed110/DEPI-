@@ -1,40 +1,18 @@
-import aboutImage from "../../assets/about-team.png";
-import "../Style/AboutSection.css";
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
+import { useI18n } from '../../context/I18nContext.jsx';
+import aboutImage from '../../assets/about-team.png';
 
-function AboutSection() {
+export default function AboutSection() {
+  const { t } = useI18n();
   return (
-    <section id="about" className="about-section" dir="rtl">
-      <div className="about-box">
-        <h2 className="about-title">
-          عن <span>شفاء:</span> تعرّف على منصتنا
-        </h2>
-
-        <div className="about-content">
-          <div className="about-text">
-            <p>
-              شفاء منصة طبية إلكترونية تجمع المرضى والأطباء والمعامل ومراكز
-              الأشعة في مكان واحد. نهدف إلى تسهيل الوصول إلى الرعاية الصحية،
-              وحفظ بياناتك الطبية بأمان، مع إبقاء التحكم في مشاركتها بين يديك.
-            </p>
-
-            <Link to="/learn-more" className="about-button">
-  اعرف المزيد عن شفاء
-</Link>
-          </div>
-
-          <div className="about-image-wrapper">
-            <img
-
-              className="about-image"
-              src={aboutImage}
-              alt="فريق طبي من الأطباء والممرضين"
-            />
-          </div>
+    <section id="about" className="sec">
+      <div className="wrap about-box">
+        <h2 className="sec-title">{t('ab_t1')} <span className="hl">{t('ab_t2')}</span> {t('ab_t3')}</h2>
+        <div className="about-grid">
+          <div><p>{t('ab_text')}</p><Link to="/learn-more" className="btn">{t('ab_more')}</Link></div>
+          <img className="about-img" src={aboutImage} alt={t('ab_img')} loading="lazy" />
         </div>
       </div>
     </section>
   );
 }
-
-export default AboutSection;
