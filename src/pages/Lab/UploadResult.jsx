@@ -17,7 +17,7 @@ export default function UploadResult() {
 
   useEffect(() => {
     let off = false;
-    api.getRequests({ status: "pending" }).then((list) => {
+    api.getRequests("pending").then((list) => {
       if (off) return;
       setPending(list);
       setSel((s) => (id && list.some((x) => String(x.id) === id) ? id : list.some((x) => String(x.id) === String(s)) ? s : list[0] ? String(list[0].id) : ""));

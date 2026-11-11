@@ -8,8 +8,7 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir);
 }
 
-const allowedExts = [".pdf", ".png", ".jpg", ".jpeg", ".webp"];
-
+const allowedExts = [".pdf", ".png", ".jpg", ".jpeg", ".webp", ".dcm"];
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, uploadsDir);
@@ -58,5 +57,26 @@ function uploadCertificate(req, res, next) {
     return sendErr(res, "invalid_data");
   });
 }
+function uploadMultiple(req, res, next) {
+  if (!req.is("multipart/form-data")) {
+    return sendErr(res, "invalid_data");
+  }
 
-module.exports = { uploadCertificate };
+  upload.array("files", 10)(req, res, function (err) {
+    if (!err) {
+      return next();
+    }
+
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return sendErr(res, "file_too_big");
+    }
+
+    if (err.code === "file_type") {
+      return sendErr(res, "file_type");
+    }
+
+    return sendErr(res, "invalid_data");
+  });
+}
+
+module.exports = { uploadCertificate, uploadMultiple };
