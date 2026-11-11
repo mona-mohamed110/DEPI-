@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const crypto = require("crypto");
 const sendEmail = require("../utils/sendEmail");
+const { uploadCertificate } = require("../middleware/upload");
 const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
@@ -23,7 +24,7 @@ function sendError(res, status, code) {
   return res.status(status).json({ code: code, message: code });
 }
 
-router.post("/register", async function (req, res) {
+router.post("/register", uploadCertificate, async function (req, res) {
   try {
     const body = req.body;
     const role = body.role;
@@ -53,6 +54,21 @@ router.post("/register", async function (req, res) {
       status = "pending";
     }
 
+    // مع الملفات الفرونت بيبعت profile كنص JSON
+    let profile = body.profile || {};
+    if (typeof profile === "string") {
+      try {
+        profile = JSON.parse(profile);
+      } catch (e) {
+        profile = {};
+      }
+    }
+
+    let certificate = "";
+    if (req.file) {
+      certificate = "uploads/" + req.file.filename;
+    }
+
     const user = await User.create({
       name: name,
       email: email,
@@ -62,7 +78,8 @@ router.post("/register", async function (req, res) {
       status: status,
       extra: body.extra || "",
       license: body.license || "",
-      profile: body.profile || {},
+      certificate: certificate,
+      profile: profile,
     });
 
     res.status(201).json({ ok: true, status: user.status });

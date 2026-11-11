@@ -17,6 +17,7 @@ const userSchema = new mongoose.Schema({
   },
   extra: { type: String, default: "" },
   license: { type: String, default: "" },
+    certificate: { type: String, default: "" },
   resetCode: { type: String, default: "" },
   resetToken: { type: String, default: "" },
   resetExpires: { type: Date },
