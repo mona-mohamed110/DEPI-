@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const crypto = require("crypto");
 const sendEmail = require("../utils/sendEmail");
+const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -103,6 +104,11 @@ router.post("/login", async function (req, res) {
     sendError(res, 500, "server_error");
   }
 });
+
+router.get("/me", requireAuth, async function (req, res) {
+  res.json({ user: publicUser(req.user) });
+});
+
 router.post("/forgot-password", async function (req, res) {
   try {
     const email = String(req.body.email || "").toLowerCase();
@@ -118,7 +124,8 @@ router.post("/forgot-password", async function (req, res) {
     user.resetToken = "";
     user.resetExpires = new Date(Date.now() + 10 * 60 * 1000);
     await user.save();
-           await sendEmail(
+
+    await sendEmail(
       email,
       "Shifa - Password reset code",
       "Your verification code is: " + code + "\nThis code is valid for 10 minutes."
