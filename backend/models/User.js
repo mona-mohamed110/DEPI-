@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
   },
   extra: { type: String, default: "" },
   license: { type: String, default: "" },
-    resetCode: { type: String, default: "" },
+  resetCode: { type: String, default: "" },
   resetToken: { type: String, default: "" },
   resetExpires: { type: Date },
   profile: {
@@ -27,6 +27,12 @@ const userSchema = new mongoose.Schema({
     weight: Number,
     chronicIds: [String],
   },
+  notifEmail: { type: Boolean, default: true },
+  notifAppt: { type: Boolean, default: true },
+  notifMeds: { type: Boolean, default: true },
+  notifAccess: { type: Boolean, default: true },
+  notifNew: { type: Boolean, default: true },
+  twoFactor: { type: Boolean, default: false },
 });
 
 module.exports = mongoose.model("User", userSchema);

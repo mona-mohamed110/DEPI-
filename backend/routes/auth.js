@@ -106,7 +106,7 @@ router.post("/login", async function (req, res) {
 });
 
 router.get("/me", requireAuth, async function (req, res) {
-  res.json({ user: publicUser(req.user) });
+  res.json(publicUser(req.user));
 });
 
 router.post("/forgot-password", async function (req, res) {
@@ -188,6 +188,41 @@ router.post("/reset-password", async function (req, res) {
     user.resetToken = "";
     user.resetCode = "";
     user.resetExpires = undefined;
+    await user.save();
+
+    res.json({ ok: true });
+  } catch (error) {
+    sendError(res, 500, "server_error");
+  }
+});
+
+router.post("/logout", function (req, res) {
+  res.json({ ok: true });
+});
+
+router.post("/change-password", requireAuth, async function (req, res) {
+  try {
+    const current = String(req.body.current || "");
+    const next = String(req.body.next || "");
+
+    if (!current || !next) {
+      return sendError(res, 400, "invalid_data");
+    }
+    if (next.length < 6) {
+      return sendError(res, 400, "invalid_data");
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return sendError(res, 404, "not_found");
+    }
+
+    const isMatch = await bcrypt.compare(current, user.password);
+    if (!isMatch) {
+      return sendError(res, 400, "wrong_password");
+    }
+
+    user.password = await bcrypt.hash(next, 10);
     await user.save();
 
     res.json({ ok: true });
