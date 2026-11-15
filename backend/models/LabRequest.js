@@ -3,11 +3,11 @@ const mongoose = require("mongoose");
 
 const labRequestSchema = new mongoose.Schema(
   {
-    labId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+labId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  default: null,
+},
     patientId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

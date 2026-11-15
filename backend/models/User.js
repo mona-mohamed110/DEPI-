@@ -4,8 +4,19 @@ const mongoose = require("mongoose");
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+
+    email: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      default: undefined,
+    },
+
+    password: {
+      type: String,
+      default: "",
+    },
+
     phone: { type: String, default: "" },
 
     role: {
@@ -21,8 +32,16 @@ const userSchema = new mongoose.Schema(
     },
 
     lastActiveAt: { type: Date, default: null },
+    tokenVersion: { type: Number, default: 0 },
 
     extra: { type: String, default: "" },
+
+    // بيانات الطبيب المهنية
+    specialty: { type: String, default: "" },
+    clinic: { type: String, default: "" },
+    address: { type: String, default: "" },
+
+    // بيانات الترخيص والشهادة
     license: { type: String, default: "" },
     certificate: { type: String, default: "" },
 
@@ -35,6 +54,7 @@ const userSchema = new mongoose.Schema(
     licenseReason: { type: String, default: "" },
     licenseBy: { type: String, default: "" },
     licenseSentAt: { type: Date },
+
     certificateName: { type: String, default: "" },
     certificateType: { type: String, default: "" },
 
@@ -56,8 +76,32 @@ const userSchema = new mongoose.Schema(
     notifAccess: { type: Boolean, default: true },
     notifNew: { type: Boolean, default: true },
     twoFactor: { type: Boolean, default: false },
+
+    // بيانات موظف الاستقبال
+    doctorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    perms: {
+      type: [Boolean],
+      default: [true, true, true],
+    },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("User", userSchema);
+// الإيميل فريد للحسابات التي لديها إيميل فقط
+userSchema.index(
+  { email: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      email: { $type: "string" },
+    },
+  }
+);
+
+module.exports =
+  mongoose.models.User || mongoose.model("User", userSchema);

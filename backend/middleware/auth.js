@@ -16,7 +16,12 @@ async function requireAuth(req, res, next) {
 
     const payload = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(payload.id);
-
+if ((payload.tokenVersion ?? 0) !== (user.tokenVersion ?? 0)) {
+  return res.status(401).json({
+    code: "session_expired",
+    message: "انتهت صلاحية الجلسة، سجّل الدخول مرة أخرى",
+  });
+}
     if (!user) {
       return res.status(401).json({
         code: "unauthorized",

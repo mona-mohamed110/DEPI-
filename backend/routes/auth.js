@@ -24,7 +24,6 @@ function publicUser(user) {
 function sendError(res, status, code) {
   return res.status(status).json({ code: code, message: code });
 }
-
 // Register
 router.post("/register", uploadCertificate, async function (req, res) {
   try {
@@ -39,9 +38,14 @@ router.post("/register", uploadCertificate, async function (req, res) {
       return sendError(res, 400, "invalid_data");
     }
 
+    // الطبيب لازم يرفع صورة الترخيص أثناء التسجيل
+    if (role === "doctor" && !req.file) {
+      return sendError(res, 400, "license_required");
+    }
+
     const email = String(body.email).trim().toLowerCase();
 
-    const oldUser = await User.findOne({ email: email });
+    const oldUser = await User.findOne({ email });
 
     if (oldUser) {
       return sendError(res, 409, "email_exists");
@@ -57,7 +61,6 @@ router.post("/register", uploadCertificate, async function (req, res) {
 
     const status = role === "patient" ? "active" : "pending";
 
-    // Parse profile sent as JSON text
     let profile = body.profile || {};
 
     if (typeof profile === "string") {
@@ -68,18 +71,18 @@ router.post("/register", uploadCertificate, async function (req, res) {
       }
     }
 
-    // Certificate information
-    let certificate = "";
-    let certificateName = "";
-    let certificateType = "";
+    const certificate = req.file
+      ? "uploads/" + req.file.filename
+      : "";
 
-    if (req.file) {
-      certificate = "uploads/" + req.file.filename;
-      certificateName = req.file.originalname;
-      certificateType = req.file.mimetype;
-    }
+    const certificateName = req.file
+      ? req.file.originalname
+      : "";
 
-    // License information
+    const certificateType = req.file
+      ? req.file.mimetype
+      : "";
+
     const licenseBy =
       role === "doctor"
         ? "syndicate"
@@ -91,26 +94,26 @@ router.post("/register", uploadCertificate, async function (req, res) {
       role !== "patient" ? new Date() : undefined;
 
     const user = await User.create({
-      name: name,
-      email: email,
+      name,
+      email,
       password: hashedPassword,
       phone: body.phone || "",
-      role: role,
-      status: status,
+      role,
+      status,
       extra: body.extra || "",
 
       license: body.license || "",
       licenseStatus: role !== "patient" ? "pend" : undefined,
       licenseReason: "",
 
-      licenseBy: licenseBy,
-      licenseSentAt: licenseSentAt,
+      licenseBy,
+      licenseSentAt,
 
-      certificate: certificate,
-      certificateName: certificateName,
-      certificateType: certificateType,
+      certificate,
+      certificateName,
+      certificateType,
 
-      profile: profile,
+      profile,
     });
 
     res.status(201).json({
@@ -131,9 +134,9 @@ router.post("/login", async function (req, res) {
 
     const user = await User.findOne({ email: email });
 
-    if (!user) {
-      return sendError(res, 401, "invalid_credentials");
-    }
+if (!user || !user.password) {
+  return sendError(res, 401, "invalid_credentials");
+}
 
     const isMatch = await bcrypt.compare(password, user.password);
 
@@ -149,11 +152,15 @@ router.post("/login", async function (req, res) {
       return sendError(res, 403, "pending_license");
     }
 
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+const token = jwt.sign(
+  {
+    id: user._id,
+    role: user.role,
+    tokenVersion: user.tokenVersion || 0,
+  },
+  process.env.JWT_SECRET,
+  { expiresIn: "7d" }
+);
 
     res.json({
       token: token,

@@ -10,6 +10,10 @@ const adminRoutes = require("./routes/admin");
 const patientRoutes = require("./routes/patient");
 const { trackApiRequests } = require("./middleware/apiStats");
 const publicRoutes = require("./routes/public");
+const doctorRoutes = require("./routes/doctor");
+const drugsRoutes = require("./routes/drugs");
+const receptionRoutes = require("./routes/reception");
+
 const app = express();
 
 app.use(cors());
@@ -24,8 +28,10 @@ app.use("/api", meRoutes);
 app.use("/api/patient", patientRoutes);
 app.use("/api/patient", patientRoutes);
 app.use("/api/lab", labRoutes);
+app.use("/api/reception", receptionRoutes);
 app.use("/api/admin", adminRoutes);
-
+app.use("/api/doctor", doctorRoutes);
+app.use("/api/drugs", drugsRoutes);
 app.get("/", function (req, res) {
   res.send("Shifa backend is working");
 });

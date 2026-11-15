@@ -52,6 +52,22 @@ const prescriptionSchema = new mongoose.Schema(
       },
     ],
 
+    // التحاليل والأشعة المطلوبة في الكشف
+    tests: [
+      {
+        name: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        kind: {
+          type: String,
+          enum: ["lab", "xray"],
+          default: "lab",
+        },
+      },
+    ],
+
     current: {
       type: Boolean,
       default: true,

@@ -90,8 +90,18 @@ router.put("/me", requireAuth, async function (req, res) {
   }
 });
 
-router.post("/me/logout-all", requireAuth, function (req, res) {
-  res.json({ ok: true });
+router.post("/me/logout-all", requireAuth, async function (req, res) {
+  try {
+    await User.updateOne(
+      { _id: req.user._id },
+      { $inc: { tokenVersion: 1 } }
+    );
+
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("Logout all error:", error);
+    sendError(res, 500, "server_error");
+  }
 });
 
 module.exports = router;

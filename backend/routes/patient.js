@@ -253,12 +253,12 @@ router.delete("/appointments/:id", async (req, res) => {
   }
 });
 
+
 // لوحة تحكم المريض
 router.get("/dashboard", async (req, res) => {
   try {
     const patientId = req.user._id;
 
-    // تاريخ اليوم بالتوقيت المحلي للسيرفر
     const now = new Date();
     const today = [
       now.getFullYear(),
@@ -266,25 +266,36 @@ router.get("/dashboard", async (req, res) => {
       String(now.getDate()).padStart(2, "0"),
     ].join("-");
 
-    const [bookings, results, permCount] = await Promise.all([
-      Booking.find({
-        patientId,
-        date: { $gte: today },
-        status: { $in: ["pending", "confirmed"] },
-      })
-        .populate("providerId", "name extra")
-        .sort({ date: 1, time: 1 })
-        .limit(5),
+    const [bookings, results, permCount, rxCount, latestRx] =
+      await Promise.all([
+        Booking.find({
+          patientId,
+          date: { $gte: today },
+          status: { $in: ["pending", "confirmed"] },
+        })
+          .populate("providerId", "name extra")
+          .sort({ date: 1, time: 1 })
+          .limit(5),
 
-      LabResult.find({ patientId })
-        .sort({ createdAt: -1 })
-        .limit(5),
+        LabResult.find({ patientId })
+          .sort({ createdAt: -1 })
+          .limit(5),
 
-      AccessRequest.countDocuments({
-        patientId,
-        status: "pending",
-      }),
-    ]);
+        AccessGrant.countDocuments({
+          patientId,
+          status: "active",
+        }),
+
+        Prescription.countDocuments({
+          patientId,
+          current: true,
+        }),
+
+        Prescription.findOne({ patientId })
+          .populate("doctorId", "name extra")
+          .sort({ date: -1 })
+          .lean(),
+      ]);
 
     const next = bookings[0] || null;
 
@@ -296,9 +307,21 @@ router.get("/dashboard", async (req, res) => {
           }
         : null,
 
-      // لا يوجد نظام روشتات حتى الآن
-      rxCount: 0,
-      latestRx: null,
+      rxCount,
+
+      latestRx: latestRx
+        ? {
+            id: latestRx._id.toString(),
+            doctor: latestRx.doctorId?.name || "",
+            specialty: latestRx.doctorId?.extra || "",
+            visit: latestRx.visit,
+            date: latestRx.date,
+            diagnosis: latestRx.diagnosis,
+            items: latestRx.items || [],
+            tests: latestRx.tests || [],
+            current: latestRx.current,
+          }
+        : null,
 
       permCount,
 
@@ -320,6 +343,7 @@ router.get("/dashboard", async (req, res) => {
     return res.status(500).json({ code: "server_error" });
   }
 });
+
 
 // عرض نتائج التحاليل الخاصة بالمريض
 router.get("/results", async (req, res) => {
@@ -667,7 +691,8 @@ router.get("/prescriptions", async (req, res) => {
       visit: rx.visit,
       date: rx.date,
       diagnosis: rx.diagnosis,
-      items: rx.items,
+      items: rx.items || [],
+      tests: rx.tests || [],
       current: rx.current,
     }));
 

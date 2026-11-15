@@ -1,8 +1,8 @@
 // ===== API الطبيب — كل الـ endpoints تحت /doctor =====
 import { api, upload } from './http.js';
 
-export const getDashboard = () => api.get('/doctor/dashboard');
-export const getPatients = () => api.get('/doctor/patients');
+export const getDashboard = (date, month) =>
+  api.get(`/doctor/dashboard?date=${date}&month=${month}`);export const getPatients = () => api.get('/doctor/patients');
 export const getPatientFile = (id) => api.get(`/doctor/patients/${id}/file`);
 export const saveExam = (d) => api.post('/doctor/exams', d);
 export const getTests = () => api.get('/doctor/tests');
