@@ -316,3 +316,178 @@
 .app-root.patient-app .map-view{height:520px}
 .app-root.patient-app .rate{display:inline-flex;align-items:center;gap:4px;background:var(--wn2);color:var(--wn);border-radius:20px;padding:2px 10px;font-size:13px}
 
+
+
+.rx-open-btn {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+  padding: 4px;
+  min-width: 0;
+}
+
+.rx-open-btn .m {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.rx-details-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--primary, #2563eb);
+  font-size: 13px;
+  margin-top: 5px;
+}
+
+.rx-actions {
+  flex-shrink: 0;
+}
+
+.rx-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.rx-modal {
+  width: min(650px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--card, #fff);
+  color: var(--text, #1e293b);
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.rx-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 22px;
+  border-bottom: 1px solid var(--border, #e5e7eb);
+}
+
+.rx-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rx-modal-title h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.rx-modal-header p {
+  margin: 8px 0 0;
+  color: var(--muted, #64748b);
+  font-size: 13px;
+}
+
+.rx-modal-close {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 7px;
+  border-radius: 8px;
+}
+
+.rx-modal-body {
+  padding: 22px;
+}
+
+.rx-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.rx-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 13px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+}
+
+.rx-info-item span,
+.rx-medicine-content span {
+  color: var(--muted, #64748b);
+  font-size: 13px;
+}
+
+.rx-detail-section {
+  margin-top: 24px;
+}
+
+.rx-detail-section h3 {
+  font-size: 16px;
+  margin: 0 0 12px;
+}
+
+.rx-medicine-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rx-medicine {
+  display: flex;
+  gap: 12px;
+  padding: 15px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+}
+
+.rx-medicine-number {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--primary, #2563eb);
+}
+
+.rx-medicine-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rx-medicine-content div {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rx-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 22px;
+  border-top: 1px solid var(--border, #e5e7eb);
+}
+
+@media (max-width: 480px) {
+  .rx-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rx-modal-overlay {
+    padding: 10px;
+  }
+}
