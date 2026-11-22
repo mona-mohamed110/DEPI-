@@ -13,6 +13,7 @@ const { uploadMultiple } = require("../middleware/upload");
 const LabRequest = require("../models/LabRequest");
 const LabResult = require("../models/LabResult");
 
+const { CHRONIC } = require("../data/catalog");
 const { requireAuth, requireRole } = require("../middleware/auth");
 
 const router = express.Router();
@@ -933,5 +934,123 @@ router.get("/permissions/log", async (req, res) => {
   }
 });
 
+
+
+// ===============================
+// الملف الشخصي للمريض
+// ===============================
+function ageFromBirth(birth) {
+  if (!birth) return null;
+  const b = new Date(birth + "T00:00:00");
+  if (Number.isNaN(b.getTime())) return null;
+  const n = new Date();
+  let a = n.getFullYear() - b.getFullYear();
+  if (n.getMonth() < b.getMonth() || (n.getMonth() === b.getMonth() && n.getDate() < b.getDate())) a -= 1;
+  return a >= 0 ? a : null;
+}
+
+function patientProfileView(user) {
+  const p = user.profile || {};
+  const ids = (p.chronicIds || []).filter((id) => CHRONIC.some((c) => c.id === id));
+  return {
+    birthDate: p.birthDate || "",
+    blood: p.blood || "",
+    height: p.height || 0,
+    weight: p.weight || 0,
+    age: ageFromBirth(p.birthDate),
+    chronic: ids.map((id) => {
+      const c = CHRONIC.find((x) => x.id === id);
+      return { ar: c.ar, en: c.en };
+    }),
+    chronicIds: ids,
+  };
+}
+
+router.get("/profile", async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("profile");
+    res.json(patientProfileView(user));
+  } catch (error) {
+    console.error("Get patient profile error:", error);
+    res.status(500).json({ code: "server_error" });
+  }
+});
+
+router.put("/profile", async (req, res) => {
+  try {
+    const b = req.body || {};
+    const set = {};
+
+    if (b.birthDate !== undefined) {
+      const ok = /^\d{4}-\d{2}-\d{2}$/.test(String(b.birthDate));
+      const d = new Date(b.birthDate);
+      if (!ok || Number.isNaN(d.getTime()) || d >= new Date() || d.getFullYear() <= 1900) {
+        return res.status(400).json({ code: "invalid_data" });
+      }
+      set["profile.birthDate"] = b.birthDate;
+    }
+    if (b.blood !== undefined) set["profile.blood"] = String(b.blood).slice(0, 4);
+    if (b.height !== undefined) set["profile.height"] = Number(b.height) || 0;
+    if (b.weight !== undefined) set["profile.weight"] = Number(b.weight) || 0;
+    if (Array.isArray(b.chronicIds)) {
+      set["profile.chronicIds"] = b.chronicIds
+        .map(String)
+        .filter((id) => CHRONIC.some((c) => c.id === id));
+    }
+
+    if (Object.keys(set).length) await User.updateOne({ _id: req.user._id }, { $set: set });
+    const user = await User.findById(req.user._id).select("profile");
+    res.json(patientProfileView(user));
+  } catch (error) {
+    console.error("Update patient profile error:", error);
+    res.status(500).json({ code: "server_error" });
+  }
+});
+
+// ===============================
+// فرز الأعراض (كلمات مفتاحية — استبدله بخدمة ذكاء اصطناعي لاحقاً)
+// ===============================
+router.post("/triage", async (req, res) => {
+  try {
+    const text = String((req.body && req.body.text) || "").toLowerCase();
+    if (text.trim().length < 2) return res.status(400).json({ code: "invalid_data" });
+
+    const has = (...w) => w.some((x) => text.includes(x));
+    let likely = "sym_l_general", severity = "low", kind = "باطنة";
+    if (has("صدر", "chest", "قلب", "heart")) { likely = "sym_l_chest"; severity = "high"; kind = "قلب"; }
+    else if (has("صداع", "دوخة", "headache", "dizz")) { likely = "sym_l_head"; severity = "medium"; kind = "مخ"; }
+    else if (has("حرارة", "كحة", "fever", "cough")) { likely = "sym_l_flu"; severity = "low"; kind = "باطنة"; }
+
+    const esc = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    let docs = await User.find({
+      role: "doctor",
+      status: "active",
+      specialty: new RegExp(esc(kind)),
+    }).select("name specialty extra").limit(2);
+    if (!docs.length) {
+      docs = await User.find({ role: "doctor", status: "active" }).select("name specialty extra").limit(2);
+    }
+
+    const doctors = docs.map((u, i) => {
+      const sp = u.specialty || u.extra || "طبيب";
+      return {
+        id: u._id.toString(),
+        type: "doctor",
+        name: { ar: u.name, en: u.name },
+        specialty: { ar: sp, en: sp },
+        address: { ar: "غير محدد", en: "Not specified" },
+        city: { ar: "غير محدد", en: "Not specified" },
+        rating: 0,
+        x: 15 + ((i * 23) % 75),
+        y: 20 + ((i * 17) % 65),
+      };
+    });
+
+    res.json({ likely, severity, doctors });
+  } catch (error) {
+    console.error("Triage error:", error);
+    res.status(500).json({ code: "server_error" });
+  }
+});
 
 module.exports = router;

@@ -6,6 +6,7 @@ const LabRequest = require("../models/LabRequest");
 const LabResult = require("../models/LabResult");
 const Booking = require("../models/Booking");
 const User = require("../models/User");
+const { TEST_CATALOG } = require("../data/catalog");
 
 const { requireAuth, requireRole } = require("../middleware/auth");
 const { uploadMultiple } = require("../middleware/upload");
@@ -271,6 +272,67 @@ router.get("/results/dates", async (req, res) => {
   } catch (error) {
     console.error("Get result dates error:", error);
     return res.status(500).json({ code: "server_error" });
+  }
+});
+
+
+function cleanDays(days) {
+  if (!Array.isArray(days) || days.length !== 7) return null;
+  const hhmm = /^([01]\d|2[0-3]):[0-5]\d$/;
+  const out = [];
+  for (const d of days) {
+    const from = String((d && d.from) || "").slice(0, 5);
+    const to = String((d && d.to) || "").slice(0, 5);
+    if (!hhmm.test(from) || !hhmm.test(to)) return null;
+    out.push({ on: !!(d && d.on), from, to });
+  }
+  return out;
+}
+
+function labProfileView(user) {
+  const lp = user.labProfile || {};
+  return {
+    license: user.license || "",
+    address: user.address || "",
+    phone: lp.phone || user.phone || "",
+    hours: lp.hours && lp.hours.length === 7 ? lp.hours : Array.from({ length: 7 }, (_, i) => ({ on: i < 6, from: "08:00", to: "20:00" })),
+    tests: lp.tests && lp.tests.length ? lp.tests : TEST_CATALOG.map((name) => ({ name, on: true })),
+  };
+}
+
+router.get("/profile", async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    res.json(labProfileView(user));
+  } catch (error) {
+    console.error("Get lab profile error:", error);
+    res.status(500).json({ code: "server_error" });
+  }
+});
+
+router.put("/profile", async (req, res) => {
+  try {
+    const b = req.body || {};
+    const set = {};
+    if (b.address !== undefined) set.address = String(b.address).trim().slice(0, 150);
+    if (b.phone !== undefined) set["labProfile.phone"] = String(b.phone).trim().slice(0, 20);
+    if (b.hours !== undefined) {
+      const hours = cleanDays(b.hours);
+      if (!hours) return res.status(400).json({ code: "invalid_data" });
+      set["labProfile.hours"] = hours;
+    }
+    if (b.tests !== undefined) {
+      if (!Array.isArray(b.tests) || b.tests.length > 200) return res.status(400).json({ code: "invalid_data" });
+      set["labProfile.tests"] = b.tests
+        .map((t) => ({ name: String((t && t.name) || "").trim().slice(0, 80), on: !!(t && t.on) }))
+        .filter((t) => t.name);
+    }
+    if (Object.keys(set).length) await User.updateOne({ _id: req.user._id }, { $set: set });
+    const user = await User.findById(req.user._id);
+    res.json(labProfileView(user));
+  } catch (error) {
+    console.error("Update lab profile error:", error);
+    res.status(500).json({ code: "server_error" });
   }
 });
 

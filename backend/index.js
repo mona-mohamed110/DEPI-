@@ -22,10 +22,8 @@ app.use(express.json());
 
 // تسجيل طلبات API قبل تشغيل الـ Routes
 app.use("/api", trackApiRequests);
-app.use("/api/lab", labRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api", meRoutes);
-app.use("/api/patient", patientRoutes);
 app.use("/api/patient", patientRoutes);
 app.use("/api/lab", labRoutes);
 app.use("/api/reception", receptionRoutes);
@@ -41,8 +39,9 @@ mongoose
   .then(function () {
     console.log("MongoDB connected");
 
-    app.listen(5000, function () {
-      console.log("Server running on port 5000");
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, function () {
+      console.log("Server running on port " + PORT);
     });
   })
   .catch(function (error) {

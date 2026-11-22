@@ -1091,4 +1091,47 @@ router.delete("/team/:id", async (req, res) => {
 });
 
 
+
+function cleanDays(days) {
+  if (!Array.isArray(days) || days.length !== 7) return null;
+  const hhmm = /^([01]\d|2[0-3]):[0-5]\d$/;
+  const out = [];
+  for (const d of days) {
+    const from = String((d && d.from) || "").slice(0, 5);
+    const to = String((d && d.to) || "").slice(0, 5);
+    if (!hhmm.test(from) || !hhmm.test(to)) return null;
+    out.push({ on: !!(d && d.on), from, to });
+  }
+  return out;
+}
+
+const DEFAULT_SCHEDULE = Array.from({ length: 7 }, (_, i) => ({ on: i < 5, from: "10:00", to: "17:00" }));
+
+// مواعيد عمل الطبيب
+router.get("/schedule", async (req, res) => {
+  try {
+    const doctor = await User.findById(req.user._id).select("schedule");
+    res.json(
+      doctor && doctor.schedule && doctor.schedule.length === 7
+        ? doctor.schedule
+        : DEFAULT_SCHEDULE
+    );
+  } catch (error) {
+    console.error("Get schedule error:", error);
+    res.status(500).json({ code: "server_error" });
+  }
+});
+
+router.put("/schedule", async (req, res) => {
+  try {
+    const days = cleanDays(req.body.days);
+    if (!days) return res.status(400).json({ code: "invalid_data" });
+    await User.updateOne({ _id: req.user._id }, { $set: { schedule: days } });
+    res.json(days);
+  } catch (error) {
+    console.error("Update schedule error:", error);
+    res.status(500).json({ code: "server_error" });
+  }
+});
+
 module.exports = router;

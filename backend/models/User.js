@@ -70,6 +70,25 @@ const userSchema = new mongoose.Schema(
       chronicIds: [String],
     },
 
+    // مواعيد عمل الطبيب (7 أيام، الأحد = 0)
+    schedule: {
+      type: [{ _id: false, on: Boolean, from: String, to: String }],
+      default: undefined,
+    },
+
+    // بيانات المعمل
+    labProfile: {
+      phone: { type: String, default: "" },
+      hours: {
+        type: [{ _id: false, on: Boolean, from: String, to: String }],
+        default: undefined,
+      },
+      tests: {
+        type: [{ _id: false, name: String, on: Boolean }],
+        default: undefined,
+      },
+    },
+
     notifEmail: { type: Boolean, default: true },
     notifAppt: { type: Boolean, default: true },
     notifMeds: { type: Boolean, default: true },
