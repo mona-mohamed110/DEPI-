@@ -3,7 +3,9 @@ import { common, merge } from './common.js';
 
 const base = {
   ar: {
+    
     nav_dash: "لوحة التحكم",
+    stat_prescriptions: 'الروشتات',
     nav_pts: "المرضى",
     nav_rec: "ملف المريض",
     nav_exam: "صفحة الكشف",
@@ -203,6 +205,7 @@ const base = {
     d0: "Saturday",
     d1: "Sunday",
     d2: "Monday",
+    stat_prescriptions: 'Prescriptions',
     d3: "Tuesday",
     d4: "Wednesday",
     d5: "Thursday",

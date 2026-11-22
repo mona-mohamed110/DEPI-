@@ -7,8 +7,7 @@
 //   GET   /lab/profile  |  PUT /lab/profile
 import { api, upload } from './http.js';
 
-// status: 'new' | 'progress' | 'done' | 'pending' (= new + progress). بتقبل نص أو { status }
-export const getRequests = (arg) => api.get('/lab/requests', { status: arg && typeof arg === 'object' ? arg.status : arg });
+export const getRequests = (status) => api.get('/lab/requests', { status });
 export const createRequest = (d) => api.post('/lab/requests', d);
 export const startRequest = (id) => api.patch(`/lab/requests/${id}/start`);
 export const uploadResult = (id, { files, notes }) => upload(`/lab/requests/${id}/result`, files, { notes });

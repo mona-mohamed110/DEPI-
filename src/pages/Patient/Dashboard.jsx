@@ -58,7 +58,7 @@ export default function Dashboard() {
               {d.alerts.length === 0 ? <div className="state">{t('d_no_alerts')}</div> : d.alerts.map((a, i) => (
                 <div className="alert-row" key={i}>
                   <Icon name="tube" size={20} />
-                  <span>{a.kind === 'labs' ? t('d_alert_labs', { n: num(a.n) }) : t('d_alert_result', { title: L(a.title) })}</span>
+                  <span>{t('d_alert_result', { title: L(a.title) })}</span>
                 </div>
               ))}
             </div>
@@ -71,7 +71,9 @@ export default function Dashboard() {
                     <div className="m"><b>{L(d.latestRx.doctor)}</b><small>{fmtDay(d.latestRx.date)}</small></div>
                     <Link to="/patient/prescriptions" className="btn s o">{t('view')}</Link>
                   </div>
-                  <p className="sub" style={{ margin: 0 }} dir="auto">{d.latestRx.meds.join(' · ')}</p>
+<p className="sub" style={{ margin: 0 }} dir="auto">
+  {d.latestRx.items?.map((item) => item.name).filter(Boolean).join(' · ') || 'لا توجد أدوية'}
+</p>
                 </>
               ) : <div className="state">{t('d_none')}</div>}
             </div>
