@@ -188,6 +188,7 @@
   .home-app .nav-actions { flex-direction: column; }
   .home-app .nav-actions .btn { width: 100%; }
   .home-app .footer-cols { grid-template-columns: 1fr 1fr; }
+  .home-app .footer-top { justify-content: center;}
   .home-app .cm-grid { grid-template-columns: 1fr; }
   .home-app .map-view { height: 420px; }
 }

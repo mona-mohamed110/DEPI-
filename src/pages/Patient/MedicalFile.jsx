@@ -6,7 +6,6 @@ import { useAsync } from '../../components/ui/hooks.js';
 import { useToast } from '../../components/ui/Toast.jsx';
 import { useI18n } from '../../context/I18nContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { safeUrl } from '../../api/security.js';
 import * as api from '../../api/patient.js';
 
 const size = (b) => `${(b / (1024 * 1024)).toFixed(1)} MB`;
@@ -47,8 +46,14 @@ export default function MedicalFile() {
     setBusy(false);
     if (ok) { state.setData((d) => ({ ...d, reports: d.reports.filter((r) => r.id !== id) })); setConfirm(null); if (view?.id === id) setView(null); }
   };
-  const open = (r) => { const u = safeUrl(r.url); if (u) setView({ ...r, url: u }); else toast(t('mf_demo')); };
-
+const open = async (r) => {
+  try {
+    await api.openReportFile(r.id);
+  } catch (error) {
+    console.error("Open medical report error:", error);
+    toast(t('mf_demo'));
+  }
+};
   return (
     <section>
       <h1>{t('mf_title')}</h1>

@@ -71,7 +71,9 @@ export default function Dashboard() {
                     <div className="m"><b>{L(d.latestRx.doctor)}</b><small>{fmtDay(d.latestRx.date)}</small></div>
                     <Link to="/patient/prescriptions" className="btn s o">{t('view')}</Link>
                   </div>
-                  <p className="sub" style={{ margin: 0 }} dir="auto">{d.latestRx.meds.join(' · ')}</p>
+<p className="sub" style={{ margin: 0 }} dir="auto">
+  {d.latestRx.items?.map((item) => item.name).filter(Boolean).join(' · ') || 'لا توجد أدوية'}
+</p>
                 </>
               ) : <div className="state">{t('d_none')}</div>}
             </div>

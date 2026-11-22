@@ -9,6 +9,8 @@ import Switch from '../ui/Switch.jsx';
 import * as shared from '../../api/shared.js';
 import * as authApi from '../../api/auth.js';
 import { isEmail, isStrongPassword } from '../../api/security.js';
+import { useNavigate } from 'react-router-dom';
+import { clearSession } from '../../api/security.js';
 
 const NOTIF_LABEL = { notifEmail: 'n_email', notifAppt: 'n_appts', notifMeds: 'n_meds', notifAccess: 'n_access', notifNew: 'n_new' };
 
@@ -20,7 +22,6 @@ export function PersonalCard({ className = 'card' }) {
   const state = useAsync(() => shared.getMe(), []);
   const [form, setForm] = useState(null);
   const [err, setErr] = useState({});
-
   const startEdit = (me) => { setErr({}); setForm({ name: L(me.name), email: me.email, phone: me.phone || '' }); };
   const save = async (e) => {
     e.preventDefault();
@@ -86,6 +87,7 @@ export function ProfilePage({ title }) {
 export function AccountPage({ notifs = ['notifEmail'] }) {
   const { t } = useI18n();
   const { act } = useToast();
+  const navigate = useNavigate();
   const state = useAsync(() => shared.getMe(), []);
   const [f, setF] = useState({ cur: '', next: '', conf: '' });
   const [err, setErr] = useState('');
@@ -106,7 +108,17 @@ export function AccountPage({ notifs = ['notifEmail'] }) {
     setBusy(false);
     if (r) setF({ cur: '', next: '', conf: '' });
   };
-  const logoutAll = () => act(() => shared.logoutAll(), 'logout_all_done');
+  const logoutAll = async () => {
+  const result = await act(
+    () => shared.logoutAll(),
+    'logout_all_done'
+  );
+
+  if (result) {
+    clearSession();
+    navigate('/login', { replace: true });
+  }
+};
 
   return (
     <section>
