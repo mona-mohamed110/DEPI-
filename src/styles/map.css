@@ -1,0 +1,16 @@
+/* خريطة Leaflet الحقيقية (مشتركة بين كل التطبيقات) */
+.lf-map { position: relative; z-index: 0; isolation: isolate; height: 560px; border-radius: 18px; border: 1px solid var(--bd, #e5e7eb); overflow: hidden; background: var(--map-bg, #e8eef3); }
+.lf-map .leaflet-container { font-family: inherit; }
+.lf-pin { background: none; border: 0; }
+.lf-pin .pin-svg { display: block; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .3)); }
+.lf-pin .pin-svg .pin-body { fill: var(--pr, #0d9488); stroke: var(--card, #fff); }
+.lf-pin .pin-svg.lab .pin-body { fill: #7c3aed; }
+.lf-pin .pin-svg .pin-hole { fill: var(--card, #fff); }
+.lf-pin .pin-svg path.pin-body:last-child { stroke: none; }
+.loc-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+.loc-coords { margin-inline-end: auto; color: var(--mu, #6b7280); font-size: 13px; font-variant-numeric: tabular-nums; }
+.sr-near { display: inline-flex; align-items: center; gap: 6px; }
+.sr-dist { color: var(--pr, #0d9488); font-weight: 600; font-size: 12px; }
+.sr-dir { font-size: 12px; color: var(--pr, #0d9488); text-decoration: none; }
+.sr-dir:hover { text-decoration: underline; }
+@media (max-width: 700px) { .lf-map { height: 420px; } }
