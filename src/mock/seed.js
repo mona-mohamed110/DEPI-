@@ -13,7 +13,7 @@
 // ======================================================================
 import { TEST_CATALOG } from '../config/catalog.js';
 export { TEST_CATALOG };
-export const SEED_VERSION = 4;
+export const SEED_VERSION = 5;
 
 const H = 3600 * 1000, D = 24 * H;
 const now = Date.now();
@@ -179,12 +179,12 @@ export function buildSeed() {
 
   // ---------------- دليل الأطباء والمعامل (للبحث والحجز) ----------------
   const places = [
-    { id: 'u_doctor', type: 'doctor', name: ar('د. أحمد سمير', 'Dr. Ahmed Samir'), specialty: ar('باطنة وسكر', 'Internal medicine & diabetes'), address: ar('١٢ شارع الجمهورية', '12 Al-Gomhoria St.'), city: ar('المنصورة', 'Mansoura'), rating: 4.9, x: 56, y: 42, availableDays: [0, 1, 2, 3, 4, 6], timeSlots: ['10:00', '10:30', '11:00', '16:00', '16:30', '17:00'] },
-    { id: 'u_doctor2', type: 'doctor', name: ar('د. سارة علي', 'Dr. Sara Ali'), specialty: ar('قلب وأوعية دموية', 'Cardiology'), address: ar('٥ شارع النيل', '5 Nile St.'), city: ar('المنصورة', 'Mansoura'), rating: 4.8, x: 30, y: 60, availableDays: [0, 1, 2, 3], timeSlots: ['16:00', '17:00', '18:00', '19:00'] },
-    { id: 'pl_3', type: 'doctor', name: ar('د. مها خالد', 'Dr. Maha Khaled'), specialty: ar('مخ وأعصاب', 'Neurology'), address: ar('٨ شارع الجيش', '8 Al-Geish St.'), city: ar('طنطا', 'Tanta'), rating: 4.7, x: 72, y: 30, availableDays: [1, 2, 4, 6], timeSlots: ['12:00', '12:30', '13:00'] },
-    { id: 'pl_4', type: 'doctor', name: ar('د. هبة نبيل', 'Dr. Heba Nabil'), specialty: ar('أطفال', 'Pediatrics'), address: ar('٣ شارع المحطة', '3 Station St.'), city: ar('القاهرة', 'Cairo'), rating: 4.6, x: 20, y: 28, availableDays: [0, 1, 2, 3, 4], timeSlots: ['09:00', '09:30', '10:00'] },
-    { id: 'u_lab', type: 'lab', name: ar('معمل الأمل', 'Al-Amal Lab'), specialty: ar('تحاليل وأشعة', 'Lab tests & imaging'), address: ar('٢٥ شارع الجلاء', '25 Al-Galaa St.'), city: ar('المنصورة', 'Mansoura'), rating: 4.9, x: 44, y: 70, availableDays: [0, 1, 2, 3, 4, 5], timeSlots: ['08:00', '09:00', '10:00', '11:00'] },
-    { id: 'pl_6', type: 'lab', name: ar('مركز النور للتحاليل', 'Al-Noor Lab Center'), specialty: ar('تحاليل وأشعة', 'Lab tests & imaging'), address: ar('١٠ شارع البحر', '10 Al-Bahr St.'), city: ar('طنطا', 'Tanta'), rating: 4.5, x: 80, y: 62, availableDays: [0, 1, 2, 3, 4, 6], timeSlots: ['08:00', '09:00', '10:00'] },
+    { id: 'u_doctor', lat: 31.0409, lng: 31.3785, type: 'doctor', name: ar('د. أحمد سمير', 'Dr. Ahmed Samir'), specialty: ar('باطنة وسكر', 'Internal medicine & diabetes'), address: ar('١٢ شارع الجمهورية', '12 Al-Gomhoria St.'), city: ar('المنصورة', 'Mansoura'), rating: 4.9, x: 56, y: 42, availableDays: [0, 1, 2, 3, 4, 6], timeSlots: ['10:00', '10:30', '11:00', '16:00', '16:30', '17:00'] },
+    { id: 'u_doctor2', lat: 31.0364, lng: 31.36, type: 'doctor', name: ar('د. سارة علي', 'Dr. Sara Ali'), specialty: ar('قلب وأوعية دموية', 'Cardiology'), address: ar('٥ شارع النيل', '5 Nile St.'), city: ar('المنصورة', 'Mansoura'), rating: 4.8, x: 30, y: 60, availableDays: [0, 1, 2, 3], timeSlots: ['16:00', '17:00', '18:00', '19:00'] },
+    { id: 'pl_3', lat: 30.7865, lng: 31.0004, type: 'doctor', name: ar('د. مها خالد', 'Dr. Maha Khaled'), specialty: ar('مخ وأعصاب', 'Neurology'), address: ar('٨ شارع الجيش', '8 Al-Geish St.'), city: ar('طنطا', 'Tanta'), rating: 4.7, x: 72, y: 30, availableDays: [1, 2, 4, 6], timeSlots: ['12:00', '12:30', '13:00'] },
+    { id: 'pl_4', lat: 30.0626, lng: 31.2497, type: 'doctor', name: ar('د. هبة نبيل', 'Dr. Heba Nabil'), specialty: ar('أطفال', 'Pediatrics'), address: ar('٣ شارع المحطة', '3 Station St.'), city: ar('القاهرة', 'Cairo'), rating: 4.6, x: 20, y: 28, availableDays: [0, 1, 2, 3, 4], timeSlots: ['09:00', '09:30', '10:00'] },
+    { id: 'u_lab', lat: 31.045, lng: 31.37, type: 'lab', name: ar('معمل الأمل', 'Al-Amal Lab'), specialty: ar('تحاليل وأشعة', 'Lab tests & imaging'), address: ar('٢٥ شارع الجلاء', '25 Al-Galaa St.'), city: ar('المنصورة', 'Mansoura'), rating: 4.9, x: 44, y: 70, availableDays: [0, 1, 2, 3, 4, 5], timeSlots: ['08:00', '09:00', '10:00', '11:00'] },
+    { id: 'pl_6', lat: 30.795, lng: 31.01, type: 'lab', name: ar('مركز النور للتحاليل', 'Al-Noor Lab Center'), specialty: ar('تحاليل وأشعة', 'Lab tests & imaging'), address: ar('١٠ شارع البحر', '10 Al-Bahr St.'), city: ar('طنطا', 'Tanta'), rating: 4.5, x: 80, y: 62, availableDays: [0, 1, 2, 3, 4, 6], timeSlots: ['08:00', '09:00', '10:00'] },
   ];
 
   return { v: SEED_VERSION, users, patients, doctors, labs, bookings, clinicPatients, licenses, extraAccounts, monitoring, places, sessions: {}, resets: {}, contacts: [] };

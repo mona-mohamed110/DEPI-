@@ -9,6 +9,7 @@ const need = (ctx) => { if (!docId(ctx)) fail(403, 'forbidden'); };
 const findB = (ctx) => { need(ctx); const b = mineAll(ctx).find((x) => x.id === ctx.params.id); if (!b) fail(404, 'not_found'); return b; };
 const view = (ctx, b) => ({ id: b.id, name: b.patientName, phone: b.phone, doctor: userName(ctx.db, docId(ctx)), time: b.time, date: b.date, status: b.queue });
 
+r.get('/reception/doctors', (ctx) => { need(ctx); const u = ctx.db.users.find((x) => x.id === docId(ctx)); return u ? [{ id: u.id, name: u.name, specialty: '' }] : []; });
 r.get('/reception/requests', (ctx) => { need(ctx); return mineAll(ctx).filter((b) => b.status === 'pending').sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`)).map((b) => ({ id: b.id, name: b.patientName, phone: b.phone, date: b.date, time: b.time })); });
 // قبول الطلب: بيتأكد الحجز، بيظهر المريض عند الدكتور، وبيتمنح الدكتور إذن الاطلاع على ملفه
 r.post('/reception/requests/:id/accept', (ctx) => {

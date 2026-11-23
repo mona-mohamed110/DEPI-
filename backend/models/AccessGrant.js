@@ -18,6 +18,9 @@ const accessGrantSchema = new mongoose.Schema(
       ref: "Booking",
       default: null,
     },
+    // تاريخ انتهاء الإذن (null = بدون انتهاء)
+    until: { type: Date, default: null },
+    scope: { type: String, default: "medical_file" },
     status: {
       type: String,
       enum: ["active", "revoked"],

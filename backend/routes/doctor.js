@@ -12,6 +12,8 @@ const Prescription = require("../models/Prescription");
 const LabResult = require("../models/LabResult");
 const DoctorTest = require("../models/DoctorTest");
 
+const { logAccess } = require("../utils/accessLog");
+const { specialtyView } = require("../data/catalog");
 const { requireAuth, requireRole } = require("../middleware/auth");
 const { uploadCertificate } = require("../middleware/upload");
 
@@ -46,6 +48,7 @@ async function getActiveGrant(patientId, doctorId) {
     patientId,
     doctorId,
     status: "active",
+    $or: [{ until: null }, { until: { $gt: new Date() } }],
   });
 }
 
@@ -321,6 +324,15 @@ router.get("/patients", async (req, res) => {
 // Doctor custom tests
 // ===============================
 
+// أسماء تحاليل الطبيب المخصصة (مرتبة بوقت الإضافة)
+async function customTestNames(doctorId) {
+  const rows = await DoctorTest.find({ doctorId })
+    .sort({ createdAt: 1 })
+    .select("name -_id")
+    .lean();
+  return rows.map((row) => row.name);
+}
+
 router.get("/tests", async (req, res) => {
   try {
     const tests = await DoctorTest.find({
@@ -364,14 +376,13 @@ router.post("/tests", async (req, res) => {
       });
     }
 
-    const test = await DoctorTest.create({
+    await DoctorTest.create({
       doctorId: req.user._id,
       name,
     });
 
-    return res.status(201).json({
-      name: test.name,
-    });
+    // الواجهة تتوقع القائمة الكاملة بعد الإضافة
+    return res.status(201).json(await customTestNames(req.user._id));
   } catch (error) {
     if (error.code === 11000) {
       return res.status(409).json({
@@ -408,9 +419,8 @@ router.delete("/tests/:name", async (req, res) => {
       });
     }
 
-    return res.json({
-      message: "test_removed",
-    });
+    // الواجهة تتوقع القائمة الكاملة بعد الحذف
+    return res.json(await customTestNames(req.user._id));
   } catch (error) {
     console.error("Remove doctor test error:", error);
     return res.status(500).json({ code: "server_error" });
@@ -435,6 +445,8 @@ router.get("/patients/:id/file", async (req, res) => {
       return res.status(403).json({ code: "access_denied" });
     }
 
+    logAccess(id, req.user, "viewed_file");
+
     const [patient, record, prescriptions, labResults] =
       await Promise.all([
         User.findOne({
@@ -448,7 +460,7 @@ router.get("/patients/:id/file", async (req, res) => {
           patientId: id,
           doctorId: req.user._id,
         })
-          .populate("doctorId", "name extra")
+          .populate("doctorId", "name extra specialty")
           .sort({ date: -1 })
           .lean(),
 
@@ -489,7 +501,7 @@ router.get("/patients/:id/file", async (req, res) => {
       prescriptions: prescriptions.map((rx) => ({
         id: rx._id.toString(),
         doctor: rx.doctorId?.name || "",
-        specialty: rx.doctorId?.extra?.specialty || "",
+        specialty: specialtyView(rx.doctorId?.specialty || rx.doctorId?.extra),
         visit: rx.visit || "consultation",
         date: rx.date,
         diagnosis: rx.diagnosis || "",
@@ -726,6 +738,8 @@ router.post("/exams", async (req, res) => {
       tests: prescriptionTests,
     });
 
+    logAccess(patientId, req.user, "added_prescription", prescription._id);
+
     booking.status = "done";
     booking.examinedAt = new Date();
 
@@ -788,7 +802,7 @@ router.get("/professional", async (req, res) => {
 
     return res.json({
       license: doctor.license || "",
-      specialty: doctor.specialty || "",
+      specialty: doctor.specialty || doctor.extra || "",
       clinic: doctor.clinic || "",
       address: doctor.address || "",
       licenseStatus: doctor.licenseStatus || "pend",
@@ -805,7 +819,8 @@ router.get("/professional", async (req, res) => {
 // Update professional profile
 router.put("/professional", async (req, res) => {
   try {
-    const { license, specialty, clinic, address } = req.body;
+    // التخصص يُحدد عند التسجيل ولا يُعدَّل من هنا (يتجاهله الخادم حتى لو أُرسل)
+    const { license, clinic, address } = req.body;
 
     const doctor = await User.findById(req.user._id);
 
@@ -814,7 +829,6 @@ router.put("/professional", async (req, res) => {
     }
 
     if (license !== undefined) doctor.license = String(license).trim();
-    if (specialty !== undefined) doctor.specialty = String(specialty).trim();
     if (clinic !== undefined) doctor.clinic = String(clinic).trim();
     if (address !== undefined) doctor.address = String(address).trim();
 
@@ -822,7 +836,7 @@ router.put("/professional", async (req, res) => {
 
     return res.json({
       license: doctor.license,
-      specialty: doctor.specialty,
+      specialty: doctor.specialty || doctor.extra || "",
       clinic: doctor.clinic,
       address: doctor.address,
       licenseStatus: doctor.licenseStatus,

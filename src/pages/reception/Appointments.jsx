@@ -1,5 +1,4 @@
-
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Icon from '../../components/Icon.jsx';
 import { Async } from '../../components/ui/States.jsx';
 import { useAsync } from '../../components/ui/hooks.js';
@@ -24,6 +23,8 @@ export default function Appointments() {
   const [err, setErr] = useState({});
   const [patientId, setPatientId] = useState('');
   const [providerId, setProviderId] = useState('');
+  // موظف الاستقبال تابع لطبيب واحد: يتحدد تلقائياً
+  useEffect(() => { const l = doctors.data; if (Array.isArray(l) && l.length === 1) setProviderId(l[0].id); }, [doctors.data]);
   const [day, setDay] = useState('');
   const [time, setTime] = useState('');
   const [busy, setBusy] = useState(false);
@@ -190,6 +191,7 @@ export default function Appointments() {
             {(list) => (
               <select
                 value={providerId}
+                disabled={list.length === 1}
                 onChange={(e) => setProviderId(e.target.value)}
               >
                 <option value="">{t('pick_doctor')}</option>

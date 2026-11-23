@@ -8,6 +8,7 @@ const Booking = require("../models/Booking");
 const User = require("../models/User");
 const { TEST_CATALOG } = require("../data/catalog");
 
+const { logAccess } = require("../utils/accessLog");
 const { requireAuth, requireRole } = require("../middleware/auth");
 const { uploadMultiple } = require("../middleware/upload");
 
@@ -176,6 +177,10 @@ router.post(
         patientId: request.patientId,
         labId: req.user._id,
         bookingId: request.bookingId,
+        requestId: request._id,
+        title: request.test,
+        kind: ["lab", "xray", "ecg", "other"].includes(request.kind) ? request.kind : "lab",
+        status: ["normal", "low", "high", "followup"].includes(req.body.status) ? req.body.status : "normal",
         fileName: file.originalname,
         filePath: `uploads/${file.filename}`,
         fileType: file.mimetype,
@@ -183,6 +188,7 @@ router.post(
 
       if (request.patientId) {
   await LabResult.insertMany(resultDocuments);
+  logAccess(request.patientId, req.user, "uploaded_result", request._id);
 }
 
       request.status = "done";

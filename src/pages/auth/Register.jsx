@@ -6,10 +6,9 @@ import Icon from '../../components/Icon.jsx';
 import { useI18n } from '../../context/I18nContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { checkFile, isEgPhone, isEmail, isStrongPassword } from '../../api/security.js';
-import { BLOOD_TYPES, CHRONIC } from '../../config/catalog.js';
+import { BLOOD_TYPES, CHRONIC, SPECIALTIES } from '../../config/catalog.js';
 
 const ROLES = [['patient', 'user', 'rg_patient'], ['doctor', 'stethoscope', 'rg_doctor'], ['lab', 'flask', 'rg_lab']];
-const SPECS = ['sp_internal', 'sp_cardio', 'sp_neuro', 'sp_peds', 'sp_derm', 'sp_ortho'];
 const digits = (s) => String(s).replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
 
 function Form() {
@@ -68,7 +67,7 @@ function Form() {
           {role === 'lab' && <div><label htmlFor="rg-lab">{t('rg_lab_name')}</label><input id="rg-lab" value={f.labName} maxLength={80} onChange={set('labName')} /><Err k="labName" /></div>}
           <div><label htmlFor="rg-email">{t('rg_email')}</label><input id="rg-email" type="email" dir="ltr" value={f.email} maxLength={254} onChange={set('email')} autoComplete="email" /><Err k="email" /></div>
           <div><label htmlFor="rg-phone">{t('rg_phone')}</label><input id="rg-phone" dir="ltr" inputMode="tel" value={f.phone} onChange={set('phone')} placeholder="01xxxxxxxxx" autoComplete="tel" /><Err k="phone" /></div>
-          {role === 'doctor' && <div><label htmlFor="rg-sp">{t('rg_specialty')}</label><select id="rg-sp" value={f.specialty} onChange={set('specialty')}>{SPECS.map((s) => <option key={s} value={s}>{t(s)}</option>)}</select></div>}
+          {role === 'doctor' && <div><label htmlFor="rg-sp">{t('rg_specialty')}</label><select id="rg-sp" value={f.specialty} onChange={set('specialty')}>{SPECIALTIES.map((s) => <option key={s.id} value={s.id}>{lang === 'ar' ? s.ar : s.en}</option>)}</select></div>}
           {role !== 'patient' && <div><label htmlFor="rg-lic">{t('rg_license')}</label><input id="rg-lic" dir="ltr" value={f.license} maxLength={40} onChange={set('license')} /><Err k="license" /></div>}
           <div><label htmlFor="rg-pass">{t('rg_pass')}</label><PasswordInput id="rg-pass" value={f.password} onChange={set('password')} autoComplete="new-password" /><Err k="password" /></div>
           <div><label htmlFor="rg-conf">{t('rg_confirm')}</label><PasswordInput id="rg-conf" value={f.confirm} onChange={set('confirm')} autoComplete="new-password" /><Err k="confirm" /></div>

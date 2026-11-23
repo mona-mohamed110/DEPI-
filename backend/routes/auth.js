@@ -1,5 +1,6 @@
 
 const express = require("express");
+const { SPECIALTIES } = require("../data/catalog");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
@@ -49,6 +50,10 @@ router.post("/register", uploadCertificate, async function (req, res) {
 
     if (oldUser) {
       return sendError(res, 409, "email_exists");
+    }
+
+    if (role === "doctor" && !SPECIALTIES.some((x) => x.id === body.extra)) {
+      return sendError(res, 400, "invalid_data");
     }
 
     const hashedPassword = await bcrypt.hash(body.password, 10);
@@ -101,6 +106,7 @@ router.post("/register", uploadCertificate, async function (req, res) {
       role,
       status,
       extra: body.extra || "",
+      specialty: role === "doctor" ? body.extra : undefined,
 
       license: body.license || "",
       licenseStatus: role !== "patient" ? "pend" : undefined,

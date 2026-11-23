@@ -28,7 +28,9 @@ function accountRow(user) {
     name: user.name,
     email: user.email,
     role: user.role,
-    active: user.status !== "disabled",
+    // الحساب المعلّق (pending) لا يستطيع الدخول، فلا يُعرض كمفعّل
+    active: user.status === "active",
+    pending: user.status === "pending",
   };
 }
 

@@ -13,7 +13,9 @@ const { uploadMultiple } = require("../middleware/upload");
 const LabRequest = require("../models/LabRequest");
 const LabResult = require("../models/LabResult");
 
-const { CHRONIC } = require("../data/catalog");
+const { CHRONIC, specialtyView } = require("../data/catalog");
+const AccessLog = require("../models/AccessLog");
+const { logAccess, ACTION_LABELS } = require("../utils/accessLog");
 const { requireAuth, requireRole } = require("../middleware/auth");
 
 const router = express.Router();
@@ -28,7 +30,7 @@ function bookingRow(booking) {
       booking.providerId?._id?.toString() ||
       booking.providerId?.toString(),
     doctor: booking.providerId?.name || "",
-    specialty: booking.providerId?.extra || "",
+    specialty: specialtyView(booking.providerId?.specialty || booking.providerId?.extra),
     date: booking.date,
     time: booking.time,
     status: booking.status,
@@ -43,7 +45,7 @@ router.get("/appointments", async (req, res) => {
     const bookings = await Booking.find({
       patientId: req.user._id,
     })
-      .populate("providerId", "name extra")
+      .populate("providerId", "name extra specialty")
       .sort({ date: 1, time: 1 });
 
     return res.json(bookings.map(bookingRow));
@@ -164,7 +166,7 @@ router.post("/appointments", async (req, res) => {
     }
 
     const result = await Booking.findById(booking._id)
-      .populate("providerId", "name extra");
+      .populate("providerId", "name extra specialty");
 
     return res.status(201).json(bookingRow(result));
   } catch (error) {
@@ -217,7 +219,7 @@ router.patch("/appointments/:id", async (req, res) => {
     await booking.save();
 
     const result = await Booking.findById(booking._id)
-      .populate("providerId", "name extra");
+      .populate("providerId", "name extra specialty");
 
     return res.json(bookingRow(result));
   } catch (error) {
@@ -274,7 +276,7 @@ router.get("/dashboard", async (req, res) => {
           date: { $gte: today },
           status: { $in: ["pending", "confirmed"] },
         })
-          .populate("providerId", "name extra")
+          .populate("providerId", "name extra specialty")
           .sort({ date: 1, time: 1 })
           .limit(5),
 
@@ -293,7 +295,7 @@ router.get("/dashboard", async (req, res) => {
         }),
 
         Prescription.findOne({ patientId })
-          .populate("doctorId", "name extra")
+          .populate("doctorId", "name extra specialty")
           .sort({ date: -1 })
           .lean(),
       ]);
@@ -314,7 +316,7 @@ router.get("/dashboard", async (req, res) => {
         ? {
             id: latestRx._id.toString(),
             doctor: latestRx.doctorId?.name || "",
-            specialty: latestRx.doctorId?.extra || "",
+            specialty: specialtyView(latestRx.doctorId?.specialty || latestRx.doctorId?.extra),
             visit: latestRx.visit,
             date: latestRx.date,
             diagnosis: latestRx.diagnosis,
@@ -329,7 +331,7 @@ router.get("/dashboard", async (req, res) => {
       upcoming: bookings.map((booking) => ({
         id: booking._id.toString(),
         doctor: booking.providerId?.name || "مقدم الخدمة",
-        specialty: booking.providerId?.extra || "",
+        specialty: specialtyView(booking.providerId?.specialty || booking.providerId?.extra),
         date: booking.date,
         time: booking.time,
         status: booking.status,
@@ -358,11 +360,11 @@ router.get("/results", async (req, res) => {
     return res.json(
       results.map((item) => ({
         id: item._id.toString(),
-        kind: "lab",
-        title: item.fileName,
+        kind: item.kind || "lab",
+        title: item.title || item.fileName,
         source: item.labId?.name || "المعمل",
         date: item.createdAt,
-        status: "normal",
+        status: item.status || "normal",
         fileUrl: `/api/patient/results/${item._id}/file`,
       }))
     );
@@ -681,14 +683,14 @@ router.get("/prescriptions", async (req, res) => {
       patientId: req.user._id,
       current,
     })
-      .populate("doctorId", "name extra")
+      .populate("doctorId", "name extra specialty")
       .sort({ date: -1 })
       .lean();
 
     const data = prescriptions.map((rx) => ({
       id: rx._id.toString(),
       doctor: rx.doctorId?.name || "",
-      specialty: rx.doctorId?.extra || "",
+      specialty: specialtyView(rx.doctorId?.specialty || rx.doctorId?.extra),
       visit: rx.visit,
       date: rx.date,
       diagnosis: rx.diagnosis,
@@ -755,8 +757,9 @@ router.get("/permissions/active", async (req, res) => {
     const grants = await AccessGrant.find({
       patientId: req.user._id,
       status: "active",
+      $or: [{ until: null }, { until: { $gt: new Date() } }],
     })
-      .populate("doctorId", "name extra")
+      .populate("doctorId", "name extra specialty")
       .sort({ grantedAt: -1 })
       .lean();
 
@@ -764,8 +767,8 @@ router.get("/permissions/active", async (req, res) => {
       id: grant._id.toString(),
       kind: "doctor",
       grantee: grant.doctorId?.name || "",
-      scope: "medical_file",
-      until: null,
+      scope: grant.scope || "medical_file",
+      until: grant.until ? new Date(grant.until).toISOString().slice(0, 10) : null,
     }));
 
     return res.json(data);
@@ -800,6 +803,9 @@ router.delete("/permissions/active/:id", async (req, res) => {
     if (!grant) {
       return res.status(404).json({ message: "Permission not found" });
     }
+
+    const revoked = await User.findById(grant.doctorId).select("name");
+    logAccess(req.user._id, { _id: grant.doctorId, name: revoked ? revoked.name : "" }, "revoked_access", grant._id);
 
     return res.json({ message: "Permission revoked successfully" });
   } catch (error) {
@@ -922,10 +928,22 @@ router.post("/permissions/requests/:id/:decision", async (req, res) => {
 });
 
 
-// Access log - waiting for actual access tracking
+// سجل الاطلاع على ملف المريض
 router.get("/permissions/log", async (req, res) => {
   try {
-    return res.json([]);
+    const rows = await AccessLog.find({ patientId: req.user._id })
+      .sort({ at: -1 })
+      .limit(100)
+      .lean();
+
+    return res.json(
+      rows.map((row) => ({
+        id: row._id.toString(),
+        who: row.actorName || "",
+        action: ACTION_LABELS[row.action],
+        at: row.at,
+      }))
+    );
   } catch (error) {
     console.error("Get access log error:", error);
     return res.status(500).json({
@@ -1021,23 +1039,20 @@ router.post("/triage", async (req, res) => {
     else if (has("صداع", "دوخة", "headache", "dizz")) { likely = "sym_l_head"; severity = "medium"; kind = "مخ"; }
     else if (has("حرارة", "كحة", "fever", "cough")) { likely = "sym_l_flu"; severity = "low"; kind = "باطنة"; }
 
-    const esc = (x) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    let docs = await User.find({
-      role: "doctor",
-      status: "active",
-      specialty: new RegExp(esc(kind)),
-    }).select("name specialty extra").limit(2);
+    const kindIds = { "قلب": ["sp_cardio"], "مخ": ["sp_neuro"], "باطنة": ["sp_internal"] }[kind] || [];
+    const bySpec = { role: "doctor", status: "active", $or: [{ specialty: { $in: kindIds } }, { extra: { $in: kindIds } }] };
+    let docs = await User.find(bySpec).select("name specialty extra").limit(2);
     if (!docs.length) {
       docs = await User.find({ role: "doctor", status: "active" }).select("name specialty extra").limit(2);
     }
 
     const doctors = docs.map((u, i) => {
-      const sp = u.specialty || u.extra || "طبيب";
+      const sp = specialtyView(u.specialty || u.extra) || { ar: "طبيب", en: "Doctor" };
       return {
         id: u._id.toString(),
         type: "doctor",
         name: { ar: u.name, en: u.name },
-        specialty: { ar: sp, en: sp },
+        specialty: sp,
         address: { ar: "غير محدد", en: "Not specified" },
         city: { ar: "غير محدد", en: "Not specified" },
         rating: 0,

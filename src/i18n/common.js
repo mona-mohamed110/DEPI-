@@ -6,6 +6,9 @@ export const merge = (...ds) => ({
 
 export const common = {
   ar: {
+    sp_locked: 'التخصص يُحدد عند التسجيل ولا يمكن تعديله. للتغيير تواصل مع إدارة النظام.',
+    adm_pending: 'قيد المراجعة',
+    loc_title: 'موقعك على الخريطة', loc_hint: 'اضغط على الخريطة أو اسحب الدبوس لتحديد المكان بدقة', loc_use_mine: 'استخدم موقعي الحالي', loc_save: 'حفظ الموقع', loc_saved: 'تم حفظ الموقع', loc_none: 'لم تحدد موقعك بعد. لن يظهر للمرضى على الخريطة قبل الحفظ.', loc_denied: 'تعذر تحديد موقعك. اسمح للمتصفح بالوصول إلى الموقع.', near_me: 'الأقرب إليّ', km: 'كم', directions: 'الاتجاهات', map_no_coords: 'لا توجد أماكن محددة على الخريطة بعد.',
     langName: 'العربية', settingsBtn: 'الحساب والإعدادات', prefs: 'الإعدادات المفضلة', language: 'اللغة', darkMode: 'الوضع الداكن', lightMode: 'الوضع الفاتح',
     profile: 'الملف الشخصي', accountSettings: 'إعدادات الحساب', logout: 'تسجيل الخروج',
     name: 'الاسم', email: 'البريد الإلكتروني',
@@ -34,6 +37,9 @@ export const common = {
     err_pending_license: 'حسابك قيد مراجعة الترخيص من الإدارة', err_invalid_code: 'الكود غير صحيح أو منتهي', err_unauthorized: 'انتهت الجلسة، سجّل دخولك مرة أخرى',
   },
   en: {
+    sp_locked: 'The specialty is set at registration and cannot be edited. Contact the administration to change it.',
+    adm_pending: 'Pending review',
+    loc_title: 'Your location on the map', loc_hint: 'Click the map or drag the pin to set the exact place', loc_use_mine: 'Use my current location', loc_save: 'Save location', loc_saved: 'Location saved', loc_none: 'You have not set a location yet. Patients will not see you on the map until you save one.', loc_denied: 'Could not get your location. Allow location access in the browser.', near_me: 'Nearest to me', km: 'km', directions: 'Directions', map_no_coords: 'No places have a map location yet.',
     langName: 'English', settingsBtn: 'Account & settings', prefs: 'Preferences', language: 'Language', darkMode: 'Dark mode', lightMode: 'Light mode',
     profile: 'Profile', accountSettings: 'Account settings', logout: 'Log out',
     name: 'Name', email: 'Email',

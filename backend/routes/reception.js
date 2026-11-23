@@ -3,6 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 
 const User = require("../models/User");
+const { specialtyView } = require("../data/catalog");
 const Booking = require("../models/Booking");
 const AccessGrant = require("../models/AccessGrant");
 const { requireAuth, requireRole } = require("../middleware/auth");
@@ -10,6 +11,27 @@ const { requireAuth, requireRole } = require("../middleware/auth");
 const router = express.Router();
 
 router.use(requireAuth, requireRole("reception"));
+
+// موظف الاستقبال تابع لطبيب واحد فقط (الذي أضاف حسابه) ويدير حجوزاته هو فقط
+router.use(function (req, res, next) {
+  if (!req.user.doctorId) {
+    return res.status(403).json({ code: "forbidden" });
+  }
+  req.doctorId = req.user.doctorId;
+  next();
+});
+
+// معرّفات مرضى هذا الطبيب: من لهم حجز عنده + من أضافهم الاستقبال
+async function clinicPatientFilter(doctorId) {
+  const ids = await Booking.distinct("patientId", {
+    providerId: doctorId,
+    kind: "doctor",
+  });
+  return {
+    role: "patient",
+    $or: [{ _id: { $in: ids } }, { createdByDoctor: doctorId }],
+  };
+}
 
 const QUEUE_STATUSES = [
   "not-arrived",
@@ -101,9 +123,9 @@ function recordRow(booking) {
 router.get("/doctors", async function (req, res) {
   try {
     const doctors = await User.find({
+      _id: req.doctorId,
       role: "doctor",
       status: "active",
-      licenseStatus: "ok",
     })
       .select("name specialty extra")
       .sort({ name: 1 });
@@ -112,7 +134,7 @@ router.get("/doctors", async function (req, res) {
       doctors.map((doctor) => ({
         id: String(doctor._id),
         name: doctor.name,
-        specialty: doctor.specialty || doctor.extra || "",
+        specialty: specialtyView(doctor.specialty || doctor.extra),
       }))
     );
   } catch (error) {
@@ -127,7 +149,7 @@ router.get("/doctors", async function (req, res) {
 // ========================================
 router.get("/patients", async function (req, res) {
   try {
-    const patients = await User.find({ role: "patient" })
+    const patients = await User.find(await clinicPatientFilter(req.doctorId))
       .select("name phone")
       .sort({ name: 1 });
 
@@ -167,6 +189,7 @@ router.post("/patients", async function (req, res) {
       role: "patient",
       status: "active",
       password: "",
+      createdByDoctor: req.doctorId,
     });
 
     res.status(201).json(patientRow(patient));
@@ -184,6 +207,8 @@ router.get("/requests", async function (req, res) {
   try {
     const requests = await Booking.find({
       status: "pending",
+      kind: "doctor",
+      providerId: req.doctorId,
     })
       .populate("patientId", "name phone")
       .populate("providerId", "name")
@@ -209,6 +234,8 @@ router.post("/requests/:id/accept", async function (req, res) {
     const booking = await Booking.findOne({
       _id: req.params.id,
       status: "pending",
+      kind: "doctor",
+      providerId: req.doctorId,
     });
 
     if (!booking) {
@@ -263,6 +290,8 @@ router.post("/requests/:id/reject", async function (req, res) {
       {
         _id: req.params.id,
         status: "pending",
+        kind: "doctor",
+        providerId: req.doctorId,
       },
       { $set: { status: "rejected" } },
       { new: true }
@@ -289,6 +318,7 @@ router.get("/queue", async function (req, res) {
       date: getToday(),
       status: { $in: ["confirmed", "done"] },
       kind: "doctor",
+      providerId: req.doctorId,
     })
       .populate("patientId", "name phone")
       .populate("providerId", "name")
@@ -319,6 +349,7 @@ router.patch("/queue/:id", async function (req, res) {
     const booking = await Booking.findOne({
       _id: req.params.id,
       kind: "doctor",
+      providerId: req.doctorId,
       status: { $in: ["confirmed", "done"] },
     });
 
@@ -347,7 +378,10 @@ router.patch("/queue/:id", async function (req, res) {
 router.post("/appointments", async function (req, res) {
   try {
     const patientId = req.body.patientId;
-    const providerId = req.body.providerId;
+    const providerId = String(req.doctorId);
+    if (req.body.providerId && String(req.body.providerId) !== providerId) {
+      return res.status(403).json({ code: "forbidden" });
+    }
     const time = String(req.body.time || "").trim();
 
     let date = String(req.body.date || req.body.day || "").trim();
@@ -366,9 +400,10 @@ router.post("/appointments", async function (req, res) {
     }
 
     const patient = await User.findOne({
-      _id: patientId,
-      role: "patient",
-      status: "active",
+      $and: [
+        { _id: patientId, status: "active" },
+        await clinicPatientFilter(req.doctorId),
+      ],
     });
 
     if (!patient) {
@@ -379,7 +414,6 @@ router.post("/appointments", async function (req, res) {
       _id: providerId,
       role: "doctor",
       status: "active",
-      licenseStatus: "ok",
     });
 
     if (!doctor) {
@@ -440,6 +474,7 @@ router.get("/records", async function (req, res) {
   try {
     const bookings = await Booking.find({
       kind: "doctor",
+      providerId: req.doctorId,
       status: { $in: ["confirmed", "done"] },
     })
       .populate("patientId", "name phone")
@@ -466,6 +501,7 @@ router.delete("/records/:id", async function (req, res) {
     const booking = await Booking.findOneAndDelete({
       _id: req.params.id,
       kind: "doctor",
+      providerId: req.doctorId,
     });
 
     if (!booking) {

@@ -1,6 +1,6 @@
 const express = require("express");
 const User = require("../models/User");
-const { requireAuth } = require("../middleware/auth");
+const { requireAuth, requireRole } = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -85,6 +85,34 @@ router.put("/me", requireAuth, async function (req, res) {
 
     await user.save();
     res.json(meData(user));
+  } catch (error) {
+    sendError(res, 500, "server_error");
+  }
+});
+
+// موقع العيادة/المعمل على الخريطة (للطبيب والمعمل فقط)
+router.get("/me/location", requireAuth, requireRole("doctor", "lab"), async function (req, res) {
+  try {
+    const user = await User.findById(req.user._id).select("location");
+    const loc = (user && user.location) || {};
+    res.json({
+      lat: Number.isFinite(loc.lat) ? loc.lat : null,
+      lng: Number.isFinite(loc.lng) ? loc.lng : null,
+    });
+  } catch (error) {
+    sendError(res, 500, "server_error");
+  }
+});
+
+router.put("/me/location", requireAuth, requireRole("doctor", "lab"), async function (req, res) {
+  try {
+    const lat = Number(req.body.lat);
+    const lng = Number(req.body.lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+      return sendError(res, 400, "invalid_data");
+    }
+    await User.updateOne({ _id: req.user._id }, { $set: { location: { lat, lng } } });
+    res.json({ lat, lng });
   } catch (error) {
     sendError(res, 500, "server_error");
   }

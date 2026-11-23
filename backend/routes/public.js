@@ -1,6 +1,7 @@
 const express = require("express");
 const User = require("../models/User");
 const ContactMessage = require("../models/ContactMessage");
+const { specialtyView } = require("../data/catalog");
 
 const router = express.Router();
 
@@ -19,7 +20,7 @@ router.get("/places", async (req, res) => {
     }
 
     let providers = await User.find(filter)
-      .select("name role extra")
+      .select("name role extra specialty address location")
       .sort({ name: 1 });
 
     if (q) {
@@ -39,12 +40,15 @@ router.get("/places", async (req, res) => {
         ar: user.name,
         en: user.name,
       },
-      specialty: {
-        ar: user.extra || (user.role === "lab" ? "معمل تحاليل" : "طبيب"),
-        en: user.extra || (user.role === "lab" ? "Medical Lab" : "Doctor"),
-      },
-      address: { ar: "غير محدد", en: "Not specified" },
+      specialty: user.role === "lab"
+        ? { ar: "معمل تحاليل", en: "Medical Lab" }
+        : specialtyView(user.specialty || user.extra) || { ar: "طبيب", en: "Doctor" },
+      address: user.address
+        ? { ar: user.address, en: user.address }
+        : { ar: "غير محدد", en: "Not specified" },
       city: { ar: "غير محدد", en: "Not specified" },
+      lat: user.location && Number.isFinite(user.location.lat) ? user.location.lat : null,
+      lng: user.location && Number.isFinite(user.location.lng) ? user.location.lng : null,
       rating: 0,
       x: 15 + ((index * 23) % 75),
       y: 20 + ((index * 17) % 65),

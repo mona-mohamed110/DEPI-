@@ -86,7 +86,7 @@ r.put('/doctor/schedule', (ctx) => {
 r.get('/doctor/professional', (ctx) => D(ctx).professional);
 r.put('/doctor/professional', (ctx) => {
   const p = D(ctx).professional, b = ctx.body;
-  ['license', 'specialty', 'clinic', 'address'].forEach((k) => { if (b[k] !== undefined) p[k] = typeof b[k] === 'object' ? b[k] : clean(b[k], 120); });
+  ['license', 'clinic', 'address'].forEach((k) => { if (b[k] !== undefined) p[k] = typeof b[k] === 'object' ? b[k] : clean(b[k], 120); });
   save(); return p;
 });
 r.post('/doctor/license-file', (ctx) => {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLab } from "./LabContext.jsx";
 import Icon from "../../components/Icon.jsx";
-import MapArt from "../../components/ui/MapArt.jsx";
+import LocationPicker from "../../components/ui/LocationPicker.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 import * as api from "../../api/lab.js";
 
@@ -42,7 +42,7 @@ export default function LabProfile() {
           <input value={L(p.address)} onChange={(e) => set("address", e.target.value)} />
           <label>{t("labPhone")}</label>
           <input dir="ltr" value={p.phone} onChange={(e) => set("phone", e.target.value)} />
-          <MapArt />
+          <LocationPicker height={240} />
         </div>
 
         <div className="card">

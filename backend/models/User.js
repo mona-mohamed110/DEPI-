@@ -70,6 +70,12 @@ const userSchema = new mongoose.Schema(
       chronicIds: [String],
     },
 
+    // موقع العيادة/المعمل على الخريطة
+    location: {
+      lat: { type: Number, min: -90, max: 90 },
+      lng: { type: Number, min: -180, max: 180 },
+    },
+
     // مواعيد عمل الطبيب (7 أيام، الأحد = 0)
     schedule: {
       type: [{ _id: false, on: Boolean, from: String, to: String }],
@@ -103,6 +109,13 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
 
+    // مريض أضافه موظف الاستقبال (بدون حساب دخول) يتبع هذا الطبيب
+    createdByDoctor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
     perms: {
       type: [Boolean],
       default: [true, true, true],
@@ -110,6 +123,10 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+userSchema.index({ role: 1, status: 1 });
+userSchema.index({ doctorId: 1 });
+userSchema.index({ phone: 1 });
 
 // الإيميل فريد للحسابات التي لديها إيميل فقط
 userSchema.index(

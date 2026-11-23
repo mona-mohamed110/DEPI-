@@ -45,6 +45,9 @@ phone: { type: String, default: "" },
   { timestamps: true }
 );
 
+labRequestSchema.index({ labId: 1, status: 1, createdAt: -1 });
+labRequestSchema.index({ patientId: 1 });
+
 module.exports =
   mongoose.models.LabRequest ||
   mongoose.model("LabRequest", labRequestSchema);

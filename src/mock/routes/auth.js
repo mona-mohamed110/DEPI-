@@ -82,6 +82,15 @@ r.post('/auth/change-password', async ({ body, user }) => {
 
 // بيانات الحساب المشتركة لكل الأدوار
 r.get('/me', ({ user }) => ({ ...publicUser(user), notifEmail: user.notifEmail, notifAppt: user.notifAppt, notifMeds: user.notifMeds, notifAccess: user.notifAccess, notifNew: user.notifNew, twoFactor: user.twoFactor }));
+r.get('/me/location', ({ user, db }) => { const p = db.places.find((x) => x.id === user.id); return { lat: p?.lat ?? null, lng: p?.lng ?? null }; });
+r.put('/me/location', ({ body, user, db }) => {
+  const lat = Number(body.lat), lng = Number(body.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) fail(400, 'invalid_data');
+  const p = db.places.find((x) => x.id === user.id);
+  if (!p) fail(404, 'not_found');
+  p.lat = lat; p.lng = lng; save();
+  return { lat, lng };
+});
 r.put('/me', ({ body, user, db }) => {
   const patch = {};
   if (body.name !== undefined) { if (clean(body.name).length < 2) fail(400, 'invalid_data'); patch.name = clean(body.name, 80); }
