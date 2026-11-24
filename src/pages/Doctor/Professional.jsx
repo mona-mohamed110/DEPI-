@@ -23,6 +23,7 @@ export default function Professional() {
       setForm({
         license: state.data.license || '',
         specialty: state.data.specialty || '',
+        followUpDays: state.data.followUpDays || 14,
         clinic: L(state.data.clinic || ''),
         address: L(state.data.address || ''),
       });
@@ -38,7 +39,7 @@ export default function Professional() {
 
   const save = async () => {
     const result = await act(
-      () => api.saveProfessional({ license: form.license, clinic: form.clinic, address: form.address }),
+      () => api.saveProfessional({ license: form.license, followUpDays: form.followUpDays, clinic: form.clinic, address: form.address }),
       'saved_prof'
     );
 
@@ -94,8 +95,12 @@ export default function Professional() {
                 />
 
                 <label>{t('specialty')}</label>
-                <input value={specName(form.specialty, lang)} disabled readOnly />
+                <input value={specName(p.specialty, lang)} disabled readOnly />
                 <p className="sub" style={{ margin: '4px 0 0', fontSize: 13 }}>{t('sp_locked')}</p>
+
+                <label>{t('vt_follow_days')}</label>
+                <input type="number" min="1" max="365" dir="ltr" value={form.followUpDays} onChange={set('followUpDays')} />
+                <p className="sub" style={{ margin: '4px 0 0', fontSize: 13 }}>{t('vt_follow_hint')}</p>
 
                 <label>{t('clinic_name')}</label>
                 <input

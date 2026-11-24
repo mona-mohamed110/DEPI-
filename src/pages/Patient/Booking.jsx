@@ -26,10 +26,15 @@ export default function Booking() {
   const [searching, setSearching] = useState(false);
   const [day, setDay] = useState('');
   const [time, setTime] = useState('');
-  const [test, setTest] = useState('');
+  const [test, setTest] = useState(() => loc.state?.test || '');
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
   const isLab = doctor?.type === 'lab';
+  // الفحوصات التي يوفرها هذا المعمل (إن لم يرسلها الخادم نعرض الكتالوج كله)
+  const labTests = isLab && Array.isArray(doctor?.tests) ? TEST_CATALOG.filter((c) => doctor.tests.includes(c.ar)) : TEST_CATALOG;
+  const customTests = isLab && Array.isArray(doctor?.tests) ? doctor.tests.filter((n) => !TEST_CATALOG.some((x) => x.ar === n)) : [];
+  // الفحص المختار يُعتمد فقط إذا كان المعمل يوفره (مثلاً قادمًا من صفحة فرز الأعراض)
+  const testValue = [...labTests.map((c) => c.ar), ...customTests].includes(test) ? test : '';
 
   const days = useMemo(() => {
     if (!doctor) return [];
@@ -51,9 +56,9 @@ export default function Booking() {
 
   const confirm = async () => {
     if (!doctor || !day || !time) return;
-    if (isLab && !test) return toast(t('bk_need_test'));
+    if (isLab && !testValue) return toast(t('bk_need_test'));
     setBusy(true);
-    const r = await act(() => api.bookAppointment({ doctorId: doctor.id, date: day, time, test: isLab ? test : undefined }));
+    const r = await act(() => api.bookAppointment({ doctorId: doctor.id, date: day, time, test: isLab ? testValue : undefined }));
     setBusy(false);
     if (r) { try { sessionStorage.removeItem(PENDING_KEY); } catch { /* ignore */ } setDone(true); }
   };
@@ -91,9 +96,10 @@ export default function Booking() {
             {isLab && (
               <>
                 <h2>{t('bk_lab_test')}</h2>
-                <select value={test} onChange={(e) => { setTest(e.target.value); setDone(false); }}>
+                <select value={testValue} onChange={(e) => { setTest(e.target.value); setDone(false); }}>
                   <option value="">—</option>
-                  {TEST_CATALOG.map((c) => <option key={c.ar} value={c.ar}>{lang === 'ar' ? c.ar : c.en}</option>)}
+                  {labTests.map((c) => <option key={c.ar} value={c.ar}>{lang === 'ar' ? c.ar : c.en}</option>)}
+                  {customTests.map((n) => <option key={n} value={n}>{n}</option>)}
                 </select>
               </>
             )}

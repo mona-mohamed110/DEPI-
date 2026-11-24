@@ -46,6 +46,7 @@ export default function Dashboard() {
             <div className="queue-row" key={x.id}>
               <div className="av">{L(x.name).charAt(0)}</div>
               <div className="m"><b>{L(x.name)}</b><small>{t('rq_for')}: {fmtDay(x.date)} · {fmtTime(x.time)}</small></div>
+              {x.visitType && <span className={`vt-badge ${x.visitType}`}>{t(`visit_${x.visitType}`)}</span>}
               <div className="act-group">
                 <button type="button" className="btn s" onClick={() => decide(x.id, true)}><Icon name="check" size={15} />{t('rq_accept')}</button>
                 <button type="button" className="btn s o dg" onClick={() => decide(x.id, false)}><Icon name="x" size={15} />{t('rq_reject')}</button>
@@ -68,6 +69,7 @@ export default function Dashboard() {
               <div className="queue-row" key={i.id}>
                 <div className="av">{L(i.name).charAt(0)}</div>
                 <div className="m"><b>{L(i.name)}</b><small>{L(i.doctor)}</small></div>
+                {i.visitType && <span className={`vt-badge ${i.visitType}`}>{t(`visit_${i.visitType}`)}</span>}
                 <span className="time-tag">{fmtTime(i.time)}</span>
                 <span className={`st ${i.status}`}>{t(`st_${i.status}`)}</span>
                 <div className="act-group">

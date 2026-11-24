@@ -491,3 +491,19 @@
     padding: 10px;
   }
 }
+
+/* مساعد فرز الأعراض */
+.app-root.patient-app .sev.emergency{color:var(--dg);font-weight:800}
+.app-root.patient-app .tri-emerg{display:flex;gap:12px;align-items:flex-start;margin-top:16px;padding:14px 16px;border-radius:14px;border:2px solid var(--dg);background:color-mix(in srgb,var(--dg) 10%,var(--card));color:var(--dg)}
+.app-root.patient-app .tri-emerg p{margin:4px 0 0;color:var(--tx)}
+.app-root.patient-app .tri-near{display:flex;gap:8px;align-items:center;font-size:14px;margin:0 0 12px}
+.app-root.patient-app .tri-near input{width:auto}
+.app-root.patient-app .tri-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.app-root.patient-app .tri-advice{margin-top:12px;padding-top:12px;border-top:1px solid var(--bd)}
+.app-root.patient-app .tri-advice p{margin:4px 0 0}
+.app-root.patient-app .tri-q{margin-bottom:14px}
+.app-root.patient-app .tri-q .chips{margin-top:8px}
+.app-root.patient-app .tri-spec{padding:12px 0;border-bottom:1px solid var(--bd)}
+.app-root.patient-app .tri-spec:last-child{border-bottom:0}
+.app-root.patient-app .tri-spec-h{display:flex;align-items:center;gap:8px}
+.app-root.patient-app .tri-none{margin-top:6px}

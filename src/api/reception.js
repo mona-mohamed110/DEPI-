@@ -11,4 +11,5 @@ export const addPatient = (d) => api.post('/reception/patients', d);
 export const bookAppointment = (d) => api.post('/reception/appointments', d);
 export const getRecords = () => api.get('/reception/records');
 export const deleteRecord = (id) => api.del(`/reception/records/${id}`);
+export const getVisitType = (patientId, date) => api.get(`/reception/visit-type?patientId=${encodeURIComponent(patientId)}&date=${encodeURIComponent(date)}`);
 export const getDoctors = () => api.get('/reception/doctors');

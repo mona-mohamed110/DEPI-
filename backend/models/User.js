@@ -61,6 +61,7 @@ const userSchema = new mongoose.Schema(
     resetCode: { type: String, default: "" },
     resetToken: { type: String, default: "" },
     resetExpires: { type: Date },
+    resetAttempts: { type: Number, default: 0 },
 
     profile: {
       birthDate: String,
@@ -100,7 +101,14 @@ const userSchema = new mongoose.Schema(
     notifMeds: { type: Boolean, default: true },
     notifAccess: { type: Boolean, default: true },
     notifNew: { type: Boolean, default: true },
+    // التحقق بخطوتين (كود على الإيميل عند كل تسجيل دخول): غير مفعّل افتراضياً، والمستخدم يفعّله من إعداداته إن أراد
     twoFactor: { type: Boolean, default: false },
+    loginCode: { type: String, default: "" },
+    loginCodeExpires: { type: Date },
+    loginAttempts: { type: Number, default: 0 },
+
+    // عدد الأيام بعد آخر روشتة التي تُعتبر فيها الزيارة "إعادة كشف" (للطبيب)
+    followUpDays: { type: Number, default: 14, min: 1, max: 365 },
 
     // بيانات موظف الاستقبال
     doctorId: {

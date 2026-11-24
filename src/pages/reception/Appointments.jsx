@@ -29,6 +29,17 @@ export default function Appointments() {
   const [time, setTime] = useState('');
   const [busy, setBusy] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [vt, setVt] = useState(null);
+  const [consult, setConsult] = useState(false);
+
+  // نوع الزيارة المتوقع: يُحسب من آخر روشتة للمريض عند الطبيب في يوم الموعد المختار
+  useEffect(() => {
+    setConsult(false);
+    if (!patientId || !day) { setVt(null); return undefined; }
+    let live = true;
+    api.getVisitType(patientId, day).then((r) => { if (live) setVt(r); }).catch(() => { if (live) setVt(null); });
+    return () => { live = false; };
+  }, [patientId, day]);
 
   const days = useMemo(() => Array.from({ length: 5 }, (_, i) => {
     const d = new Date();
@@ -102,6 +113,7 @@ export default function Appointments() {
         providerId,
         date: day,
         time,
+        visit: consult ? 'consult' : undefined,
       }),
       'booked'
     );
@@ -111,6 +123,7 @@ export default function Appointments() {
     if (r) {
       setDay('');
       setTime('');
+      setConsult(false);
     }
   };
 
@@ -232,6 +245,23 @@ export default function Appointments() {
               </button>
             ))}
           </div>
+
+          {vt && (
+            <div className="vt-box">
+              <label className="first">{t('vt_title')}</label>
+              <span className={`vt-badge ${consult ? 'consult' : vt.type}`}>{t(`visit_${consult ? 'consult' : vt.type}`)}</span>
+              <p className="sub" style={{ margin: '6px 0 0', fontSize: 13 }}>
+                {vt.lastDate
+                  ? `${t('vt_last')} ${vt.lastDate} (${vt.daysSince} ${t('vt_days')}) · ${t('vt_window')}: ${vt.windowDays} ${t('vt_days')}${vt.graceDays ? ` + ${t('vt_grace')} ${vt.graceDays}` : ''} — ${vt.type === 'followup' ? (vt.inGrace ? t('vt_in_grace') : t('vt_in')) : t('vt_expired')}`
+                  : t('vt_none')}
+              </p>
+              {vt.lastDate && (
+                <label className="vt-consult">
+                  <input type="checkbox" checked={consult} onChange={(e) => setConsult(e.target.checked)} /> {t('vt_consult')}
+                </label>
+              )}
+            </div>
+          )}
 
           {err.book && <div className="err">{err.book}</div>}
 

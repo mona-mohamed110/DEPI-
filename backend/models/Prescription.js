@@ -68,6 +68,11 @@ const prescriptionSchema = new mongoose.Schema(
       },
     ],
 
+    // أيام إعادة الكشف التي يحددها الطبيب لهذه الروشتة (null = المدة الافتراضية للطبيب)
+    followUpDays: { type: Number, default: null, min: 1, max: 365 },
+    // فترة سماح اختيارية بعد انتهاء الأيام (0 = بدون)
+    graceDays: { type: Number, default: 0, min: 0, max: 60 },
+
     current: {
       type: Boolean,
       default: true,

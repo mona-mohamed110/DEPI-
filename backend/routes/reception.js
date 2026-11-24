@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const User = require("../models/User");
 const { specialtyView } = require("../data/catalog");
 const Booking = require("../models/Booking");
+const Prescription = require("../models/Prescription");
 const AccessGrant = require("../models/AccessGrant");
 const { requireAuth, requireRole } = require("../middleware/auth");
 
@@ -73,6 +74,74 @@ function normalizeEgyptPhone(value) {
 
 function isValidEgyptPhone(phone) {
   return /^01[0125]\d{8}$/.test(phone);
+}
+
+// ===== نوع الزيارة (كشف جديد / إعادة / استشارة) =====
+const DEFAULT_FOLLOWUP_DAYS = 14;
+
+function cairoDay(d) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Cairo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date(d));
+}
+
+function dayDiff(from, to) {
+  const a = from.split("-").map(Number);
+  const b = to.split("-").map(Number);
+  return Math.round((Date.UTC(b[0], b[1] - 1, b[2]) - Date.UTC(a[0], a[1] - 1, a[2])) / 86400000);
+}
+
+async function followUpWindow(doctorId) {
+  const doc = await User.findById(doctorId).select("followUpDays");
+  return Number.isFinite(doc && doc.followUpDays) ? doc.followUpDays : DEFAULT_FOLLOWUP_DAYS;
+}
+
+// يحسب النوع من آخر روشتة كتبها هذا الطبيب لهذا المريض قبل يوم الموعد:
+// لا توجد روشتة، أو فات الوقت المسموح  => كشف جديد. غير ذلك => إعادة كشف.
+async function visitInfo(doctorId, patientId, date, defaultDays) {
+  const fallback = defaultDays || (await followUpWindow(doctorId));
+  const rxs = await Prescription.find({ patientId, doctorId })
+    .sort({ date: -1 })
+    .limit(30)
+    .select("date followUpDays graceDays");
+
+  // آخر روشتة قبل يوم الموعد
+  const last = rxs.find((x) => cairoDay(x.date) < date) || null;
+
+  if (!last) {
+    return { type: "new", lastDate: null, daysSince: null, windowDays: fallback, graceDays: 0, inGrace: false };
+  }
+
+  // المدة وفترة السماح يحددهما الطبيب عند كتابة الروشتة
+  const windowDays = last.followUpDays || fallback;
+  const graceDays = last.graceDays || 0;
+  const lastDate = cairoDay(last.date);
+  const daysSince = dayDiff(lastDate, date);
+
+  return {
+    type: daysSince <= windowDays + graceDays ? "followup" : "new",
+    lastDate,
+    daysSince,
+    windowDays,
+    graceDays,
+    inGrace: daysSince > windowDays && daysSince <= windowDays + graceDays,
+  };
+}
+
+async function addVisit(doctorId, bookings, rows) {
+  const days = await followUpWindow(doctorId);
+  return Promise.all(
+    rows.map(async (row, i) => {
+      const b = bookings[i];
+      if (b.visitType) return { ...row, visitType: b.visitType };
+      const pid = (b.patientId && b.patientId._id) || b.patientId;
+      const info = await visitInfo(doctorId, pid, b.date, days);
+      return { ...row, visitType: info.type, daysSince: info.daysSince };
+    })
+  );
 }
 
 function patientRow(user) {
@@ -214,7 +283,7 @@ router.get("/requests", async function (req, res) {
       .populate("providerId", "name")
       .sort({ createdAt: -1 });
 
-    res.json(requests.map(requestRow));
+    res.json(await addVisit(req.doctorId, requests, requests.map(requestRow)));
   } catch (error) {
     console.error("Reception requests error:", error);
     res.status(500).json({ code: "server_error" });
@@ -269,7 +338,7 @@ router.post("/requests/:id/accept", async function (req, res) {
       .populate("patientId", "name phone")
       .populate("providerId", "name");
 
-    res.json(requestRow(populated));
+    res.json((await addVisit(req.doctorId, [populated], [requestRow(populated)]))[0]);
   } catch (error) {
     console.error("Reception accept request error:", error);
     res.status(500).json({ code: "server_error" });
@@ -324,7 +393,7 @@ router.get("/queue", async function (req, res) {
       .populate("providerId", "name")
       .sort({ time: 1 });
 
-    res.json(bookings.map(queueRow));
+    res.json(await addVisit(req.doctorId, bookings, bookings.map(queueRow)));
   } catch (error) {
     console.error("Reception queue error:", error);
     res.status(500).json({ code: "server_error" });
@@ -367,6 +436,32 @@ router.patch("/queue/:id", async function (req, res) {
     res.json(queueRow(populated));
   } catch (error) {
     console.error("Reception update queue error:", error);
+    res.status(500).json({ code: "server_error" });
+  }
+});
+
+// ========================================
+// نوع الزيارة المتوقع لمريض في يوم معين
+// GET /api/reception/visit-type?patientId=&date=
+// ========================================
+router.get("/visit-type", async function (req, res) {
+  try {
+    const patientId = req.query.patientId;
+    let date = String(req.query.date || "").trim();
+    if (date === "today") date = getToday();
+
+    if (!mongoose.isValidObjectId(patientId) || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return res.status(400).json({ code: "invalid_data" });
+    }
+
+    const patient = await User.findOne({
+      $and: [{ _id: patientId, status: "active" }, await clinicPatientFilter(req.doctorId)],
+    });
+    if (!patient) return res.status(404).json({ code: "patient_not_found" });
+
+    res.json(await visitInfo(req.doctorId, patientId, date));
+  } catch (error) {
+    console.error("Reception visit type error:", error);
     res.status(500).json({ code: "server_error" });
   }
 });
@@ -431,6 +526,10 @@ router.post("/appointments", async function (req, res) {
       return res.status(409).json({ code: "slot_taken" });
     }
 
+    // النوع يحسبه الخادم من آخر روشتة؛ الاستقبال يستطيع فقط تحويله إلى "استشارة" إذا كانت للمريض روشتة سابقة
+    const info = await visitInfo(providerId, patientId, date);
+    const visitType = req.body.visit === "consult" && info.lastDate ? "consult" : info.type;
+
     const booking = await Booking.create({
       patientId,
       providerId,
@@ -440,6 +539,7 @@ router.post("/appointments", async function (req, res) {
       status: "confirmed",
       queue: "not-arrived",
       source: "reception",
+      visitType,
     });
 
     await AccessGrant.findOneAndUpdate(
@@ -459,7 +559,7 @@ router.post("/appointments", async function (req, res) {
       .populate("patientId", "name phone")
       .populate("providerId", "name");
 
-    res.status(201).json(recordRow(populated));
+    res.status(201).json({ ...recordRow(populated), visitType });
   } catch (error) {
     console.error("Reception book appointment error:", error);
     res.status(500).json({ code: "server_error" });

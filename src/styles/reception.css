@@ -260,3 +260,10 @@
 .app-root.reception-app .queue-row:last-child{border-bottom:0}
 .app-root.reception-app .time-tag{min-width:64px;font-weight:700;color:var(--pr)}
 
+/* نوع الزيارة في الاستقبال */
+.vt-box { margin-top: 12px; padding: 12px; border: 1px solid var(--line, #e5e7eb); border-radius: 12px; }
+.vt-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; background: #eef2ff; color: #3730a3; }
+.vt-badge.followup { background: #ecfdf5; color: #047857; }
+.vt-badge.consult { background: #fff7ed; color: #c2410c; }
+.vt-consult { display: flex; gap: 6px; align-items: center; margin-top: 8px; font-size: 14px; }
+.vt-consult input { width: auto; }

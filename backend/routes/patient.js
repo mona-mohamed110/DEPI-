@@ -1026,42 +1026,156 @@ router.put("/profile", async (req, res) => {
 });
 
 // ===============================
-// فرز الأعراض (كلمات مفتاحية — استبدله بخدمة ذكاء اصطناعي لاحقاً)
+// مساعد فرز الأعراض: يفهم الأعراض، ينبّه للطوارئ، يرتب التخصصات ويقترح أطباء من قاعدة البيانات
+// (محرك قواعد دائم + نموذج Claude اختياري عند ضبط ANTHROPIC_API_KEY). انظر utils/triage.js
 // ===============================
+const { triage: runTriage, aiEnabled } = require("../utils/triage");
+const { TEST_INFO, labOfferedTests } = require("../data/catalog");
+const { norm: normText } = require("../utils/triage");
+
+const triageHits = new Map();
+
+function kmBetween(a, b) {
+  const R = 6371;
+  const rad = (x) => (x * Math.PI) / 180;
+  const dLat = rad(b.lat - a.lat);
+  const dLng = rad(b.lng - a.lng);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
 router.post("/triage", async (req, res) => {
   try {
-    const text = String((req.body && req.body.text) || "").toLowerCase();
-    if (text.trim().length < 2) return res.status(400).json({ code: "invalid_data" });
+    const text = String((req.body && req.body.text) || "").trim().slice(0, 1000);
+    if (text.length < 2) return res.status(400).json({ code: "invalid_data" });
 
-    const has = (...w) => w.some((x) => text.includes(x));
-    let likely = "sym_l_general", severity = "low", kind = "باطنة";
-    if (has("صدر", "chest", "قلب", "heart")) { likely = "sym_l_chest"; severity = "high"; kind = "قلب"; }
-    else if (has("صداع", "دوخة", "headache", "dizz")) { likely = "sym_l_head"; severity = "medium"; kind = "مخ"; }
-    else if (has("حرارة", "كحة", "fever", "cough")) { likely = "sym_l_flu"; severity = "low"; kind = "باطنة"; }
+    // حد 30 طلب في الساعة لكل مريض (حماية من الإغراق وتكلفة الذكاء الاصطناعي)
+    const key = String(req.user._id);
+    const now = Date.now();
+    const hits = (triageHits.get(key) || []).filter((t) => now - t < 3600 * 1000);
+    if (hits.length >= 30) return res.status(429).json({ code: "too_many_requests" });
+    hits.push(now);
+    triageHits.set(key, hits);
 
-    const kindIds = { "قلب": ["sp_cardio"], "مخ": ["sp_neuro"], "باطنة": ["sp_internal"] }[kind] || [];
-    const bySpec = { role: "doctor", status: "active", $or: [{ specialty: { $in: kindIds } }, { extra: { $in: kindIds } }] };
-    let docs = await User.find(bySpec).select("name specialty extra").limit(2);
-    if (!docs.length) {
-      docs = await User.find({ role: "doctor", status: "active" }).select("name specialty extra").limit(2);
+    // سياق المريض: العمر والأمراض المزمنة (من ملفه الصحي)
+    const profile = req.user.profile || {};
+    let age = null;
+    if (profile.birthDate) {
+      const birth = new Date(profile.birthDate);
+      if (!Number.isNaN(birth.getTime())) {
+        age = Math.floor((now - birth.getTime()) / (365.25 * 24 * 3600 * 1000));
+      }
+    }
+    const chronic = (Array.isArray(profile.chronicIds) ? profile.chronicIds : [])
+      .map((id) => (CHRONIC.find((c) => c.id === id) || {}).en)
+      .filter(Boolean);
+
+    const result = await runTriage(text, { age, chronic });
+
+    // موقع المريض (اختياري) لترتيب الأطباء بالأقرب
+    const near =
+      req.body.near && Number.isFinite(Number(req.body.near.lat)) && Number.isFinite(Number(req.body.near.lng))
+        ? { lat: Number(req.body.near.lat), lng: Number(req.body.near.lng) }
+        : null;
+
+    // أطباء كل تخصص مقترح (حتى 3 لكل تخصص)
+    const doctors = [];
+    const seen = new Set();
+    for (const spec of result.specialties) {
+      const docs = await User.find({
+        role: "doctor",
+        status: "active",
+        $or: [{ specialty: spec.id }, { extra: spec.id }],
+      })
+        .select("name specialty extra address clinic location")
+        .limit(30);
+
+      const rows = docs
+        .filter((u) => !seen.has(String(u._id)))
+        .map((u) => {
+          const hasLoc = u.location && Number.isFinite(u.location.lat) && Number.isFinite(u.location.lng);
+          return {
+            id: u._id.toString(),
+            type: "doctor",
+            name: { ar: u.name, en: u.name },
+            specialty: specialtyView(u.specialty || u.extra) || { ar: "طبيب", en: "Doctor" },
+            clinic: u.clinic || "",
+            address: u.address ? { ar: u.address, en: u.address } : { ar: "غير محدد", en: "Not specified" },
+            city: { ar: "غير محدد", en: "Not specified" },
+            lat: hasLoc ? u.location.lat : null,
+            lng: hasLoc ? u.location.lng : null,
+            rating: 0,
+            x: 50,
+            y: 50,
+            matchedSpecialty: spec.id,
+            distanceKm: near && hasLoc ? Math.round(kmBetween(near, u.location) * 10) / 10 : null,
+          };
+        });
+
+      if (near) {
+        rows.sort((a, b) => (a.distanceKm ?? 1e9) - (b.distanceKm ?? 1e9));
+      }
+      rows.slice(0, 3).forEach((r) => {
+        seen.add(r.id);
+        doctors.push(r);
+      });
     }
 
-    const doctors = docs.map((u, i) => {
-      const sp = specialtyView(u.specialty || u.extra) || { ar: "طبيب", en: "Doctor" };
-      return {
-        id: u._id.toString(),
-        type: "doctor",
-        name: { ar: u.name, en: u.name },
-        specialty: sp,
-        address: { ar: "غير محدد", en: "Not specified" },
-        city: { ar: "غير محدد", en: "Not specified" },
-        rating: 0,
-        x: 15 + ((i * 23) % 75),
-        y: 20 + ((i * 17) % 65),
-      };
-    });
+    // الفحوصات المقترحة + المعامل التي توفر كل فحص (حسب ما فعّله كل معمل في ملفه)
+    const tests = [];
+    if (!result.emergency && result.tests && result.tests.length) {
+      const labs = await User.find({ role: "lab", status: "active" })
+        .select("name address location labProfile")
+        .limit(300);
+      const labRows = labs.map((u) => {
+        const hasLoc = u.location && Number.isFinite(u.location.lat) && Number.isFinite(u.location.lng);
+        return {
+          u,
+          offered: labOfferedTests(u).map(normText),
+          hasLoc,
+        };
+      });
 
-    res.json({ likely, severity, doctors });
+      for (const name of result.tests) {
+        const info = TEST_INFO.find((t) => t.ar === name);
+        if (!info) continue;
+        const keys = [normText(info.ar), normText(info.en)];
+        const offers = (n) => keys.includes(n) || (n.length >= 4 && keys.some((k) => k.includes(n) || n.includes(k)));
+        const rows = labRows
+          .filter((l) => l.offered.some(offers))
+          .map(({ u, hasLoc }) => ({
+            id: u._id.toString(),
+            type: "lab",
+            name: { ar: u.name, en: u.name },
+            specialty: { ar: "معمل تحاليل", en: "Medical Lab" },
+            address: u.address ? { ar: u.address, en: u.address } : { ar: "غير محدد", en: "Not specified" },
+            city: { ar: "غير محدد", en: "Not specified" },
+            lat: hasLoc ? u.location.lat : null,
+            lng: hasLoc ? u.location.lng : null,
+            rating: 0,
+            x: 50,
+            y: 50,
+            distanceKm: near && hasLoc ? Math.round(kmBetween(near, u.location) * 10) / 10 : null,
+          }));
+        if (near) rows.sort((a, b) => (a.distanceKm ?? 1e9) - (b.distanceKm ?? 1e9));
+        tests.push({ ar: info.ar, en: info.en, kind: info.kind, labs: rows.slice(0, 3), labCount: rows.length });
+      }
+    }
+
+    res.json({
+      tests,
+      severity: result.severity,
+      emergency: result.emergency,
+      summary: result.summary,
+      specialties: result.specialties,
+      questions: result.questions,
+      advice: result.advice,
+      doctors,
+      source: result.source,
+      aiEnabled: aiEnabled(),
+    });
   } catch (error) {
     console.error("Triage error:", error);
     res.status(500).json({ code: "server_error" });

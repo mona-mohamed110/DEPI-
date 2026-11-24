@@ -13,13 +13,15 @@ const ICON = { patient: 'user', doctor: 'stethoscope', lab: 'flask', reception: 
 
 function Form() {
   const { t } = useI18n();
-  const { user, login } = useAuth();
+  const { user, login, verifyLogin } = useAuth();
   const nav = useNavigate();
   const loc = useLocation();
   const [email, setEmail] = useState(loc.state?.email || '');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [step, setStep] = useState('login'); // login | code
+  const [code, setCode] = useState('');
 
   // لو مسجل دخول بالفعل يروح للوحته
   if (user) return <Navigate to={ROLE_HOME[user.role]} replace />;
@@ -32,12 +34,52 @@ function Form() {
     e.preventDefault();
     if (!isEmail(email) || !password) return setError(t('lg_need'));
     setError(''); setBusy(true);
-    try { go(await login(email, password)); }
+    try {
+      const r = await login(email, password);
+      if (r.twoFactorRequired) { setStep('code'); setCode(''); setBusy(false); return; }
+      go(r);
+    }
     catch (err) {
       const msg = err.code === 'locked' ? t('lg_locked', { n: err.wait }) : t(`err_${err.code}`) !== `err_${err.code}` ? t(`err_${err.code}`) : t('error');
       setError(msg); setBusy(false);
     }
   };
+
+  const submitCode = async (e) => {
+    e.preventDefault();
+    if (!/^\d{6}$/.test(code.trim())) return setError(t('err_invalid_code'));
+    setError(''); setBusy(true);
+    try { go(await verifyLogin(email, code)); }
+    catch (err) {
+      setError(t(`err_${err.code}`) !== `err_${err.code}` ? t(`err_${err.code}`) : t('error'));
+      setBusy(false);
+    }
+  };
+  const resend = async () => {
+    setError(''); setBusy(true);
+    try { await login(email, password); } catch { setError(t('error')); }
+    setBusy(false);
+  };
+
+  if (step === 'code') {
+    return (
+      <>
+        <h1>{t('tf_title')}</h1>
+        <p className="auth-sub">{t('tf_sub')} <b dir="ltr">{email}</b></p>
+        <form onSubmit={submitCode} noValidate>
+          <label htmlFor="tf-code">{t('tf_code')}</label>
+          <input id="tf-code" dir="ltr" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} />
+          {error && <div className="err" role="alert">{error}</div>}
+          <button type="submit" className="btn lg wide" disabled={busy}>{busy ? t('lg_ing') : t('tf_verify')}</button>
+        </form>
+        <p className="auth-foot">
+          <button type="button" className="link" onClick={resend} disabled={busy}>{t('tf_resend')}</button>
+          {' · '}
+          <button type="button" className="link" onClick={() => { setStep('login'); setError(''); setPassword(''); }}>{t('tf_back')}</button>
+        </p>
+      </>
+    );
+  }
 
   return (
     <>

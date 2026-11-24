@@ -1,14 +1,46 @@
 // نفس كتالوج الواجهة (src/config/catalog.js) — حدّثهما معاً
-const TEST_CATALOG = [
-  "HbA1c",
-  "صورة دم كاملة CBC",
-  "وظائف كلى",
-  "وظائف كبد",
-  "أشعة سينية على الصدر",
-  "أشعة مقطعية على الصدر",
-  "موجات صوتية على البطن",
-  "رنين مغناطيسي",
+// الاسم العربي هو المفتاح المحفوظ في قاعدة البيانات (نفس src/config/catalog.js — حدّثهما معاً)
+const TEST_INFO = [
+  { ar: "HbA1c", en: "HbA1c", kind: "lab" },
+  { ar: "صورة دم كاملة CBC", en: "Complete blood count (CBC)", kind: "lab" },
+  { ar: "وظائف كلى", en: "Kidney function", kind: "lab" },
+  { ar: "وظائف كبد", en: "Liver function", kind: "lab" },
+  { ar: "أشعة سينية على الصدر", en: "Chest X-ray", kind: "xray" },
+  { ar: "أشعة مقطعية على الصدر", en: "Chest CT", kind: "xray" },
+  { ar: "موجات صوتية على البطن", en: "Abdominal ultrasound", kind: "xray" },
+  { ar: "رنين مغناطيسي", en: "MRI", kind: "xray" },
+  { ar: "سكر صائم", en: "Fasting blood glucose", kind: "lab" },
+  { ar: "صورة دهون (كوليسترول)", en: "Lipid profile (cholesterol)", kind: "lab" },
+  { ar: "وظائف الغدة الدرقية (TSH)", en: "Thyroid function (TSH)", kind: "lab" },
+  { ar: "تحليل بول كامل", en: "Complete urine analysis", kind: "lab" },
+  { ar: "مزرعة بول", en: "Urine culture", kind: "lab" },
+  { ar: "تحليل براز", en: "Stool analysis", kind: "lab" },
+  { ar: "فيريتين وحديد", en: "Ferritin & iron", kind: "lab" },
+  { ar: "فيتامين د", en: "Vitamin D", kind: "lab" },
+  { ar: "فيتامين ب12", en: "Vitamin B12", kind: "lab" },
+  { ar: "بروتين سي التفاعلي (CRP)", en: "C-reactive protein (CRP)", kind: "lab" },
+  { ar: "سرعة الترسيب (ESR)", en: "ESR", kind: "lab" },
+  { ar: "تروبونين (أنزيمات القلب)", en: "Troponin (cardiac enzymes)", kind: "lab" },
+  { ar: "تحليل الحمل (بيتا HCG)", en: "Pregnancy test (beta-hCG)", kind: "lab" },
+  { ar: "اختبار جرثومة المعدة (H. pylori)", en: "H. pylori test", kind: "lab" },
+  { ar: "حمض اليوريك", en: "Uric acid", kind: "lab" },
+  { ar: "العامل الروماتويدي (RF)", en: "Rheumatoid factor (RF)", kind: "lab" },
+  { ar: "رسم قلب (ECG)", en: "ECG", kind: "xray" },
+  { ar: "إيكو على القلب", en: "Echocardiogram", kind: "xray" },
+  { ar: "أشعة سينية على الركبة", en: "Knee X-ray", kind: "xray" },
+  { ar: "أشعة سينية على العمود الفقري", en: "Spine X-ray", kind: "xray" },
+  { ar: "أشعة سينية على العظام", en: "Bone X-ray", kind: "xray" },
+  { ar: "أشعة سينية على الجيوب الأنفية", en: "Sinus X-ray", kind: "xray" },
+  { ar: "موجات صوتية على الحوض", en: "Pelvic ultrasound", kind: "xray" },
+  { ar: "موجات صوتية على المسالك البولية", en: "Urinary tract ultrasound", kind: "xray" },
+  { ar: "موجات صوتية على الغدة الدرقية", en: "Thyroid ultrasound", kind: "xray" },
+  { ar: "موجات صوتية على الحمل", en: "Obstetric ultrasound", kind: "xray" },
+  { ar: "رنين مغناطيسي على المخ", en: "Brain MRI", kind: "xray" },
+  { ar: "أشعة مقطعية على المخ", en: "Brain CT", kind: "xray" },
+  { ar: "رنين مغناطيسي على العمود الفقري", en: "Spine MRI", kind: "xray" },
 ];
+const TEST_CATALOG = TEST_INFO.map((t) => t.ar);
+
 
 const CHRONIC = [
   { id: "diabetes", ar: "السكري", en: "Diabetes" },
@@ -72,4 +104,11 @@ function specialtyView(value) {
   return s ? { ar: s.ar, en: s.en } : v;
 }
 
-module.exports = { TEST_CATALOG, CHRONIC, SPECIALTIES, specialtyView };
+// التحاليل التي يوفرها معمل: ما فعّله في ملفه، وإذا لم يضبط شيئاً بعد فكل الكتالوج
+function labOfferedTests(user) {
+  const lp = (user && user.labProfile) || {};
+  if (lp.tests && lp.tests.length) return lp.tests.filter((t) => t.on).map((t) => t.name);
+  return TEST_CATALOG.slice();
+}
+
+module.exports = { TEST_CATALOG, TEST_INFO, CHRONIC, SPECIALTIES, specialtyView, labOfferedTests };

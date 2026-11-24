@@ -79,12 +79,11 @@ r.post('/patient/triage', ({ body, db }) => {
   const s = String(body.text || '').toLowerCase();
   if (s.trim().length < 2) fail(400, 'invalid_data');
   const has = (...w) => w.some((x) => s.includes(x));
-  let likely = 'sym_l_general', severity = 'low', kind = 'باطنة';
-  if (has('صدر', 'chest', 'قلب', 'heart')) { likely = 'sym_l_chest'; severity = 'high'; kind = 'قلب'; }
-  else if (has('صداع', 'دوخة', 'headache', 'dizz')) { likely = 'sym_l_head'; severity = 'medium'; kind = 'مخ'; }
-  else if (has('حرارة', 'كحة', 'fever', 'cough')) { likely = 'sym_l_flu'; severity = 'low'; kind = 'باطنة'; }
-  const doctors = db.places.filter((p) => p.type === 'doctor').filter((p) => p.specialty.ar.includes(kind) || p.specialty.ar.includes('باطنة')).slice(0, 2);
-  return { likely, severity, doctors };
+  let kind = 'باطنة', severity = 'low', sp = { id: 'sp_internal', ar: 'باطنة', en: 'Internal medicine' };
+  if (has('صدر', 'chest', 'قلب', 'heart')) { kind = 'قلب'; severity = 'high'; sp = { id: 'sp_cardio', ar: 'قلب وأوعية دموية', en: 'Cardiology' }; }
+  else if (has('صداع', 'دوخة', 'headache', 'dizz')) { kind = 'مخ'; severity = 'medium'; sp = { id: 'sp_neuro', ar: 'مخ وأعصاب', en: 'Neurology' }; }
+  const doctors = db.places.filter((p) => p.type === 'doctor').filter((p) => p.specialty.ar.includes(kind) || p.specialty.ar.includes('باطنة')).slice(0, 2).map((d) => ({ ...d, matchedSpecialty: sp.id }));
+  return { severity, emergency: false, summary: { ar: 'وضع العرض التجريبي: تحليل مبسّط', en: 'Demo mode: simplified analysis' }, specialties: [{ ...sp, reason: { ar: '', en: '' }, score: 3 }], tests: [], questions: [], advice: { ar: 'احجز كشفًا خلال أيام.', en: 'Book a visit within a few days.' }, doctors, source: 'rules' };
 });
 
 // ---- المواعيد = حجوزات (دكتور: طلب لموظف الاستقبال / معمل: طلب للمعمل) ----

@@ -28,6 +28,8 @@ const bookingSchema = new mongoose.Schema(
     },
     test: { type: String, default: null },
     source: { type: String, default: "app" },
+    // نوع الزيارة: يُحسب من تاريخ آخر روشتة للمريض عند هذا الطبيب (null = يُحسب عند العرض)
+    visitType: { type: String, enum: ["new", "followup", "consult", null], default: null },
     queue: {
       type: String,
       enum: ["not-arrived", "arrived", "in-exam", "ended"],

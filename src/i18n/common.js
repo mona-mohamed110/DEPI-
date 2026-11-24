@@ -6,6 +6,10 @@ export const merge = (...ds) => ({
 
 export const common = {
   ar: {
+    tf_title: 'التحقق بخطوتين', tf_sub: 'أرسلنا كودًا من 6 أرقام إلى', tf_code: 'كود التحقق', tf_verify: 'تأكيد ودخول', tf_resend: 'إعادة إرسال الكود', tf_back: 'رجوع',
+    sp_choose: 'اختر التخصص',
+    vt_title: 'نوع الزيارة', vt_none: 'لا توجد روشتة سابقة لهذا المريض عند الطبيب.', vt_last: 'آخر روشتة بتاريخ', vt_days: 'يوم', vt_window: 'المدة المسموحة للإعادة', vt_expired: 'انتهت المدة المسموحة فتُحسب كشفًا جديدًا.', vt_in: 'ضمن المدة المسموحة فتُحسب إعادة كشف.', vt_consult: 'تحويل إلى استشارة', vt_follow_days: 'المدة الافتراضية لإعادة الكشف (بالأيام)', vt_follow_hint: 'تظهر هذه المدة مبدئيًا عند كتابة كل روشتة، وتعدلها لكل مريض.', vt_grace: 'فترة السماح', vt_in_grace: 'ضمن فترة السماح فتُحسب إعادة كشف.', rx_follow_days: 'أيام إعادة الكشف', rx_grace_days: 'فترة السماح بعدها (اختياري)', rx_optional: 'بدون', rx_follow_hint: 'إذا حضر المريض خلال هذه الأيام (وفترة السماح إن وُجدت) يُحسب إعادة كشف، وبعدها كشفًا جديدًا.',
+    sp_once: 'اختر تخصصك الآن. بعد الحفظ لا يمكن تعديله.',
     sp_locked: 'التخصص يُحدد عند التسجيل ولا يمكن تعديله. للتغيير تواصل مع إدارة النظام.',
     adm_pending: 'قيد المراجعة',
     loc_title: 'موقعك على الخريطة', loc_hint: 'اضغط على الخريطة أو اسحب الدبوس لتحديد المكان بدقة', loc_use_mine: 'استخدم موقعي الحالي', loc_save: 'حفظ الموقع', loc_saved: 'تم حفظ الموقع', loc_none: 'لم تحدد موقعك بعد. لن يظهر للمرضى على الخريطة قبل الحفظ.', loc_denied: 'تعذر تحديد موقعك. اسمح للمتصفح بالوصول إلى الموقع.', near_me: 'الأقرب إليّ', km: 'كم', directions: 'الاتجاهات', map_no_coords: 'لا توجد أماكن محددة على الخريطة بعد.',
@@ -37,6 +41,10 @@ export const common = {
     err_pending_license: 'حسابك قيد مراجعة الترخيص من الإدارة', err_invalid_code: 'الكود غير صحيح أو منتهي', err_unauthorized: 'انتهت الجلسة، سجّل دخولك مرة أخرى',
   },
   en: {
+    tf_title: 'Two-step verification', tf_sub: 'We sent a 6-digit code to', tf_code: 'Verification code', tf_verify: 'Verify and log in', tf_resend: 'Resend code', tf_back: 'Back',
+    sp_choose: 'Choose specialty',
+    vt_title: 'Visit type', vt_none: 'No previous prescription for this patient with the doctor.', vt_last: 'Last prescription on', vt_days: 'days', vt_window: 'Follow-up window', vt_expired: 'The window has passed, so this counts as a new visit.', vt_in: 'Within the window, so this counts as a follow-up.', vt_consult: 'Mark as consultation', vt_follow_days: 'Default follow-up window (days)', vt_follow_hint: 'Pre-filled when you write each prescription; you can change it per patient.', vt_grace: 'Grace period', vt_in_grace: 'Within the grace period, so this counts as a follow-up.', rx_follow_days: 'Follow-up days', rx_grace_days: 'Grace period after (optional)', rx_optional: 'None', rx_follow_hint: 'A visit within these days (plus the grace period, if set) counts as a follow-up; later it counts as a new visit.',
+    sp_once: 'Choose your specialty now. It cannot be changed after saving.',
     sp_locked: 'The specialty is set at registration and cannot be edited. Contact the administration to change it.',
     adm_pending: 'Pending review',
     loc_title: 'Your location on the map', loc_hint: 'Click the map or drag the pin to set the exact place', loc_use_mine: 'Use my current location', loc_save: 'Save location', loc_saved: 'Location saved', loc_none: 'You have not set a location yet. Patients will not see you on the map until you save one.', loc_denied: 'Could not get your location. Allow location access in the browser.', near_me: 'Nearest to me', km: 'km', directions: 'Directions', map_no_coords: 'No places have a map location yet.',

@@ -13,7 +13,7 @@ const LabResult = require("../models/LabResult");
 const DoctorTest = require("../models/DoctorTest");
 
 const { logAccess } = require("../utils/accessLog");
-const { specialtyView } = require("../data/catalog");
+const { specialtyView, CHRONIC } = require("../data/catalog");
 const { requireAuth, requireRole } = require("../middleware/auth");
 const { uploadCertificate } = require("../middleware/upload");
 
@@ -487,9 +487,11 @@ router.get("/patients/:id/file", async (req, res) => {
         weight: profile.weight || "",
       },
 
-      chronic: Array.isArray(profile.chronicIds)
-        ? profile.chronicIds
-        : [],
+      // الواجهة تعرض الاسم ثنائي اللغة، فنحوّل المعرّفات (diabetes ...) إلى {ar, en}
+      chronic: (Array.isArray(profile.chronicIds) ? profile.chronicIds : [])
+        .map((cid) => CHRONIC.find((c) => c.id === cid))
+        .filter(Boolean)
+        .map((c) => ({ ar: c.ar, en: c.en })),
 
       history: (record?.history || []).map((item) => ({
         id: item._id?.toString() || "",
@@ -511,11 +513,21 @@ router.get("/patients/:id/file", async (req, res) => {
 
       results: labResults.map((result) => ({
         id: result._id.toString(),
-        kind: "lab",
-        title: result.test || result.fileName || "نتيجة تحليل",
+        kind: result.kind || "lab",
+        title: result.title || result.fileName || "نتيجة تحليل",
         source: "معمل",
         date: result.uploadedAt || result.createdAt,
-        status: result.status || "",
+        status: result.status || "normal",
+        // ملف النتيجة الذي رفعه المعمل (يُفتح بعد التحقق من صلاحية الطبيب)
+        name: result.fileName || "",
+        type:
+          path.extname(result.fileName || "").toLowerCase() === ".pdf" ||
+          result.fileType === "application/pdf"
+            ? "pdf"
+            : "image",
+        url: result.filePath
+          ? `/api/doctor/patients/${id}/results/${result._id}/file`
+          : "",
       })),
 
       reports: (record?.reports || []).map((report) => {
@@ -541,6 +553,53 @@ router.get("/patients/:id/file", async (req, res) => {
     return res.status(500).json({ code: "server_error" });
   }
 });
+
+// Open a lab/radiology result file (uploaded by the lab) after checking permission
+router.get(
+  "/patients/:patientId/results/:resultId/file",
+  async (req, res) => {
+    try {
+      const { patientId, resultId } = req.params;
+
+      if (
+        !mongoose.Types.ObjectId.isValid(patientId) ||
+        !mongoose.Types.ObjectId.isValid(resultId)
+      ) {
+        return res.status(404).json({ code: "not_found" });
+      }
+
+      const grant = await getActiveGrant(patientId, req.user._id);
+
+      if (!grant) {
+        return res.status(403).json({ code: "access_denied" });
+      }
+
+      const result = await LabResult.findOne({ _id: resultId, patientId });
+
+      if (!result || !result.filePath) {
+        return res.status(404).json({ code: "not_found" });
+      }
+
+      const uploadsDir = path.resolve(__dirname, "../uploads");
+      const filePath = path.resolve(__dirname, "..", result.filePath);
+
+      if (
+        !filePath.startsWith(uploadsDir + path.sep) ||
+        !fs.existsSync(filePath)
+      ) {
+        return res.status(404).json({ code: "file_not_found" });
+      }
+
+      logAccess(patientId, req.user, "viewed_file");
+
+      if (result.fileType) res.type(result.fileType);
+      return res.sendFile(filePath);
+    } catch (error) {
+      console.error("Doctor result file error:", error);
+      return res.status(500).json({ code: "server_error" });
+    }
+  }
+);
 
 // Open patient report after checking permission
 router.get(
@@ -613,6 +672,8 @@ router.post("/exams", async (req, res) => {
       visit,
       meds,
       tests,
+      followUpDays,
+      graceDays,
     } = req.body;
 
     if (
@@ -734,6 +795,15 @@ router.post("/exams", async (req, res) => {
       bookingId: booking._id,
       diagnosis: String(diagnosis || "").trim(),
       visit: visit || "new",
+      // الطبيب هو من يحدد أيام إعادة الكشف وفترة السماح (السماح اختياري)
+      followUpDays: (() => {
+        const n = Math.round(Number(followUpDays));
+        return Number.isFinite(n) && n >= 1 && n <= 365 ? n : null;
+      })(),
+      graceDays: (() => {
+        const n = Math.round(Number(graceDays));
+        return Number.isFinite(n) && n >= 1 && n <= 60 ? n : 0;
+      })(),
       items,
       tests: prescriptionTests,
     });
@@ -805,6 +875,7 @@ router.get("/professional", async (req, res) => {
       specialty: doctor.specialty || doctor.extra || "",
       clinic: doctor.clinic || "",
       address: doctor.address || "",
+      followUpDays: doctor.followUpDays || 14,
       licenseStatus: doctor.licenseStatus || "pend",
       certificateName: doctor.certificateName || "",
       certificateType: doctor.certificateType || "",
@@ -819,8 +890,8 @@ router.get("/professional", async (req, res) => {
 // Update professional profile
 router.put("/professional", async (req, res) => {
   try {
-    // التخصص يُحدد عند التسجيل ولا يُعدَّل من هنا (يتجاهله الخادم حتى لو أُرسل)
-    const { license, clinic, address } = req.body;
+    // التخصص يُحدد عند التسجيل فقط ولا يُعدَّل من هنا (يتجاهله الخادم حتى لو أُرسل)
+    const { license, clinic, address, followUpDays } = req.body;
 
     const doctor = await User.findById(req.user._id);
 
@@ -828,6 +899,10 @@ router.put("/professional", async (req, res) => {
       return res.status(404).json({ code: "not_found" });
     }
 
+    if (followUpDays !== undefined) {
+      const n = Math.round(Number(followUpDays));
+      if (Number.isFinite(n) && n >= 1 && n <= 365) doctor.followUpDays = n;
+    }
     if (license !== undefined) doctor.license = String(license).trim();
     if (clinic !== undefined) doctor.clinic = String(clinic).trim();
     if (address !== undefined) doctor.address = String(address).trim();
@@ -839,6 +914,7 @@ router.put("/professional", async (req, res) => {
       specialty: doctor.specialty || doctor.extra || "",
       clinic: doctor.clinic,
       address: doctor.address,
+      followUpDays: doctor.followUpDays || 14,
       licenseStatus: doctor.licenseStatus,
     });
   } catch (error) {

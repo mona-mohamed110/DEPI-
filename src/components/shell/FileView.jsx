@@ -3,6 +3,8 @@ import Icon from '../Icon.jsx';
 import RxCard from './RxCard.jsx';
 import { useI18n } from '../../context/I18nContext.jsx';
 import { safeUrl } from '../../api/security.js';
+import { fetchProtectedBlobUrl } from '../../api/http.js';
+import { USE_MOCK } from '../../config/env.js';
 
 const ICON = { lab: 'tube', xray: 'scan', ecg: 'activity' };
 const TONE = { normal: 'ok', low: 'wn', followup: 'dg' };
@@ -12,7 +14,29 @@ export default function FileView({ file }) {
   const { t, L, num, fmtDate } = useI18n();
   const [view, setView] = useState(null);
   const i = file.info || {};
-  const open = (r) => { const u = safeUrl(r.url); if (u) setView({ ...r, url: u }); else setView({ ...r, url: '', demo: true }); };
+  const [loading, setLoading] = useState(false);
+  const close = () => { if (view?.blob) URL.revokeObjectURL(view.url); setView(null); };
+  const open = async (r, from = 'rep') => {
+    if (view?.blob) URL.revokeObjectURL(view.url);
+    const raw = String(r.url || '');
+    // مسار API محمي (مثل /api/doctor/patients/..): لا يُفتح مباشرة لأنه يحتاج تسجيل الدخول وعنوان الخادم
+    if (!USE_MOCK && /^\/(?!\/)/.test(raw)) {
+      setLoading(true);
+      try { setView({ ...r, from, url: await fetchProtectedBlobUrl(raw), blob: true }); }
+      catch { setView({ ...r, from, url: '', error: true }); }
+      finally { setLoading(false); }
+      return;
+    }
+    const u = safeUrl(raw);
+    if (u) setView({ ...r, from, url: u }); else setView({ ...r, from, url: '', demo: true });
+  };
+  const viewer = view && (
+          <div className="viewer">
+            <div className="viewer-h"><b dir="ltr">{view.name}</b><button type="button" className="icon-btn" onClick={close} aria-label={t('close')}><Icon name="x" size={18} /></button></div>
+            {view.error ? <div className="state">{t('error')}</div> : view.demo ? <div className="state">{t('fv_demo')}</div> : view.type === 'pdf' ? <iframe src={view.url} title={view.name} /> : <img src={view.url} alt={view.name} />}
+          </div>
+  );
+
   return (
     <div className="fv">
       <div className="card">
@@ -50,8 +74,10 @@ export default function FileView({ file }) {
             <div className="res-icon"><Icon name={ICON[r.kind] || 'file'} size={22} /></div>
             <div className="m"><b>{L(r.title)}</b><small>{L(r.source)} · {fmtDate(r.date)}</small></div>
             <span className={`badge ${TONE[r.status] || ''}`}>{r.status}</span>
+            {r.url && <button type="button" className="btn s o" onClick={() => open(r, 'res')} disabled={loading}><Icon name="eye" size={15} />{t('fv_view')}</button>}
           </div>
         ))}
+        {view?.from === 'res' && viewer}
       </div>
 
       <div className="card" style={{ marginTop: 16 }}>
@@ -61,16 +87,11 @@ export default function FileView({ file }) {
             <thead><tr><th>{t('fv_file')}</th><th>{t('fv_date')}</th><th /></tr></thead>
             <tbody>{file.reports.map((r) => (
               <tr key={r.id}><td><span className="file-chip"><Icon name="file" size={18} /><b dir="ltr">{r.name}</b></span></td><td>{fmtDate(r.date)}</td>
-                <td><button type="button" className="btn s o" onClick={() => open(r)}><Icon name="eye" size={15} />{t('fv_view')}</button></td></tr>
+                <td><button type="button" className="btn s o" onClick={() => open(r)} disabled={loading}><Icon name="eye" size={15} />{t('fv_view')}</button></td></tr>
             ))}</tbody>
           </table></div>
         )}
-        {view && (
-          <div className="viewer">
-            <div className="viewer-h"><b dir="ltr">{view.name}</b><button type="button" className="icon-btn" onClick={() => setView(null)} aria-label={t('close')}><Icon name="x" size={18} /></button></div>
-            {view.demo ? <div className="state">{t('fv_demo')}</div> : view.type === 'pdf' ? <iframe src={view.url} title={view.name} /> : <img src={view.url} alt={view.name} />}
-          </div>
-        )}
+        {view?.from !== 'res' && viewer}
       </div>
     </div>
   );

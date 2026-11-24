@@ -24,10 +24,11 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener('shefaa:unauthorized', off);
   }, []);
 
-  const login = useCallback(async (email, password) => { const u = await authApi.login(email, password); setUser(u); return u; }, []);
+  const login = useCallback(async (email, password) => { const u = await authApi.login(email, password); if (u.twoFactorRequired) return u; setUser(u); return u; }, []);
+  const verifyLogin = useCallback(async (email, code) => { const u = await authApi.verifyLogin(email, code); setUser(u); return u; }, []);
   const logout = useCallback(async () => { await authApi.logout(); setUser(null); }, []);
   const updateUser = useCallback((patch) => { patchSessionUser(patch); setUser((u) => (u ? { ...u, ...patch } : u)); }, []);
 
-  const value = useMemo(() => ({ user, ready, login, logout, updateUser, register: authApi.register }), [user, ready, login, logout, updateUser]);
+  const value = useMemo(() => ({ user, ready, login, verifyLogin, logout, updateUser, register: authApi.register }), [user, ready, login, verifyLogin, logout, updateUser]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

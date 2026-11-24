@@ -1,7 +1,17 @@
 const express = require("express");
 const User = require("../models/User");
 const ContactMessage = require("../models/ContactMessage");
-const { specialtyView } = require("../data/catalog");
+const { specialtyView, TEST_INFO, labOfferedTests } = require("../data/catalog");
+
+// اسم الفحص بالعربية والإنجليزية (للبحث عن معمل بالتحليل المتاح فيه)
+function testSearchText(user) {
+  return labOfferedTests(user)
+    .map((n) => {
+      const i = TEST_INFO.find((t) => t.ar === n);
+      return i ? `${i.ar} ${i.en}` : n;
+    })
+    .join(" ");
+}
 
 const router = express.Router();
 
@@ -20,17 +30,21 @@ router.get("/places", async (req, res) => {
     }
 
     let providers = await User.find(filter)
-      .select("name role extra specialty address location")
+      .select("name role extra specialty address location labProfile")
       .sort({ name: 1 });
 
     if (q) {
       const search = String(q).trim().toLowerCase();
 
-      providers = providers.filter((user) =>
-        `${user.name} ${user.extra || ""}`
+      providers = providers.filter((user) => {
+        // البحث بالاسم وباسم التخصص بالعربية والإنجليزية (التخصص يُحفظ كمعرّف مثل sp_cardio)
+        const sp = user.role === "doctor" ? specialtyView(user.specialty || user.extra) : null;
+        const spText = sp && typeof sp === "object" ? `${sp.ar} ${sp.en}` : sp || "";
+        const testsText = user.role === "lab" ? testSearchText(user) : "";
+        return `${user.name} ${user.extra || ""} ${spText} ${testsText}`
           .toLowerCase()
-          .includes(search)
-      );
+          .includes(search);
+      });
     }
 
     const places = providers.map((user, index) => ({
@@ -49,6 +63,8 @@ router.get("/places", async (req, res) => {
       city: { ar: "غير محدد", en: "Not specified" },
       lat: user.location && Number.isFinite(user.location.lat) ? user.location.lat : null,
       lng: user.location && Number.isFinite(user.location.lng) ? user.location.lng : null,
+      // الفحوصات التي يوفرها المعمل (لتصفية قائمة الحجز)
+      ...(user.role === "lab" ? { tests: labOfferedTests(user) } : {}),
       rating: 0,
       x: 15 + ((index * 23) % 75),
       y: 20 + ((index * 17) % 65),

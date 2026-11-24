@@ -22,6 +22,26 @@ function publicUser(user) {
   };
 }
 
+const LOGIN_CODE_TTL = 10 * 60 * 1000;
+
+function hashCode(code) {
+  return crypto.createHash("sha256").update(String(code)).digest("hex");
+}
+
+function issueSession(user) {
+  const token = jwt.sign(
+    {
+      id: user._id,
+      role: user.role,
+      tokenVersion: user.tokenVersion || 0,
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
+
+  return { token: token, user: publicUser(user) };
+}
+
 function sendError(res, status, code) {
   return res.status(status).json({ code: code, message: code });
 }
@@ -158,22 +178,95 @@ if (!user || !user.password) {
       return sendError(res, 403, "pending_license");
     }
 
-const token = jwt.sign(
-  {
-    id: user._id,
-    role: user.role,
-    tokenVersion: user.tokenVersion || 0,
-  },
-  process.env.JWT_SECRET,
-  { expiresIn: "7d" }
-);
+    // التحقق بخطوتين: بعد نجاح كلمة المرور نرسل كوداً على الإيميل ولا نعطي توكن قبل إدخاله
+    if (user.twoFactor === true) {
+      const now = Date.now();
+      const sentAt = user.loginCodeExpires
+        ? new Date(user.loginCodeExpires).getTime() - LOGIN_CODE_TTL
+        : 0;
 
-    res.json({
-      token: token,
-      user: publicUser(user),
-    });
+      // لا نعيد إرسال كود جديد قبل مرور 30 ثانية (منع إغراق البريد)
+      if (!user.loginCode || now - sentAt > 30 * 1000) {
+        const code = String(Math.floor(100000 + Math.random() * 900000));
+
+        user.loginCode = hashCode(code);
+        user.loginCodeExpires = new Date(now + LOGIN_CODE_TTL);
+        user.loginAttempts = 0;
+        await user.save();
+
+        try {
+          await sendEmail(
+            user.email,
+            "Shifa - Login verification code",
+            "Your login verification code is: " +
+              code +
+              "\nThis code is valid for 10 minutes. If you did not try to log in, change your password."
+          );
+        } catch (mailError) {
+          if (
+            mailError.code === "EMAIL_NOT_CONFIGURED" &&
+            process.env.NODE_ENV !== "production"
+          ) {
+            console.warn("[DEV] كود تسجيل الدخول للبريد " + user.email + " هو: " + code);
+          } else {
+            console.error("Login code email error:", mailError.message || mailError);
+            return sendError(res, 500, "server_error");
+          }
+        }
+      }
+
+      return res.json({ twoFactor: true, email: user.email });
+    }
+
+    res.json(issueSession(user));
   } catch (error) {
     console.error("Login error:", error);
+    sendError(res, 500, "server_error");
+  }
+});
+
+// Verify the login code (two-step verification)
+router.post("/login-verify", async function (req, res) {
+  try {
+    const email = String(req.body.email || "").trim().toLowerCase();
+    const code = String(req.body.code || "").trim();
+
+    const user = await User.findOne({ email: email });
+
+    if (
+      !user ||
+      !user.loginCode ||
+      !user.loginCodeExpires ||
+      user.loginCodeExpires < new Date() ||
+      (user.loginAttempts || 0) >= 5
+    ) {
+      return sendError(res, 400, "invalid_code");
+    }
+
+    // 5 محاولات فقط لكل كود
+    if (user.loginCode !== hashCode(code)) {
+      user.loginAttempts = (user.loginAttempts || 0) + 1;
+      await user.save();
+      return sendError(res, 400, "invalid_code");
+    }
+
+    if (user.status === "disabled") {
+      return sendError(res, 403, "account_disabled");
+    }
+
+    if (user.status === "pending") {
+      return sendError(res, 403, "pending_license");
+    }
+
+    // الكود يُستخدم مرة واحدة
+    user.loginCode = "";
+    user.loginCodeExpires = undefined;
+    user.loginAttempts = 0;
+    await user.save();
+
+    res.json(issueSession(user));
+  } catch (error) {
+    console.error("Login verify error:", error);
     sendError(res, 500, "server_error");
   }
 });
@@ -200,21 +293,37 @@ router.post("/forgot-password", async function (req, res) {
 
     user.resetCode = code;
     user.resetToken = "";
+    user.resetAttempts = 0;
     user.resetExpires = new Date(Date.now() + 10 * 60 * 1000);
 
     await user.save();
 
-    await sendEmail(
-      email,
-      "Shifa - Password reset code",
-      "Your verification code is: " +
-        code +
-        "\nThis code is valid for 10 minutes."
-    );
+    try {
+      await sendEmail(
+        email,
+        "Shifa - Password reset code",
+        "Your verification code is: " +
+          code +
+          "\nThis code is valid for 10 minutes."
+      );
+    } catch (mailError) {
+      // أثناء التطوير فقط (بدون إعداد البريد): نطبع الكود في نافذة الباك إند حتى يمكن اختبار الخطوات
+      if (
+        mailError.code === "EMAIL_NOT_CONFIGURED" &&
+        process.env.NODE_ENV !== "production"
+      ) {
+        console.warn(
+          "[DEV] البريد غير مضبوط. كود التحقق للبريد " + email + " هو: " + code
+        );
+        return res.json({ ok: true });
+      }
+
+      throw mailError;
+    }
 
     res.json({ ok: true });
   } catch (error) {
-    console.error("Forgot password error:", error);
+    console.error("Forgot password error:", error.message || error);
     sendError(res, 500, "server_error");
   }
 });
@@ -230,10 +339,17 @@ router.post("/verify-code", async function (req, res) {
     if (
       !user ||
       !user.resetCode ||
-      user.resetCode !== code ||
       !user.resetExpires ||
-      user.resetExpires < new Date()
+      user.resetExpires < new Date() ||
+      (user.resetAttempts || 0) >= 5
     ) {
+      return sendError(res, 400, "invalid_code");
+    }
+
+    // 5 محاولات فقط لكل كود (حماية من تخمين الكود)
+    if (user.resetCode !== code) {
+      user.resetAttempts = (user.resetAttempts || 0) + 1;
+      await user.save();
       return sendError(res, 400, "invalid_code");
     }
 
@@ -274,7 +390,10 @@ router.post("/reset-password", async function (req, res) {
     user.password = await bcrypt.hash(password, 10);
     user.resetToken = "";
     user.resetCode = "";
+    user.resetAttempts = 0;
     user.resetExpires = undefined;
+    // تسجيل الخروج من كل الأجهزة بعد استعادة كلمة المرور
+    user.tokenVersion = (user.tokenVersion || 0) + 1;
 
     await user.save();
 

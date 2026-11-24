@@ -302,7 +302,9 @@ function labProfileView(user) {
     address: user.address || "",
     phone: lp.phone || user.phone || "",
     hours: lp.hours && lp.hours.length === 7 ? lp.hours : Array.from({ length: 7 }, (_, i) => ({ on: i < 6, from: "08:00", to: "20:00" })),
-    tests: lp.tests && lp.tests.length ? lp.tests : TEST_CATALOG.map((name) => ({ name, on: true })),
+    tests: lp.tests && lp.tests.length
+      ? [...lp.tests, ...TEST_CATALOG.filter((name) => !lp.tests.some((t) => t.name === name)).map((name) => ({ name, on: false }))]
+      : TEST_CATALOG.map((name) => ({ name, on: true })),
   };
 }
 

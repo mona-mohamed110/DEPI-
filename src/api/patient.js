@@ -47,8 +47,8 @@ export const openResultFile = (id) =>
 export const openReportFile = (id) =>
   openProtectedFile(`/patient/reports/${id}/file`);
 
-export const triage = (text) =>
-  api.post('/patient/triage', { text });
+export const triage = (text, near) =>
+  api.post('/patient/triage', near ? { text, near } : { text });
 
 export const getAppointments = () =>
   api.get('/patient/appointments');
