@@ -2,15 +2,23 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLab } from "./LabContext.jsx";
 import Icon from "../../components/Icon.jsx";
+import DayPicker from "./DayPicker.jsx";
 
 const STATUS = { new: { k: "stNew", c: "wn" }, progress: { k: "stProg", c: "" }, done: { k: "stDone", c: "ok" } };
 const FILTERS = [["all", "fAll"], ["new", "fNew"], ["progress", "fProg"], ["done", "fDone"]];
 
 export default function LabDashboard() {
-  const { t, testName, num, requests, counts, loading, startRequest, fmtDateTime } = useLab();
+  const { t, testName, num, requests, loading, startRequest, fmtDateTime, day, setDay, requestDays, inDay } = useLab();
   const nav = useNavigate();
   const [f, setF] = useState("all");
-  const list = useMemo(() => requests.filter((r) => f === "all" || r.status === f), [requests, f]);
+  const dayList = useMemo(() => requests.filter(inDay), [requests, inDay]);
+  const list = useMemo(() => dayList.filter((r) => f === "all" || r.status === f), [dayList, f]);
+  const counts = {
+    new: dayList.filter((r) => r.status === "new").length,
+    progress: dayList.filter((r) => r.status === "progress").length,
+    done: dayList.filter((r) => r.status === "done").length,
+    total: dayList.length,
+  };
 
   const stats = [
     { k: "statNew", v: counts.new, icon: "inbox", tone: "wn" },
@@ -23,6 +31,7 @@ export default function LabDashboard() {
     <section>
       <h1>{t("incoming")}</h1>
       <p className="sub">{t("incomingSub")}</p>
+      <div className="filters" style={{ marginBottom: 12 }}><DayPicker value={day} dates={requestDays} onChange={setDay} /></div>
 
       <div className="grid g4">
         {stats.map((s) => (
@@ -41,7 +50,7 @@ export default function LabDashboard() {
           ))}
         </div>
 
-        {loading ? <p className="sub">{t("loading")}</p> : list.length === 0 ? <p className="sub">{t("noRequests")}</p> : list.map((r) => {
+        {loading ? <p className="sub">{t("loading")}</p> : list.length === 0 ? <p className="sub">{t(day ? "noRequestsDay" : "noRequests")}</p> : list.map((r) => {
           const st = STATUS[r.status];
           return (
             <div className="row" key={r.id}>

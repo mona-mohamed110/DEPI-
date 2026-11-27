@@ -39,11 +39,16 @@ phone: { type: String, default: "" },
       default: "new",
     },
     files: [{ type: String }],
+    filePaths: [{ type: String }],
+    resultStatus: { type: String, enum: ["normal", "low", "high", "followup"], default: "normal" },
     notes: { type: String, default: "" },
     uploadedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
+
+labRequestSchema.index({ labId: 1, status: 1, createdAt: -1 });
+labRequestSchema.index({ patientId: 1 });
 
 module.exports =
   mongoose.models.LabRequest ||

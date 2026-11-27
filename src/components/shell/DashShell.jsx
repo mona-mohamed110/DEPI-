@@ -7,19 +7,21 @@ import { ToastProvider, ToastView } from '../ui/Toast.jsx';
 import SettingsMenu from './SettingsMenu.jsx';
 import Icon from '../Icon.jsx';
 import BrandLogo from '../BrandLogo.jsx';
+import Avatar from '../ui/Avatar.jsx';
 
 // الهيكل المشترك لكل اللوحات (lab / patient / doctor / reception / admin): سايدبار + محتوى + توست
 // root: اسم الكلاس الجذري لكل جزء (مثلاً lab-app) — كل جزء له ملف CSS خاص به
 function Frame({ root, items, links, badges = {}, children }) {
   const { t, L, num } = useI18n();
   const { theme, lang } = usePrefs();
-  const { user } = useAuth();
+  const { user, avatar } = useAuth();
   const name = L(user?.name);
   return (
     <div className={`app-root ${root}`} data-theme={theme} dir={lang === 'ar' ? 'rtl' : 'ltr'} lang={lang}>
       <aside className="side">
         <div className="logo">
           <BrandLogo />
+          {avatar && <div style={{ display: 'flex', justifyContent: 'center', margin: '8px 0' }}><Avatar name={name} src={avatar} size={56} /></div>}
           {name && <div className="user" title={name}>{name}</div>}
         </div>
         <nav className="nav" aria-label="main">

@@ -11,6 +11,8 @@ const ITEMS = [
 ];
 const LINKS = [
   { to: '/doctor/profile', icon: 'user', key: 'profile' },
+  { to: '/doctor/feedback', icon: 'star', key: 'fb_nav' },
+  { to: '/doctor/support', icon: 'mail', key: 'ct_nav' },
   { to: '/doctor/professional', icon: 'badge', key: 'prof_profile' },
   { to: '/doctor/schedule', icon: 'calendar', key: 'schedule' },
   { to: '/doctor/team', icon: 'users', key: 'nav_team' },

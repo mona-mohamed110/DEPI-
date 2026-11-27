@@ -1,6 +1,6 @@
 import { r, fail } from '../router.js';
 import { save, uid } from '../db.js';
-import { chronicFromIds, patientOf, emptyPatient } from '../helpers.js';
+import { chronicFromIds, otherFrom, patientOf, emptyPatient } from '../helpers.js';
 import { BLOOD_TYPES } from '../../config/catalog.js';
 import { sha256, isEmail, isStrongPassword, clean } from '../../api/security.js';
 import { REQUIRE_LICENSE_APPROVAL } from '../../config/env.js';
@@ -22,6 +22,7 @@ r.post('/auth/login', async ({ body, db }) => {
 
 r.post('/auth/register', async ({ body, db }) => {
   const { role, fullName, email, phone, password, extra, license, profile = {}, files = [] } = body;
+  if (!/^\d{11}$/.test(String(phone || '').replace(/[\s-]/g, ''))) fail(400, 'invalid_phone');
   if (!['patient', 'doctor', 'lab'].includes(role)) fail(400, 'invalid_data');
   if (clean(fullName).length < 3 || !isEmail(email) || !isStrongPassword(password)) fail(400, 'invalid_data');
   if (findByEmail(db, email)) fail(409, 'email_exists');
@@ -36,13 +37,13 @@ r.post('/auth/register', async ({ body, db }) => {
     id: uid('u'), role, email: String(email).toLowerCase(), phone: clean(phone, 20), passHash: await sha256(password),
     name: role === 'lab' && extra ? clean(extra, 80) : clean(fullName, 80), extra: clean(extra, 80),
     status: needsLicense && REQUIRE_LICENSE_APPROVAL ? 'pending' : 'active', createdAt: new Date().toISOString(),
-    notifEmail: true, notifAppt: true, notifMeds: true, notifAccess: true, notifNew: true, twoFactor: false,
+    twoFactor: false,
   };
   db.users.push(user);
   if (role === 'patient') {
     const rec = emptyPatient(); db.patients[user.id] = rec;
     rec.info = { birthDate: profile.birthDate, blood: profile.blood || '', height: Number(profile.height) || 0, weight: Number(profile.weight) || 0 };
-    rec.chronic = chronicFromIds(profile.chronicIds || []);
+    rec.chronic = [...chronicFromIds(profile.chronicIds || []), ...otherFrom(profile.chronicOther)];
   }
   if (needsLicense) {
     db.licenses.unshift({ id: Date.now(), userId: user.id, name: user.name, type: role === 'doctor' ? 'dr' : 'lab', number: clean(license, 40) || '—', by: role === 'doctor' ? 'syndicate' : 'ministry', sentAt: new Date().toISOString(), status: 'pend', reason: '', file: { name: files[0].name, type: files[0].type, dataUrl: files[0].dataUrl || null } });
@@ -81,7 +82,16 @@ r.post('/auth/change-password', async ({ body, user }) => {
 });
 
 // بيانات الحساب المشتركة لكل الأدوار
-r.get('/me', ({ user }) => ({ ...publicUser(user), notifEmail: user.notifEmail, notifAppt: user.notifAppt, notifMeds: user.notifMeds, notifAccess: user.notifAccess, notifNew: user.notifNew, twoFactor: user.twoFactor }));
+r.get('/me', ({ user }) => ({ ...publicUser(user), twoFactor: user.twoFactor, queueOnly: !!user.queueOnly }));
+r.get('/me/location', ({ user, db }) => { const p = db.places.find((x) => x.id === user.id); return { lat: p?.lat ?? null, lng: p?.lng ?? null }; });
+r.put('/me/location', ({ body, user, db }) => {
+  const lat = Number(body.lat), lng = Number(body.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) fail(400, 'invalid_data');
+  const p = db.places.find((x) => x.id === user.id);
+  if (!p) fail(404, 'not_found');
+  p.lat = lat; p.lng = lng; save();
+  return { lat, lng };
+});
 r.put('/me', ({ body, user, db }) => {
   const patch = {};
   if (body.name !== undefined) { if (clean(body.name).length < 2) fail(400, 'invalid_data'); patch.name = clean(body.name, 80); }
@@ -92,9 +102,9 @@ r.put('/me', ({ body, user, db }) => {
     patch.email = String(body.email).toLowerCase();
   }
   if (body.phone !== undefined) patch.phone = clean(body.phone, 20);
-  ['notifEmail', 'notifAppt', 'notifMeds', 'notifAccess', 'notifNew', 'twoFactor'].forEach((k) => { if (typeof body[k] === 'boolean') patch[k] = body[k]; });
+  ['twoFactor', ...(user.role === 'doctor' ? ['queueOnly'] : [])].forEach((k) => { if (typeof body[k] === 'boolean') patch[k] = body[k]; });
   Object.assign(user, patch); save();
-  return { ...publicUser(user), notifEmail: user.notifEmail, notifAppt: user.notifAppt, notifMeds: user.notifMeds, notifAccess: user.notifAccess, notifNew: user.notifNew, twoFactor: user.twoFactor };
+  return { ...publicUser(user), twoFactor: user.twoFactor, queueOnly: !!user.queueOnly };
 });
 r.post('/me/logout-all', ({ db, user }) => { Object.keys(db.sessions).forEach((t) => { if (db.sessions[t].userId === user.id) delete db.sessions[t]; }); save(); return { ok: true }; });
 
@@ -105,7 +115,7 @@ r.get('/public/places', ({ query, db }) => {
     (!q || [p.name, p.specialty, p.city, p.address].some((x) => Object.values(x || {}).join(' ').toLowerCase().includes(q))));
 }, true);
 r.post('/public/contact', ({ body, db }) => {
-  if (!isEmail(body.email) || clean(body.message).length < 5) fail(400, 'invalid_data');
-  db.contacts.push({ ...body, at: new Date().toISOString() }); save();
+  if (!isEmail(body.email) || clean(body.message).length < 5 || !/^\d{11}$/.test(String(body.phone || '').replace(/[\s-]/g, ''))) fail(400, 'invalid_data');
+  db.contacts.push({ kind: ['message', 'complaint', 'suggestion'].includes(body.kind) ? body.kind : 'message', subject: clean(body.subject, 120), name: clean(body.name, 80), email: body.email, phone: String(body.phone).replace(/[\s-]/g, ''), message: clean(body.message, 2000), role: 'visitor', at: new Date().toISOString() }); save();
   return { ok: true };
 }, true);

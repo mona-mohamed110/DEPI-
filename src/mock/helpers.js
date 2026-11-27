@@ -37,3 +37,5 @@ export const activeGrant = (db, patientId, doctorId) => {
 };
 export const bookingStatusOf = (b) => b.status;
 export { bucket, save, uid };
+export const otherFrom = (v) => (Array.isArray(v) ? v : String(v || '').split(/[,،;\n]/)).map((x) => String(x).trim().slice(0, 60)).filter(Boolean).slice(0, 10).map((x) => ({ ar: x, en: x }));
+export const chronicOtherOf = (list = []) => list.filter((c) => !CHRONIC.some((x) => x.ar === (c.ar ?? c))).map((c) => c.ar ?? c);

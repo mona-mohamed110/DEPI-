@@ -86,65 +86,6 @@ export default function Prescriptions() {
                 <div className="rx-grid">
                   {list.map((rx) => (
                     <RxCard key={rx.id} rx={rx}>
-                      {/* التحاليل والأشعة */}
-                      {rx.tests && rx.tests.length > 0 && (
-                        <div
-                          className="rx-tests"
-                          style={{
-                            marginTop: 16,
-                            padding: 14,
-                            borderRadius: 10,
-                            background: 'var(--surface, #f5f8fc)',
-                          }}
-                        >
-                          <h4
-                            style={{
-                              margin: '0 0 12px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 8,
-                            }}
-                          >
-                            <Icon name="flask-conical" size={18} />
-                            التحاليل والأشعة المطلوبة
-                          </h4>
-
-                          <div
-                            style={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: 8,
-                            }}
-                          >
-                            {rx.tests.map((test, index) => (
-                              <div
-                                key={`${test.name}-${index}`}
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'space-between',
-                                  gap: 10,
-                                  padding: '9px 12px',
-                                  borderRadius: 8,
-                                  background: 'var(--card, #fff)',
-                                }}
-                              >
-                                <span>{test.name}</span>
-
-                                <span
-                                  className="badge"
-                                  style={{ whiteSpace: 'nowrap' }}
-                                >
-                                  {test.kind === 'xray'
-                                    ? 'أشعة'
-                                    : 'تحليل'}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
                       <button
                         type="button"
                         className="btn s o"

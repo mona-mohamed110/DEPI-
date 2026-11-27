@@ -45,7 +45,7 @@ export default function Accounts() {
           <div className="row" key={a.id}>
             <div className="av">{L(a.name).replace(/^(د\.|Dr\.)\s*/, '').charAt(0)}</div>
             <div className="m"><b>{L(a.name)}</b><small><span dir="ltr">{a.email}</span> · {t(ROLE[a.role])}</small></div>
-            <span className={`badge ${a.active ? 'ok' : 'wn'}`}>{a.active ? t('adm_on') : t('adm_off')}</span>
+            <span className={`badge ${a.active ? 'ok' : 'wn'}`}>{a.active ? t('adm_on') : a.pending ? t('adm_pending') : t('adm_off')}</span>
             <Switch on={a.active} label={L(a.name)} onChange={(v) => (v ? set(a, true) : setConfirm(a.id))} />
             {confirm === a.id && <ConfirmForm message={`${t('adm_stop_ask')} ${L(a.name)}؟`} confirmLabel={t('adm_stop_yes')} busy={busy} onConfirm={() => set(a, false)} onCancel={() => setConfirm(null)} />}
           </div>

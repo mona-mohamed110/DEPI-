@@ -6,6 +6,7 @@ require("dotenv").config();
 const labRoutes = require("./routes/lab");
 const authRoutes = require("./routes/auth");
 const meRoutes = require("./routes/me");
+const supportRoutes = require("./routes/support");
 const adminRoutes = require("./routes/admin");
 const patientRoutes = require("./routes/patient");
 const { trackApiRequests } = require("./middleware/apiStats");
@@ -22,14 +23,14 @@ app.use(express.json());
 
 // تسجيل طلبات API قبل تشغيل الـ Routes
 app.use("/api", trackApiRequests);
-app.use("/api/lab", labRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api", meRoutes);
-app.use("/api/patient", patientRoutes);
 app.use("/api/patient", patientRoutes);
 app.use("/api/lab", labRoutes);
 app.use("/api/reception", receptionRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/support", supportRoutes);
+app.use("/api/reviews", require("./routes/reviews"));
 app.use("/api/doctor", doctorRoutes);
 app.use("/api/drugs", drugsRoutes);
 app.get("/", function (req, res) {
@@ -41,8 +42,9 @@ mongoose
   .then(function () {
     console.log("MongoDB connected");
 
-    app.listen(5000, function () {
-      console.log("Server running on port 5000");
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, function () {
+      console.log("Server running on port " + PORT);
     });
   })
   .catch(function (error) {

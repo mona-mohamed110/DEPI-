@@ -5,6 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const Prescription = require("../models/Prescription");
 const AccessGrant = require("../models/AccessGrant");
+const { withinHours } = require("../utils/schedule");
 const AccessRequest = require("../models/AccessRequest");
 const Booking = require("../models/Booking");
 const User = require("../models/User");
@@ -13,6 +14,9 @@ const { uploadMultiple } = require("../middleware/upload");
 const LabRequest = require("../models/LabRequest");
 const LabResult = require("../models/LabResult");
 
+const { CHRONIC, specialtyView } = require("../data/catalog");
+const AccessLog = require("../models/AccessLog");
+const { logAccess, ACTION_LABELS } = require("../utils/accessLog");
 const { requireAuth, requireRole } = require("../middleware/auth");
 
 const router = express.Router();
@@ -27,14 +31,35 @@ function bookingRow(booking) {
       booking.providerId?._id?.toString() ||
       booking.providerId?.toString(),
     doctor: booking.providerId?.name || "",
-    specialty: booking.providerId?.extra || "",
+    specialty: specialtyView(booking.providerId?.specialty || booking.providerId?.extra),
     date: booking.date,
     time: booking.time,
     status: booking.status,
     test: booking.test || "",
     queue: booking.queue,
+    rejectReason: booking.rejectReason || "",
+    rejectNew: booking.status === "rejected" && booking.rejectSeen === false,
   };
 }
+
+// تنبيهات رفض الحجز التي لم يطّلع عليها المريض
+router.get("/rejections/count", async (req, res) => {
+  try {
+    const count = await Booking.countDocuments({ patientId: req.user._id, status: "rejected", rejectSeen: false });
+    res.json({ count });
+  } catch (error) {
+    res.status(500).json({ code: "server_error" });
+  }
+});
+
+router.post("/rejections/seen", async (req, res) => {
+  try {
+    await Booking.updateMany({ patientId: req.user._id, status: "rejected", rejectSeen: false }, { $set: { rejectSeen: true } });
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ code: "server_error" });
+  }
+});
 
 // عرض حجوزات المريض
 router.get("/appointments", async (req, res) => {
@@ -42,13 +67,27 @@ router.get("/appointments", async (req, res) => {
     const bookings = await Booking.find({
       patientId: req.user._id,
     })
-      .populate("providerId", "name extra")
+      .populate("providerId", "name extra specialty")
       .sort({ date: 1, time: 1 });
 
     return res.json(bookings.map(bookingRow));
   } catch (error) {
     console.error("Get patient appointments error:", error);
     return res.status(500).json({ code: "server_error" });
+  }
+});
+
+// المواعيد المحجوزة فعلاً عند طبيب/معمل في يوم معيّن (لإخفائها من قائمة الأوقات)
+router.get("/booked-slots", async (req, res) => {
+  try {
+    const { providerId, date } = req.query;
+    if (!mongoose.Types.ObjectId.isValid(providerId) || !/^\d{4}-\d{2}-\d{2}$/.test(String(date || ""))) {
+      return res.status(400).json({ code: "invalid_data" });
+    }
+    const list = await Booking.find({ providerId, date: String(date), status: { $in: ["pending", "confirmed"] } }).select("time");
+    res.json({ times: list.map((b) => b.time) });
+  } catch (error) {
+    res.status(500).json({ code: "server_error" });
   }
 });
 
@@ -79,6 +118,10 @@ router.post("/appointments", async (req, res) => {
     }
 
     const kind = provider.role;
+
+    if (!withinHours(provider, String(date), String(time))) {
+      return res.status(400).json({ code: "outside_hours" });
+    }
 
     const existingBooking = await Booking.findOne({
       providerId,
@@ -163,7 +206,7 @@ router.post("/appointments", async (req, res) => {
     }
 
     const result = await Booking.findById(booking._id)
-      .populate("providerId", "name extra");
+      .populate("providerId", "name extra specialty");
 
     return res.status(201).json(bookingRow(result));
   } catch (error) {
@@ -195,6 +238,11 @@ router.patch("/appointments/:id", async (req, res) => {
       return res.status(404).json({ code: "not_found" });
     }
 
+    const provider = await User.findById(booking.providerId).select("role schedule labProfile");
+    if (provider && !withinHours(provider, String(date), String(time))) {
+      return res.status(400).json({ code: "outside_hours" });
+    }
+
     const conflict = await Booking.findOne({
       _id: { $ne: booking._id },
       providerId: booking.providerId,
@@ -216,7 +264,7 @@ router.patch("/appointments/:id", async (req, res) => {
     await booking.save();
 
     const result = await Booking.findById(booking._id)
-      .populate("providerId", "name extra");
+      .populate("providerId", "name extra specialty");
 
     return res.json(bookingRow(result));
   } catch (error) {
@@ -273,7 +321,7 @@ router.get("/dashboard", async (req, res) => {
           date: { $gte: today },
           status: { $in: ["pending", "confirmed"] },
         })
-          .populate("providerId", "name extra")
+          .populate("providerId", "name extra specialty")
           .sort({ date: 1, time: 1 })
           .limit(5),
 
@@ -292,7 +340,7 @@ router.get("/dashboard", async (req, res) => {
         }),
 
         Prescription.findOne({ patientId })
-          .populate("doctorId", "name extra")
+          .populate("doctorId", "name extra specialty")
           .sort({ date: -1 })
           .lean(),
       ]);
@@ -313,7 +361,7 @@ router.get("/dashboard", async (req, res) => {
         ? {
             id: latestRx._id.toString(),
             doctor: latestRx.doctorId?.name || "",
-            specialty: latestRx.doctorId?.extra || "",
+            specialty: specialtyView(latestRx.doctorId?.specialty || latestRx.doctorId?.extra),
             visit: latestRx.visit,
             date: latestRx.date,
             diagnosis: latestRx.diagnosis,
@@ -328,7 +376,7 @@ router.get("/dashboard", async (req, res) => {
       upcoming: bookings.map((booking) => ({
         id: booking._id.toString(),
         doctor: booking.providerId?.name || "مقدم الخدمة",
-        specialty: booking.providerId?.extra || "",
+        specialty: specialtyView(booking.providerId?.specialty || booking.providerId?.extra),
         date: booking.date,
         time: booking.time,
         status: booking.status,
@@ -357,11 +405,11 @@ router.get("/results", async (req, res) => {
     return res.json(
       results.map((item) => ({
         id: item._id.toString(),
-        kind: "lab",
-        title: item.fileName,
+        kind: item.kind || "lab",
+        title: item.title || item.fileName,
         source: item.labId?.name || "المعمل",
         date: item.createdAt,
-        status: "normal",
+        status: item.status || "normal",
         fileUrl: `/api/patient/results/${item._id}/file`,
       }))
     );
@@ -451,7 +499,13 @@ router.get("/medical-file", async (req, res) => {
         weight: profile.weight || "",
       },
 
-      chronic: profile.chronicIds || [],
+      chronic: [
+        ...(profile.chronicIds || [])
+          .map((id) => CHRONIC.find((c) => c.id === id))
+          .filter(Boolean)
+          .map((c) => ({ ar: c.ar, en: c.en })),
+        ...cleanOther(profile.chronicOther).map((x) => ({ ar: x, en: x })),
+      ],
 
       history: (record?.history || []).map((item) => ({
         id: item._id.toString(),
@@ -680,14 +734,14 @@ router.get("/prescriptions", async (req, res) => {
       patientId: req.user._id,
       current,
     })
-      .populate("doctorId", "name extra")
+      .populate("doctorId", "name extra specialty")
       .sort({ date: -1 })
       .lean();
 
     const data = prescriptions.map((rx) => ({
       id: rx._id.toString(),
       doctor: rx.doctorId?.name || "",
-      specialty: rx.doctorId?.extra || "",
+      specialty: specialtyView(rx.doctorId?.specialty || rx.doctorId?.extra),
       visit: rx.visit,
       date: rx.date,
       diagnosis: rx.diagnosis,
@@ -754,8 +808,9 @@ router.get("/permissions/active", async (req, res) => {
     const grants = await AccessGrant.find({
       patientId: req.user._id,
       status: "active",
+      $or: [{ until: null }, { until: { $gt: new Date() } }],
     })
-      .populate("doctorId", "name extra")
+      .populate("doctorId", "name extra specialty")
       .sort({ grantedAt: -1 })
       .lean();
 
@@ -763,8 +818,8 @@ router.get("/permissions/active", async (req, res) => {
       id: grant._id.toString(),
       kind: "doctor",
       grantee: grant.doctorId?.name || "",
-      scope: "medical_file",
-      until: null,
+      scope: grant.scope || "medical_file",
+      until: grant.until ? new Date(grant.until).toISOString().slice(0, 10) : null,
     }));
 
     return res.json(data);
@@ -799,6 +854,9 @@ router.delete("/permissions/active/:id", async (req, res) => {
     if (!grant) {
       return res.status(404).json({ message: "Permission not found" });
     }
+
+    const revoked = await User.findById(grant.doctorId).select("name");
+    logAccess(req.user._id, { _id: grant.doctorId, name: revoked ? revoked.name : "" }, "revoked_access", grant._id);
 
     return res.json({ message: "Permission revoked successfully" });
   } catch (error) {
@@ -921,10 +979,22 @@ router.post("/permissions/requests/:id/:decision", async (req, res) => {
 });
 
 
-// Access log - waiting for actual access tracking
+// سجل الاطلاع على ملف المريض
 router.get("/permissions/log", async (req, res) => {
   try {
-    return res.json([]);
+    const rows = await AccessLog.find({ patientId: req.user._id })
+      .sort({ at: -1 })
+      .limit(100)
+      .lean();
+
+    return res.json(
+      rows.map((row) => ({
+        id: row._id.toString(),
+        who: row.actorName || "",
+        action: ACTION_LABELS[row.action],
+        at: row.at,
+      }))
+    );
   } catch (error) {
     console.error("Get access log error:", error);
     return res.status(500).json({
@@ -933,5 +1003,249 @@ router.get("/permissions/log", async (req, res) => {
   }
 });
 
+
+
+// ===============================
+// الملف الشخصي للمريض
+// ===============================
+function ageFromBirth(birth) {
+  if (!birth) return null;
+  const b = new Date(birth + "T00:00:00");
+  if (Number.isNaN(b.getTime())) return null;
+  const n = new Date();
+  let a = n.getFullYear() - b.getFullYear();
+  if (n.getMonth() < b.getMonth() || (n.getMonth() === b.getMonth() && n.getDate() < b.getDate())) a -= 1;
+  return a >= 0 ? a : null;
+}
+
+
+function cleanOther(v) {
+  const arr = Array.isArray(v) ? v : String(v || "").split(/[,،;\n]/);
+  return arr.map((x) => String(x).trim().slice(0, 60)).filter(Boolean).slice(0, 10);
+}
+
+function patientProfileView(user) {
+  const p = user.profile || {};
+  const ids = (p.chronicIds || []).filter((id) => CHRONIC.some((c) => c.id === id));
+  const other = cleanOther(p.chronicOther);
+  return {
+    birthDate: p.birthDate || "",
+    blood: p.blood || "",
+    height: p.height || 0,
+    weight: p.weight || 0,
+    age: ageFromBirth(p.birthDate),
+    chronic: [
+      ...ids.map((id) => {
+        const c = CHRONIC.find((x) => x.id === id);
+        return { ar: c.ar, en: c.en };
+      }),
+      ...other.map((x) => ({ ar: x, en: x })),
+    ],
+    chronicIds: ids,
+    chronicOther: other,
+  };
+}
+
+router.get("/profile", async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("profile");
+    res.json(patientProfileView(user));
+  } catch (error) {
+    console.error("Get patient profile error:", error);
+    res.status(500).json({ code: "server_error" });
+  }
+});
+
+router.put("/profile", async (req, res) => {
+  try {
+    const b = req.body || {};
+    const set = {};
+
+    if (b.birthDate !== undefined) {
+      const ok = /^\d{4}-\d{2}-\d{2}$/.test(String(b.birthDate));
+      const d = new Date(b.birthDate);
+      if (!ok || Number.isNaN(d.getTime()) || d >= new Date() || d.getFullYear() <= 1900) {
+        return res.status(400).json({ code: "invalid_data" });
+      }
+      set["profile.birthDate"] = b.birthDate;
+    }
+    if (b.blood !== undefined) set["profile.blood"] = String(b.blood).slice(0, 4);
+    if (b.height !== undefined) set["profile.height"] = Number(b.height) || 0;
+    if (b.weight !== undefined) set["profile.weight"] = Number(b.weight) || 0;
+    if (b.chronicOther !== undefined) {
+      set["profile.chronicOther"] = cleanOther(b.chronicOther);
+    }
+    if (Array.isArray(b.chronicIds)) {
+      set["profile.chronicIds"] = b.chronicIds
+        .map(String)
+        .filter((id) => CHRONIC.some((c) => c.id === id));
+    }
+
+    if (Object.keys(set).length) await User.updateOne({ _id: req.user._id }, { $set: set });
+    const user = await User.findById(req.user._id).select("profile");
+    res.json(patientProfileView(user));
+  } catch (error) {
+    console.error("Update patient profile error:", error);
+    res.status(500).json({ code: "server_error" });
+  }
+});
+
+// ===============================
+// مساعد فرز الأعراض: يفهم الأعراض، ينبّه للطوارئ، يرتب التخصصات ويقترح أطباء من قاعدة البيانات
+// (محرك قواعد دائم + نموذج Claude اختياري عند ضبط ANTHROPIC_API_KEY). انظر utils/triage.js
+// ===============================
+const { triage: runTriage, aiEnabled } = require("../utils/triage");
+const { TEST_INFO, labOfferedTests } = require("../data/catalog");
+const { norm: normText } = require("../utils/triage");
+
+const triageHits = new Map();
+
+function kmBetween(a, b) {
+  const R = 6371;
+  const rad = (x) => (x * Math.PI) / 180;
+  const dLat = rad(b.lat - a.lat);
+  const dLng = rad(b.lng - a.lng);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+router.post("/triage", async (req, res) => {
+  try {
+    const text = String((req.body && req.body.text) || "").trim().slice(0, 1000);
+    if (text.length < 2) return res.status(400).json({ code: "invalid_data" });
+
+    // حد 30 طلب في الساعة لكل مريض (حماية من الإغراق وتكلفة الذكاء الاصطناعي)
+    const key = String(req.user._id);
+    const now = Date.now();
+    const hits = (triageHits.get(key) || []).filter((t) => now - t < 3600 * 1000);
+    if (hits.length >= 30) return res.status(429).json({ code: "too_many_requests" });
+    hits.push(now);
+    triageHits.set(key, hits);
+
+    // سياق المريض: العمر والأمراض المزمنة (من ملفه الصحي)
+    const profile = req.user.profile || {};
+    let age = null;
+    if (profile.birthDate) {
+      const birth = new Date(profile.birthDate);
+      if (!Number.isNaN(birth.getTime())) {
+        age = Math.floor((now - birth.getTime()) / (365.25 * 24 * 3600 * 1000));
+      }
+    }
+    const chronic = (Array.isArray(profile.chronicIds) ? profile.chronicIds : [])
+      .map((id) => (CHRONIC.find((c) => c.id === id) || {}).en)
+      .filter(Boolean)
+      .concat(cleanOther(profile.chronicOther));
+
+    const result = await runTriage(text, { age, chronic });
+
+    // موقع المريض (اختياري) لترتيب الأطباء بالأقرب
+    const near =
+      req.body.near && Number.isFinite(Number(req.body.near.lat)) && Number.isFinite(Number(req.body.near.lng))
+        ? { lat: Number(req.body.near.lat), lng: Number(req.body.near.lng) }
+        : null;
+
+    // أطباء كل تخصص مقترح (حتى 3 لكل تخصص)
+    const doctors = [];
+    const seen = new Set();
+    for (const spec of result.specialties) {
+      const docs = await User.find({
+        role: "doctor",
+        status: "active",
+        $or: [{ specialty: spec.id }, { extra: spec.id }],
+      })
+        .select("name specialty extra address clinic location")
+        .limit(30);
+
+      const rows = docs
+        .filter((u) => !seen.has(String(u._id)))
+        .map((u) => {
+          const hasLoc = u.location && Number.isFinite(u.location.lat) && Number.isFinite(u.location.lng);
+          return {
+            id: u._id.toString(),
+            type: "doctor",
+            name: { ar: u.name, en: u.name },
+            specialty: specialtyView(u.specialty || u.extra) || { ar: "طبيب", en: "Doctor" },
+            clinic: u.clinic || "",
+            address: u.address ? { ar: u.address, en: u.address } : { ar: "غير محدد", en: "Not specified" },
+            city: { ar: "غير محدد", en: "Not specified" },
+            lat: hasLoc ? u.location.lat : null,
+            lng: hasLoc ? u.location.lng : null,
+            rating: 0,
+            x: 50,
+            y: 50,
+            matchedSpecialty: spec.id,
+            distanceKm: near && hasLoc ? Math.round(kmBetween(near, u.location) * 10) / 10 : null,
+          };
+        });
+
+      if (near) {
+        rows.sort((a, b) => (a.distanceKm ?? 1e9) - (b.distanceKm ?? 1e9));
+      }
+      rows.slice(0, 3).forEach((r) => {
+        seen.add(r.id);
+        doctors.push(r);
+      });
+    }
+
+    // الفحوصات المقترحة + المعامل التي توفر كل فحص (حسب ما فعّله كل معمل في ملفه)
+    const tests = [];
+    if (!result.emergency && result.tests && result.tests.length) {
+      const labs = await User.find({ role: "lab", status: "active" })
+        .select("name address location labProfile")
+        .limit(300);
+      const labRows = labs.map((u) => {
+        const hasLoc = u.location && Number.isFinite(u.location.lat) && Number.isFinite(u.location.lng);
+        return {
+          u,
+          offered: labOfferedTests(u).map(normText),
+          hasLoc,
+        };
+      });
+
+      for (const name of result.tests) {
+        const info = TEST_INFO.find((t) => t.ar === name);
+        if (!info) continue;
+        const keys = [normText(info.ar), normText(info.en)];
+        const offers = (n) => keys.includes(n) || (n.length >= 4 && keys.some((k) => k.includes(n) || n.includes(k)));
+        const rows = labRows
+          .filter((l) => l.offered.some(offers))
+          .map(({ u, hasLoc }) => ({
+            id: u._id.toString(),
+            type: "lab",
+            name: { ar: u.name, en: u.name },
+            specialty: { ar: "معمل تحاليل", en: "Medical Lab" },
+            address: u.address ? { ar: u.address, en: u.address } : { ar: "غير محدد", en: "Not specified" },
+            city: { ar: "غير محدد", en: "Not specified" },
+            lat: hasLoc ? u.location.lat : null,
+            lng: hasLoc ? u.location.lng : null,
+            rating: 0,
+            x: 50,
+            y: 50,
+            distanceKm: near && hasLoc ? Math.round(kmBetween(near, u.location) * 10) / 10 : null,
+          }));
+        if (near) rows.sort((a, b) => (a.distanceKm ?? 1e9) - (b.distanceKm ?? 1e9));
+        tests.push({ ar: info.ar, en: info.en, kind: info.kind, labs: rows.slice(0, 3), labCount: rows.length });
+      }
+    }
+
+    res.json({
+      tests,
+      severity: result.severity,
+      emergency: result.emergency,
+      summary: result.summary,
+      specialties: result.specialties,
+      questions: result.questions,
+      advice: result.advice,
+      doctors,
+      source: result.source,
+      aiEnabled: aiEnabled(),
+    });
+  } catch (error) {
+    console.error("Triage error:", error);
+    res.status(500).json({ code: "server_error" });
+  }
+});
 
 module.exports = router;

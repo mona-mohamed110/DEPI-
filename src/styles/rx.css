@@ -1,0 +1,16 @@
+/* بطاقة الروشتة (مريض + ملف المريض عند الطبيب) */
+.rxc { background: var(--card); border: 1px solid var(--bd); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 12px; color: var(--tx); }
+.rxc-top { display: flex; align-items: center; gap: 12px; }
+.rxc-ic { flex: none; width: 46px; height: 46px; border-radius: 12px; background: var(--pr2); color: var(--pr); display: grid; place-items: center; }
+.rxc-main { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.rxc-main b { font-size: 16px; overflow-wrap: anywhere; }
+.rxc-main small { color: var(--mu); }
+.rxc-dx { margin: 0; color: var(--mu); font-size: 14px; }
+.rxc-dx span { color: var(--tx); font-weight: 600; }
+.rxc-sum { display: flex; flex-wrap: wrap; gap: 8px; }
+.rxc-sum span { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; background: var(--bg); border: 1px solid var(--bd); font-size: 13px; color: var(--mu); }
+.rxc-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.rxc-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 10px; background: var(--pr2); color: var(--pr); font-size: 13px; font-weight: 600; max-width: 100%; overflow-wrap: anywhere; }
+.rxc-chip.x { background: var(--bg); color: var(--tx); border: 1px solid var(--bd); }
+.rxc-foot { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; padding-top: 12px; border-top: 1px solid var(--bd); }
+.rxc-foot .btn { flex: 1 1 140px; justify-content: center; }

@@ -188,3 +188,27 @@ export async function openProtectedFile(path) {
     throw error;
   }
 }
+
+// يجلب ملفاً محمياً (يحتاج Authorization) ويرجع رابط blob صالحاً للعرض داخل iframe أو img.
+// المسار قد يأتي من الباك إند بالشكل /api/... فنحذف /api لأن API_URL يحتويه أصلاً.
+export async function fetchProtectedBlobUrl(path) {
+  const session = getSession();
+
+  if (!session?.token) {
+    throw new ApiError(401, 'unauthorized');
+  }
+
+  const clean = String(path).replace(/^\/api(?=\/)/, '');
+  const res = await fetch(API_URL + clean, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${session.token}` },
+    credentials: API_CREDENTIALS,
+    cache: 'no-store',
+  });
+
+  if (!res.ok) {
+    throw new ApiError(res.status, 'file_error');
+  }
+
+  return URL.createObjectURL(await res.blob());
+}

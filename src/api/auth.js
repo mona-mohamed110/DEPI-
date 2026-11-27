@@ -17,7 +17,10 @@ export async function login(email, password) {
   const wait = loginGuard.remaining(mail);
   if (wait > 0) { const e = new ApiError(429, 'locked'); e.wait = wait; throw e; }
   try {
-    const { token, user } = await api.post('/auth/login', { email: mail, password });
+    const r = await api.post('/auth/login', { email: mail, password });
+    // التحقق بخطوتين: الخادم أرسل كوداً على الإيميل ولم يعطِ توكن بعد
+    if (r.twoFactor) return { twoFactorRequired: true, email: mail };
+    const { token, user } = r;
     loginGuard.reset(mail);
     saveSession({ token, user });
     return user;
@@ -25,6 +28,15 @@ export async function login(email, password) {
     if (e.code === 'invalid_credentials' || e.status === 401) loginGuard.fail(mail);
     throw e;
   }
+}
+
+// الخطوة الثانية من تسجيل الدخول: كود الإيميل
+export async function verifyLogin(email, code) {
+  const mail = String(email || '').trim().toLowerCase();
+  const { token, user } = await api.post('/auth/login-verify', { email: mail, code: String(code || '').trim() });
+  loginGuard.reset(mail);
+  saveSession({ token, user });
+  return user;
 }
 
 // data.certificate = ملف الشهادة (صورة أو PDF) للطبيب والمعمل، و data.profile = بيانات المريض الصحية

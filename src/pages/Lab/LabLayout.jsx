@@ -14,6 +14,8 @@ const ITEMS = [
 const LINKS = [
   { to: '/lab/settings/profile', icon: 'building', key: 'labFile' },
   { to: '/lab/settings/personal', icon: 'user', key: 'profile' },
+  { to: '/lab/settings/feedback', icon: 'star', key: 'fb_nav' },
+  { to: '/lab/settings/support', icon: 'mail', key: 'ct_nav' },
   { to: '/lab/settings/account', icon: 'sliders', key: 'accountSettings' },
 ];
 

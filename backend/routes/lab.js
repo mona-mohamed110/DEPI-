@@ -1,12 +1,16 @@
 
 const express = require("express");
+const path = require("path");
+const fs = require("fs");
 const mongoose = require("mongoose");
 
 const LabRequest = require("../models/LabRequest");
 const LabResult = require("../models/LabResult");
 const Booking = require("../models/Booking");
 const User = require("../models/User");
+const { TEST_CATALOG } = require("../data/catalog");
 
+const { logAccess } = require("../utils/accessLog");
 const { requireAuth, requireRole } = require("../middleware/auth");
 const { uploadMultiple } = require("../middleware/upload");
 
@@ -29,6 +33,7 @@ function requestRow(item) {
     doctor: item.doctor,
     status: item.status,
     files: item.files || [],
+    resultStatus: item.resultStatus || "normal",
     notes: item.notes || "",
     createdAt: item.createdAt,
     uploadedAt: item.uploadedAt,
@@ -175,6 +180,10 @@ router.post(
         patientId: request.patientId,
         labId: req.user._id,
         bookingId: request.bookingId,
+        requestId: request._id,
+        title: request.test,
+        kind: ["lab", "xray", "ecg", "other"].includes(request.kind) ? request.kind : "lab",
+        status: ["normal", "low", "high", "followup"].includes(req.body.status) ? req.body.status : "normal",
         fileName: file.originalname,
         filePath: `uploads/${file.filename}`,
         fileType: file.mimetype,
@@ -182,10 +191,13 @@ router.post(
 
       if (request.patientId) {
   await LabResult.insertMany(resultDocuments);
+  logAccess(request.patientId, req.user, "uploaded_result", request._id);
 }
 
       request.status = "done";
       request.files = req.files.map((file) => file.originalname);
+      request.filePaths = req.files.map((file) => `uploads/${file.filename}`);
+      request.resultStatus = resultDocuments[0].status;
       request.notes = String(req.body.notes || "").trim();
       request.uploadedAt = uploadedAt;
 
@@ -243,6 +255,38 @@ router.get("/results", async (req, res) => {
   }
 });
 
+// فتح ملف نتيجة مرفوع (للمعمل صاحب الطلب فقط)
+router.get("/requests/:id/files/:index", async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ code: "not_found" });
+    }
+    const request = await LabRequest.findOne({ _id: req.params.id, labId: req.user._id });
+    const i = Number(req.params.index);
+    if (!request || !Number.isInteger(i) || i < 0) {
+      return res.status(404).json({ code: "not_found" });
+    }
+
+    let rel = (request.filePaths || [])[i];
+    if (!rel) {
+      // طلبات قديمة: نجيب المسار من سجل نتيجة المريض
+      const docs = await LabResult.find({ requestId: request._id }).sort({ createdAt: 1 });
+      rel = docs[i] && docs[i].filePath;
+    }
+    if (!rel) return res.status(404).json({ code: "file_not_found" });
+
+    const root = path.resolve(__dirname, "..", "uploads");
+    const filePath = path.resolve(__dirname, "..", rel);
+    if (!filePath.startsWith(root + path.sep) || !fs.existsSync(filePath)) {
+      return res.status(404).json({ code: "file_not_found" });
+    }
+    return res.sendFile(filePath);
+  } catch (error) {
+    console.error("Open lab file error:", error);
+    return res.status(500).json({ code: "server_error" });
+  }
+});
+
 // تواريخ النتائج المتاحة
 router.get("/results/dates", async (req, res) => {
   try {
@@ -271,6 +315,69 @@ router.get("/results/dates", async (req, res) => {
   } catch (error) {
     console.error("Get result dates error:", error);
     return res.status(500).json({ code: "server_error" });
+  }
+});
+
+
+function cleanDays(days) {
+  if (!Array.isArray(days) || days.length !== 7) return null;
+  const hhmm = /^([01]\d|2[0-3]):[0-5]\d$/;
+  const out = [];
+  for (const d of days) {
+    const from = String((d && d.from) || "").slice(0, 5);
+    const to = String((d && d.to) || "").slice(0, 5);
+    if (!hhmm.test(from) || !hhmm.test(to)) return null;
+    out.push({ on: !!(d && d.on), from, to });
+  }
+  return out;
+}
+
+function labProfileView(user) {
+  const lp = user.labProfile || {};
+  return {
+    license: user.license || "",
+    address: user.address || "",
+    phone: lp.phone || user.phone || "",
+    hours: lp.hours && lp.hours.length === 7 ? lp.hours : Array.from({ length: 7 }, (_, i) => ({ on: i < 6, from: "08:00", to: "20:00" })),
+    tests: lp.tests && lp.tests.length
+      ? [...lp.tests, ...TEST_CATALOG.filter((name) => !lp.tests.some((t) => t.name === name)).map((name) => ({ name, on: false }))]
+      : TEST_CATALOG.map((name) => ({ name, on: true })),
+  };
+}
+
+router.get("/profile", async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    res.json(labProfileView(user));
+  } catch (error) {
+    console.error("Get lab profile error:", error);
+    res.status(500).json({ code: "server_error" });
+  }
+});
+
+router.put("/profile", async (req, res) => {
+  try {
+    const b = req.body || {};
+    const set = {};
+    if (b.address !== undefined) set.address = String(b.address).trim().slice(0, 150);
+    if (b.phone !== undefined) set["labProfile.phone"] = String(b.phone).trim().slice(0, 20);
+    if (b.hours !== undefined) {
+      const hours = cleanDays(b.hours);
+      if (!hours) return res.status(400).json({ code: "invalid_data" });
+      set["labProfile.hours"] = hours;
+    }
+    if (b.tests !== undefined) {
+      if (!Array.isArray(b.tests) || b.tests.length > 200) return res.status(400).json({ code: "invalid_data" });
+      set["labProfile.tests"] = b.tests
+        .map((t) => ({ name: String((t && t.name) || "").trim().slice(0, 80), on: !!(t && t.on) }))
+        .filter((t) => t.name);
+    }
+    if (Object.keys(set).length) await User.updateOne({ _id: req.user._id }, { $set: set });
+    const user = await User.findById(req.user._id);
+    res.json(labProfileView(user));
+  } catch (error) {
+    console.error("Update lab profile error:", error);
+    res.status(500).json({ code: "server_error" });
   }
 });
 

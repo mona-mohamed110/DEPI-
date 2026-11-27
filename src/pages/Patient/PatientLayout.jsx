@@ -16,6 +16,8 @@ const ITEMS = [
 ];
 const LINKS = [
   { to: '/patient/profile', icon: 'user', key: 'profile' },
+  { to: '/patient/feedback', icon: 'star', key: 'fb_nav' },
+  { to: '/patient/support', icon: 'mail', key: 'ct_nav' },
   { to: '/patient/account', icon: 'sliders', key: 'accountSettings' },
 ];
 

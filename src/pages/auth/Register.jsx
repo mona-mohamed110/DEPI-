@@ -6,10 +6,9 @@ import Icon from '../../components/Icon.jsx';
 import { useI18n } from '../../context/I18nContext.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { checkFile, isEgPhone, isEmail, isStrongPassword } from '../../api/security.js';
-import { BLOOD_TYPES, CHRONIC } from '../../config/catalog.js';
+import { BLOOD_TYPES, CHRONIC, SPECIALTIES } from '../../config/catalog.js';
 
 const ROLES = [['patient', 'user', 'rg_patient'], ['doctor', 'stethoscope', 'rg_doctor'], ['lab', 'flask', 'rg_lab']];
-const SPECS = ['sp_internal', 'sp_cardio', 'sp_neuro', 'sp_peds', 'sp_derm', 'sp_ortho'];
 const digits = (s) => String(s).replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
 
 function Form() {
@@ -18,8 +17,9 @@ function Form() {
   const certInput = useRef(null);
   const nav = useNavigate();
   const [role, setRole] = useState('patient');
-  const [f, setF] = useState({ fullName: '', labName: '', email: '', phone: '', password: '', confirm: '', specialty: 'sp_internal', license: '', terms: false, birthDate: '', blood: '', height: '', weight: '' });
+  const [f, setF] = useState({ fullName: '', labName: '', email: '', phone: '', password: '', confirm: '', specialty: 'sp_internal', specialtyOther: '', license: '', terms: false, birthDate: '', blood: '', height: '', weight: '' });
   const [chronicIds, setChronicIds] = useState([]);
+  const [chronicOther, setChronicOther] = useState('');
   const [cert, setCert] = useState(null);
   const [err, setErr] = useState({});
   const [apiErr, setApiErr] = useState('');
@@ -33,9 +33,10 @@ function Form() {
     if (f.fullName.trim().length < 3) er.fullName = t('rg_err_name');
     if (role === 'lab' && f.labName.trim().length < 3) er.labName = t('rg_err_name');
     if (!isEmail(f.email)) er.email = t('rg_err_email');
-    if (!isEgPhone(digits(f.phone))) er.phone = t('rg_err_phone');
+    if (!/^\d{11}$/.test(digits(f.phone).replace(/[\s-]/g, ''))) er.phone = t('rg_err_phone');
     if (!isStrongPassword(f.password)) er.password = t('rg_err_pass');
     else if (f.password !== f.confirm) er.confirm = t('rg_err_match');
+    if (role === 'doctor' && f.specialty === 'sp_other' && f.specialtyOther.trim().length < 2) er.specialtyOther = t('rg_err_spec_other');
     if (role !== 'patient' && f.license.trim().length < 4) er.license = t('rg_err_license');
     if (role === 'patient') {
       if (!f.birthDate || new Date(f.birthDate) >= new Date()) er.birthDate = t('rg_err_birth');
@@ -46,8 +47,8 @@ function Form() {
     if (Object.keys(er).length) return;
     setBusy(true);
     try {
-      const r = await register({ role, fullName: f.fullName, email: f.email, phone: digits(f.phone), password: f.password, extra: role === 'lab' ? f.labName : role === 'doctor' ? f.specialty : '', license: role === 'patient' ? '' : f.license,
-        ...(role === 'patient' ? { profile: { birthDate: f.birthDate, blood: f.blood, height: Number(digits(f.height)) || 0, weight: Number(digits(f.weight)) || 0, chronicIds } } : { certificate: cert }) });
+      const r = await register({ role, fullName: f.fullName, email: f.email, phone: digits(f.phone).replace(/[\s-]/g, ''), password: f.password, extra: role === 'lab' ? f.labName : role === 'doctor' ? (f.specialty === 'sp_other' ? f.specialtyOther.trim().replace(/\s+/g, ' ') : f.specialty) : '', license: role === 'patient' ? '' : f.license,
+        ...(role === 'patient' ? { profile: { birthDate: f.birthDate, blood: f.blood, height: Number(digits(f.height)) || 0, weight: Number(digits(f.weight)) || 0, chronicIds, chronicOther: splitOther(chronicOther) } } : { certificate: cert }) });
       nav('/login', { replace: true, state: { email: f.email, registered: r?.status === 'pending' ? 'pending' : 'ok' } });
     } catch (x) { setApiErr(t(`err_${x.code}`) !== `err_${x.code}` ? t(`err_${x.code}`) : t('error')); setBusy(false); }
   };
@@ -67,9 +68,10 @@ function Form() {
           <div className={role === 'lab' ? '' : 'full'}><label htmlFor="rg-name">{t('rg_name')}</label><input id="rg-name" value={f.fullName} maxLength={80} onChange={set('fullName')} autoComplete="name" /><Err k="fullName" /></div>
           {role === 'lab' && <div><label htmlFor="rg-lab">{t('rg_lab_name')}</label><input id="rg-lab" value={f.labName} maxLength={80} onChange={set('labName')} /><Err k="labName" /></div>}
           <div><label htmlFor="rg-email">{t('rg_email')}</label><input id="rg-email" type="email" dir="ltr" value={f.email} maxLength={254} onChange={set('email')} autoComplete="email" /><Err k="email" /></div>
-          <div><label htmlFor="rg-phone">{t('rg_phone')}</label><input id="rg-phone" dir="ltr" inputMode="tel" value={f.phone} onChange={set('phone')} placeholder="01xxxxxxxxx" autoComplete="tel" /><Err k="phone" /></div>
-          {role === 'doctor' && <div><label htmlFor="rg-sp">{t('rg_specialty')}</label><select id="rg-sp" value={f.specialty} onChange={set('specialty')}>{SPECS.map((s) => <option key={s} value={s}>{t(s)}</option>)}</select></div>}
-          {role !== 'patient' && <div><label htmlFor="rg-lic">{t('rg_license')}</label><input id="rg-lic" dir="ltr" value={f.license} maxLength={40} onChange={set('license')} /><Err k="license" /></div>}
+          <div><label htmlFor="rg-phone">{t('rg_phone')}</label><input id="rg-phone" dir="ltr" inputMode="tel" maxLength={11} value={f.phone} onChange={(e) => setF((x) => ({ ...x, phone: String(e.target.value).replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/\D/g, '').slice(0, 11) }))} placeholder="01xxxxxxxxx" autoComplete="tel" /><Err k="phone" /></div>
+          {role === 'doctor' && <div className={f.specialty === 'sp_other' ? '' : 'full'}><label htmlFor="rg-sp">{t('rg_specialty')}</label><select id="rg-sp" value={f.specialty} onChange={set('specialty')}>{SPECIALTIES.map((s) => <option key={s.id} value={s.id}>{lang === 'ar' ? s.ar : s.en}</option>)}</select></div>}
+          {role === 'doctor' && f.specialty === 'sp_other' && <div><label htmlFor="rg-sp-other">{t('rg_sp_other_ph')}</label><input id="rg-sp-other" value={f.specialtyOther} maxLength={60} onChange={set('specialtyOther')} /><Err k="specialtyOther" /></div>}
+          {role !== 'patient' && <div className="full"><label htmlFor="rg-lic">{t('rg_license')}</label><input id="rg-lic" dir="ltr" value={f.license} maxLength={40} onChange={set('license')} /><Err k="license" /></div>}
           <div><label htmlFor="rg-pass">{t('rg_pass')}</label><PasswordInput id="rg-pass" value={f.password} onChange={set('password')} autoComplete="new-password" /><Err k="password" /></div>
           <div><label htmlFor="rg-conf">{t('rg_confirm')}</label><PasswordInput id="rg-conf" value={f.confirm} onChange={set('confirm')} autoComplete="new-password" /><Err k="confirm" /></div>
         </div>
@@ -87,6 +89,8 @@ function Form() {
               <button type="button" className={`chip ${chronicIds.length === 0 ? 'on' : ''}`} onClick={() => setChronicIds([])}>{t('rg_chronic_none')}</button>
               {CHRONIC.map((c) => <button type="button" key={c.id} className={`chip ${chronicIds.includes(c.id) ? 'on' : ''}`} aria-pressed={chronicIds.includes(c.id)} onClick={() => toggleChronic(c.id)}>{lang === 'ar' ? c.ar : c.en}</button>)}
             </div>
+            <label htmlFor="rg-chr-other" style={{ marginTop: 12 }}>{t('rg_chronic_other')}</label>
+            <input id="rg-chr-other" value={chronicOther} maxLength={300} onChange={(e) => setChronicOther(e.target.value)} placeholder={t('rg_chronic_other_ph')} />
           </fieldset>
         )}
         {role !== 'patient' && (
@@ -110,4 +114,6 @@ function Form() {
     </>
   );
 }
+const splitOther = (s) => String(s || '').split(/[,،;\n]/).map((x) => x.trim().slice(0, 60)).filter(Boolean).slice(0, 10);
+
 export default function Register() { return <AuthPage><Form /></AuthPage>; }

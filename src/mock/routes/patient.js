@@ -1,5 +1,5 @@
 import { r, fail } from '../router.js';
-import { save, uid, ageFrom, chronicFromIds, chronicToIds, patientOf, place, hasStaff, todayKey, grantDoctor } from '../helpers.js';
+import { save, uid, ageFrom, otherFrom, chronicOtherOf, chronicFromIds, chronicToIds, patientOf, place, hasStaff, todayKey, grantDoctor } from '../helpers.js';
 import { clean } from '../../api/security.js';
 
 const P = ({ db, user }) => patientOf(db, user.id);
@@ -30,16 +30,16 @@ r.get('/patient/dashboard', (ctx) => {
   };
 });
 
-r.get('/patient/profile', (ctx) => ({ ...infoView(P(ctx)), chronic: P(ctx).chronic, chronicIds: chronicToIds(P(ctx).chronic) }));
+r.get('/patient/profile', (ctx) => ({ ...infoView(P(ctx)), chronic: P(ctx).chronic, chronicIds: chronicToIds(P(ctx).chronic), chronicOther: chronicOtherOf(P(ctx).chronic) }));
 r.put('/patient/profile', (ctx) => {
   const b = ctx.body, p = P(ctx);
   if (b.birthDate !== undefined) { if (!validBirth(b.birthDate)) fail(400, 'invalid_data'); p.info.birthDate = b.birthDate; }
   if (b.blood !== undefined) p.info.blood = String(b.blood).slice(0, 4);
   if (b.height !== undefined) p.info.height = Number(b.height) || 0;
   if (b.weight !== undefined) p.info.weight = Number(b.weight) || 0;
-  if (Array.isArray(b.chronicIds)) p.chronic = chronicFromIds(b.chronicIds);
+  if (Array.isArray(b.chronicIds) || b.chronicOther !== undefined) p.chronic = [...chronicFromIds(Array.isArray(b.chronicIds) ? b.chronicIds : chronicToIds(p.chronic)), ...otherFrom(b.chronicOther !== undefined ? b.chronicOther : chronicOtherOf(p.chronic))];
   save();
-  return { ...infoView(p), chronic: p.chronic, chronicIds: chronicToIds(p.chronic) };
+  return { ...infoView(p), chronic: p.chronic, chronicIds: chronicToIds(p.chronic), chronicOther: chronicOtherOf(p.chronic) };
 });
 
 r.get('/patient/medical-file', (ctx) => { const p = P(ctx); return { info: infoView(p), chronic: p.chronic, history: [...p.history].sort((a, b) => String(b.date).localeCompare(String(a.date))), reports: [...p.reports].sort(byDate('date')) }; });
@@ -79,12 +79,11 @@ r.post('/patient/triage', ({ body, db }) => {
   const s = String(body.text || '').toLowerCase();
   if (s.trim().length < 2) fail(400, 'invalid_data');
   const has = (...w) => w.some((x) => s.includes(x));
-  let likely = 'sym_l_general', severity = 'low', kind = 'باطنة';
-  if (has('صدر', 'chest', 'قلب', 'heart')) { likely = 'sym_l_chest'; severity = 'high'; kind = 'قلب'; }
-  else if (has('صداع', 'دوخة', 'headache', 'dizz')) { likely = 'sym_l_head'; severity = 'medium'; kind = 'مخ'; }
-  else if (has('حرارة', 'كحة', 'fever', 'cough')) { likely = 'sym_l_flu'; severity = 'low'; kind = 'باطنة'; }
-  const doctors = db.places.filter((p) => p.type === 'doctor').filter((p) => p.specialty.ar.includes(kind) || p.specialty.ar.includes('باطنة')).slice(0, 2);
-  return { likely, severity, doctors };
+  let kind = 'باطنة', severity = 'low', sp = { id: 'sp_internal', ar: 'باطنة', en: 'Internal medicine' };
+  if (has('صدر', 'chest', 'قلب', 'heart')) { kind = 'قلب'; severity = 'high'; sp = { id: 'sp_cardio', ar: 'قلب وأوعية دموية', en: 'Cardiology' }; }
+  else if (has('صداع', 'دوخة', 'headache', 'dizz')) { kind = 'مخ'; severity = 'medium'; sp = { id: 'sp_neuro', ar: 'مخ وأعصاب', en: 'Neurology' }; }
+  const doctors = db.places.filter((p) => p.type === 'doctor').filter((p) => p.specialty.ar.includes(kind) || p.specialty.ar.includes('باطنة')).slice(0, 2).map((d) => ({ ...d, matchedSpecialty: sp.id }));
+  return { severity, emergency: false, summary: { ar: 'وضع العرض التجريبي: تحليل مبسّط', en: 'Demo mode: simplified analysis' }, specialties: [{ ...sp, reason: { ar: '', en: '' }, score: 3 }], tests: [], questions: [], advice: { ar: 'احجز كشفًا خلال أيام.', en: 'Book a visit within a few days.' }, doctors, source: 'rules' };
 });
 
 // ---- المواعيد = حجوزات (دكتور: طلب لموظف الاستقبال / معمل: طلب للمعمل) ----

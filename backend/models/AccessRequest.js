@@ -29,6 +29,8 @@ const accessRequestSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+accessRequestSchema.index({ patientId: 1, status: 1 });
+
 module.exports =
   mongoose.models.AccessRequest ||
   mongoose.model("AccessRequest", accessRequestSchema);

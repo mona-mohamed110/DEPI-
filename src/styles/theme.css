@@ -39,3 +39,42 @@ body { margin: 0; }
 .app-root *::-webkit-scrollbar-thumb { background: var(--bd); border-radius: 10px; border: 2px solid transparent; background-clip: content-box; }
 .app-root *::-webkit-scrollbar-thumb:hover { background: var(--mu); background-clip: content-box; }
 
+
+/* ---------- تواصل مع الإدارة (مشترك) ---------- */
+.app-root .ct-item{border:1px solid var(--bd);border-radius:14px;margin-bottom:10px;overflow:hidden;background:var(--card)}
+.app-root .ct-item.unread{border-color:var(--pr)}
+.app-root .ct-head{display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px;background:transparent;border:0;color:inherit;font:inherit;text-align:start;cursor:pointer}
+.app-root .ct-head .m{flex:1;min-width:0}
+.app-root .ct-head .m small{display:block;color:var(--mu)}
+.app-root .ct-body{padding:4px 14px 14px;border-top:1px solid var(--bd)}
+.app-root .ct-msg{max-width:88%;margin:10px 0;padding:10px 14px;border-radius:14px;background:var(--pr2)}
+.app-root .ct-msg p{margin:0 0 4px;white-space:pre-wrap;overflow-wrap:anywhere}
+.app-root .ct-msg small{color:var(--mu)}
+.app-root .ct-msg.admin{margin-inline-start:auto;background:var(--ok2)}
+.app-root .msg-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.app-root .msg-filters select{width:auto;min-width:160px}
+.app-root .msg-layout{display:grid;grid-template-columns:minmax(260px,380px) 1fr;gap:16px;align-items:start}
+@media (max-width:900px){.app-root .msg-layout{grid-template-columns:1fr}}
+.app-root .msg-list{padding:8px}
+.app-root .msg-row{display:flex;align-items:center;gap:8px;width:100%;padding:10px 12px;border:0;border-radius:12px;background:transparent;color:inherit;font:inherit;text-align:start;cursor:pointer}
+.app-root .msg-row:hover,.app-root .msg-row.on{background:var(--pr2)}
+.app-root .msg-row .m{flex:1;min-width:0}
+.app-root .msg-row .m b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.app-root .msg-row .m small{display:block;color:var(--mu)}
+.app-root .msg-row.unread .m b{color:var(--pr)}
+.app-root .msg-meta{margin:12px 0}
+.app-root .msg-meta div{display:flex;gap:10px;padding:4px 0}
+.app-root .msg-meta dt{color:var(--mu);min-width:90px}
+.app-root .msg-meta dd{margin:0}
+.app-root .msg-detail form{margin-top:14px}
+.app-root .wc{border:1px solid var(--bd);border-radius:14px;padding:12px;background:var(--card);max-width:340px}
+.app-root .wc-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.app-root .wc-arrow{width:32px;height:32px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);cursor:pointer;display:grid;place-items:center}
+.app-root .wc-arrow:disabled{opacity:.35;cursor:not-allowed}
+.app-root .wc-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.app-root .wc-h{font-size:12px;color:var(--mu);padding:4px 0}
+.app-root .wc-d{aspect-ratio:1;border-radius:10px;border:1px solid transparent;background:transparent;color:var(--tx);font:inherit;cursor:pointer}
+.app-root .wc-d:hover:not(:disabled){border-color:var(--pr)}
+.app-root .wc-d.today{border-color:var(--bd);font-weight:700}
+.app-root .wc-d.on{background:var(--pr);border-color:var(--pr);color:var(--pr-ink,#fff)}
+.app-root .wc-d:disabled{opacity:.3;cursor:not-allowed;text-decoration:line-through}

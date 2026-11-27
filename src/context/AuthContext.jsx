@@ -2,6 +2,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import * as authApi from '../api/auth.js';
 import { clearSession, getSession, patchSessionUser } from '../api/security.js';
+import { getAvatar } from '../api/shared.js';
 
 const Ctx = createContext(null);
 export const useAuth = () => useContext(Ctx);
@@ -9,6 +10,14 @@ export const useAuth = () => useContext(Ctx);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => getSession()?.user || null);
   const [ready, setReady] = useState(false);
+  const [avatar, setAvatar] = useState(''); // صورة البروفايل (لا تُحفظ في الجلسة)
+  const uid = user?.id;
+  useEffect(() => {
+    let alive = true;
+    if (!uid) { setAvatar(''); return undefined; }
+    getAvatar().then((r) => alive && setAvatar((r && r.avatar) || '')).catch(() => {});
+    return () => { alive = false; };
+  }, [uid]);
 
   // نتأكد من الجلسة مع السيرفر عند فتح الموقع
   useEffect(() => {
@@ -24,10 +33,11 @@ export function AuthProvider({ children }) {
     return () => window.removeEventListener('shefaa:unauthorized', off);
   }, []);
 
-  const login = useCallback(async (email, password) => { const u = await authApi.login(email, password); setUser(u); return u; }, []);
+  const login = useCallback(async (email, password) => { const u = await authApi.login(email, password); if (u.twoFactorRequired) return u; setUser(u); return u; }, []);
+  const verifyLogin = useCallback(async (email, code) => { const u = await authApi.verifyLogin(email, code); setUser(u); return u; }, []);
   const logout = useCallback(async () => { await authApi.logout(); setUser(null); }, []);
   const updateUser = useCallback((patch) => { patchSessionUser(patch); setUser((u) => (u ? { ...u, ...patch } : u)); }, []);
 
-  const value = useMemo(() => ({ user, ready, login, logout, updateUser, register: authApi.register }), [user, ready, login, logout, updateUser]);
+  const value = useMemo(() => ({ user, avatar, setAvatar, ready, login, verifyLogin, logout, updateUser, register: authApi.register }), [user, avatar, ready, login, verifyLogin, logout, updateUser]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

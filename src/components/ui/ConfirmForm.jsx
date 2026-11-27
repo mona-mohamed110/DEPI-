@@ -5,14 +5,14 @@ import { useI18n } from '../../context/I18nContext.jsx';
 export default function ConfirmForm({ message, confirmLabel, cancelLabel, danger = true, busy = false, onConfirm, onCancel, children }) {
   const { t } = useI18n();
   return (
-    <form className="confirm-form" role="alertdialog" aria-label={message}
-      onSubmit={(e) => { e.preventDefault(); if (!busy) onConfirm(); }}>
+    // div وليس form: بعض الصفحات تضعه داخل نموذج آخر، والنماذج المتداخلة تعيد تحميل الصفحة ولا تنفّذ التأكيد
+    <div className="confirm-form" role="alertdialog" aria-label={message}>
       <span className="confirm-msg">{message}</span>
       {children}
       <div className="confirm-actions">
-        <button type="submit" className={`btn s ${danger ? 'dg' : ''}`} disabled={busy}>{confirmLabel || t('confirm_delete')}</button>
+        <button type="button" className={`btn s ${danger ? 'dg' : ''}`} disabled={busy} onClick={() => { if (!busy) onConfirm(); }}>{confirmLabel || t('confirm_delete')}</button>
         <button type="button" className="btn s o" onClick={onCancel}>{cancelLabel || t('cancel')}</button>
       </div>
-    </form>
+    </div>
   );
 }

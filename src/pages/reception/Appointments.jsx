@@ -1,5 +1,4 @@
-
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Icon from '../../components/Icon.jsx';
 import { Async } from '../../components/ui/States.jsx';
 import { useAsync } from '../../components/ui/hooks.js';
@@ -7,9 +6,10 @@ import { useToast } from '../../components/ui/Toast.jsx';
 import { useI18n } from '../../context/I18nContext.jsx';
 import { isEgPhone } from '../../api/security.js';
 import ConfirmForm from '../../components/ui/ConfirmForm.jsx';
+import { slotsForDate } from '../../utils/schedule.js';
+import WorkCalendar from '../../components/ui/WorkCalendar.jsx';
 import * as api from '../../api/reception.js';
 
-const TIMES = ['09:00', '09:30', '10:00', '11:00', '12:00', '16:00', '17:00'];
 const normDigits = (s) => String(s).replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
 
 export default function Appointments() {
@@ -24,26 +24,29 @@ export default function Appointments() {
   const [err, setErr] = useState({});
   const [patientId, setPatientId] = useState('');
   const [providerId, setProviderId] = useState('');
+  // موظف الاستقبال تابع لطبيب واحد: يتحدد تلقائياً
+  useEffect(() => { const l = doctors.data; if (Array.isArray(l) && l.length === 1) setProviderId(l[0].id); }, [doctors.data]);
   const [day, setDay] = useState('');
   const [time, setTime] = useState('');
   const [busy, setBusy] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [vt, setVt] = useState(null);
+  const [consult, setConsult] = useState(false);
 
-  const days = useMemo(() => Array.from({ length: 5 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() + i);
+  // نوع الزيارة المتوقع: يُحسب من آخر روشتة للمريض عند الطبيب في يوم الموعد المختار
+  useEffect(() => {
+    setConsult(false);
+    if (!patientId || !day) { setVt(null); return undefined; }
+    let live = true;
+    api.getVisitType(patientId, day).then((r) => { if (live) setVt(r); }).catch(() => { if (live) setVt(null); });
+    return () => { live = false; };
+  }, [patientId, day]);
 
-    return {
-      id: i === 0 ? 'today' : d.getFullYear() + '-' +
-        String(d.getMonth() + 1).padStart(2, '0') + '-' +
-        String(d.getDate()).padStart(2, '0'),
-      label: i === 0
-        ? t('today')
-        : i === 1
-          ? t('tomorrow')
-          : d.toLocaleDateString(locale, { weekday: 'long' }),
-    };
-  }), [locale, t]);
+  // ساعات عمل الطبيب (من إعداداته): تحدد الأيام والمواعيد المتاحة
+  const provider = (doctors.data || []).find((x) => x.id === providerId);
+  const sch = provider?.schedule;
+  const times = day ? slotsForDate(sch, day) : [];
+  useEffect(() => { if (time && !times.includes(time)) setTime(''); }, [day, providerId, sch]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const askAdd = (e) => {
     e.preventDefault();
@@ -51,7 +54,7 @@ export default function Appointments() {
     const er = {};
 
     if (name.trim().length < 3) er.name = t('err_name');
-    if (!isEgPhone(normDigits(phone))) er.phone = t('err_phone');
+    if (!/^01[0125]\d{8}$/.test(normDigits(phone))) er.phone = t('err_phone');
 
     setErr(er);
 
@@ -101,6 +104,7 @@ export default function Appointments() {
         providerId,
         date: day,
         time,
+        visit: consult ? 'consult' : undefined,
       }),
       'booked'
     );
@@ -110,6 +114,7 @@ export default function Appointments() {
     if (r) {
       setDay('');
       setTime('');
+      setConsult(false);
     }
   };
 
@@ -136,7 +141,8 @@ export default function Appointments() {
             dir="ltr"
             inputMode="tel"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            maxLength={11}
+            onChange={(e) => setPhone(normDigits(e.target.value).replace(/\D/g, '').slice(0, 11))}
             placeholder="01xxxxxxxxx"
           />
           {err.phone && <div className="err">{err.phone}</div>}
@@ -190,6 +196,7 @@ export default function Appointments() {
             {(list) => (
               <select
                 value={providerId}
+                disabled={list.length === 1}
                 onChange={(e) => setProviderId(e.target.value)}
               >
                 <option value="">{t('pick_doctor')}</option>
@@ -204,22 +211,11 @@ export default function Appointments() {
           </Async>
 
           <label>{t('day')}</label>
-          <div className="days">
-            {days.map((d) => (
-              <button
-                type="button"
-                key={d.id}
-                className={`slot ${day === d.id ? 'on' : ''}`}
-                onClick={() => setDay(d.id)}
-              >
-                {d.label}
-              </button>
-            ))}
-          </div>
+          <WorkCalendar value={day} onChange={(d) => { setDay(d); setTime(''); }} schedule={sch} />
 
           <label>{t('time')}</label>
           <div className="slots">
-            {TIMES.map((x) => (
+            {!day ? <span className="sub" style={{ margin: 0 }}>{t('pick_day_first')}</span> : times.length === 0 ? <span className="sub" style={{ margin: 0 }}>{t('no_hours_day')}</span> : times.map((x) => (
               <button
                 type="button"
                 key={x}
@@ -230,6 +226,23 @@ export default function Appointments() {
               </button>
             ))}
           </div>
+
+          {vt && (
+            <div className="vt-box">
+              <label className="first">{t('vt_title')}</label>
+              <span className={`vt-badge ${consult ? 'consult' : vt.type}`}>{t(`visit_${consult ? 'consult' : vt.type}`)}</span>
+              <p className="sub" style={{ margin: '6px 0 0', fontSize: 13 }}>
+                {vt.lastDate
+                  ? `${t('vt_last')} ${vt.lastDate} (${vt.daysSince} ${t('vt_days')}) · ${t('vt_window')}: ${vt.windowDays} ${t('vt_days')}${vt.graceDays ? ` + ${t('vt_grace')} ${vt.graceDays}` : ''} — ${vt.type === 'followup' ? (vt.inGrace ? t('vt_in_grace') : t('vt_in')) : t('vt_expired')}`
+                  : t('vt_none')}
+              </p>
+              {vt.lastDate && (
+                <label className="vt-consult">
+                  <input type="checkbox" checked={consult} onChange={(e) => setConsult(e.target.checked)} /> {t('vt_consult')}
+                </label>
+              )}
+            </div>
+          )}
 
           {err.book && <div className="err">{err.book}</div>}
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Icon from '../../components/Icon.jsx';
-import MapArt from '../../components/ui/MapArt.jsx';
+import LocationPicker from '../../components/ui/LocationPicker.jsx';
+import { specName } from '../../config/catalog.js';
 import { Async } from '../../components/ui/States.jsx';
 import { useAsync } from '../../components/ui/hooks.js';
 import { useToast } from '../../components/ui/Toast.jsx';
@@ -10,7 +11,7 @@ import { safeUrl } from '../../api/security.js';
 import * as api from '../../api/doctor.js';
 
 export default function Professional() {
-  const { t, L } = useI18n();
+  const { t, L, lang } = useI18n();
   const { user } = useAuth();
   const { act } = useToast();
 
@@ -22,6 +23,7 @@ export default function Professional() {
       setForm({
         license: state.data.license || '',
         specialty: state.data.specialty || '',
+        followUpDays: state.data.followUpDays || 14,
         clinic: L(state.data.clinic || ''),
         address: L(state.data.address || ''),
       });
@@ -37,7 +39,7 @@ export default function Professional() {
 
   const save = async () => {
     const result = await act(
-      () => api.saveProfessional(form),
+      () => api.saveProfessional({ license: form.license, followUpDays: form.followUpDays, clinic: form.clinic, address: form.address }),
       'saved_prof'
     );
 
@@ -76,7 +78,7 @@ export default function Professional() {
                     <b style={{ fontSize: 18 }}>
                       {L(user?.name || '')}
                     </b>
-                    <small>{t(form.specialty)}</small>
+                    <small>{specName(form.specialty, lang)}</small>
                   </div>
 
                   <span className="badge ok">
@@ -93,20 +95,12 @@ export default function Professional() {
                 />
 
                 <label>{t('specialty')}</label>
-                <select
-                  value={form.specialty}
-                  onChange={set('specialty')}
-                >
-                  {[
-                    'sp_internal',
-                    'sp_cardio',
-                    'sp_neuro',
-                  ].map((key) => (
-                    <option key={key} value={key}>
-                      {t(key)}
-                    </option>
-                  ))}
-                </select>
+                <input value={specName(p.specialty, lang)} disabled readOnly />
+                <p className="sub" style={{ margin: '4px 0 0', fontSize: 13 }}>{t('sp_locked')}</p>
+
+                <label>{t('vt_follow_days')}</label>
+                <input type="number" min="1" max="365" dir="ltr" value={form.followUpDays} onChange={set('followUpDays')} />
+                <p className="sub" style={{ margin: '4px 0 0', fontSize: 13 }}>{t('vt_follow_hint')}</p>
 
                 <label>{t('clinic_name')}</label>
                 <input
@@ -167,11 +161,7 @@ export default function Professional() {
                   لتحديث الترخيص، يرجى التواصل مع إدارة النظام.
                 </p>
 
-                <h2 style={{ marginTop: 22 }}>
-                  {t('map_title')}
-                </h2>
-
-                <MapArt height={190} />
+                <LocationPicker height={260} />
 
                 <p
                   className="sub"

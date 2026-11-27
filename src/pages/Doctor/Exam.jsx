@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Icon from '../../components/Icon.jsx';
 import { Async } from '../../components/ui/States.jsx';
@@ -10,14 +10,26 @@ import ConfirmForm from '../../components/ui/ConfirmForm.jsx';
 import { TEST_CATALOG, VISIT_TYPES } from '../../config/catalog.js';
 import DrugPicker from './DrugPicker.jsx';
 import * as api from '../../api/doctor.js';
+import * as shared from '../../api/shared.js';
 
 export default function Exam() {
-  const { t, L, lang } = useI18n();
+  const { t, L, lang, fmtDate } = useI18n();
   const { act, toast } = useToast();
   const [params, setParams] = useSearchParams();
 
-  const pts = useAsync(() => api.getPatients(), []);
+  const pts = useAsync(() => api.getPatients(true), []);
+  const me = useAsync(() => shared.getMe(), []);
+  const queueOnly = !!me.data?.queueOnly;
+  // لما الخيار مفعّل: القائمة بتتحدّث لوحدها عشان تظهر حركة الاستقبال
+  useEffect(() => {
+    if (!queueOnly) return undefined;
+    const h = setInterval(() => pts.reload && pts.reload(), 20000);
+    return () => clearInterval(h);
+  }, [queueOnly]); // eslint-disable-line react-hooks/exhaustive-deps
   const tests = useAsync(() => api.getTests(), []);
+  const prof = useAsync(() => api.getProfessional(), []);
+  const [followDays, setFollowDays] = useState('');
+  const [graceDays, setGraceDays] = useState('');
 
   const [dx, setDx] = useState('');
   const [drug, setDrug] = useState(null);
@@ -29,6 +41,9 @@ export default function Exam() {
   const [picked, setPicked] = useState([]);
   const [newTest, setNewTest] = useState('');
   const [busy, setBusy] = useState(false);
+
+  // القيمة المبدئية من المدة الافتراضية للطبيب، ويعدلها لكل مريض
+  useEffect(() => { if (prof.data && followDays === '') setFollowDays(String(prof.data.followUpDays || 14)); }, [prof.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const custom = tests.data?.custom || [];
 
@@ -133,6 +148,8 @@ export default function Exam() {
             duration: du,
           })),
           tests: picked,
+          followUpDays: followDays === '' ? undefined : Number(followDays),
+          graceDays: graceDays === '' ? undefined : Number(graceDays),
         }),
       'saved_exam'
     );
@@ -145,6 +162,8 @@ export default function Exam() {
       setMeds([]);
       setPicked([]);
       setVisit('new');
+      setGraceDays('');
+      setFollowDays(String(prof.data?.followUpDays || 14));
     }
   };
 
@@ -156,14 +175,19 @@ export default function Exam() {
       <Async state={pts}>
         {(list) => {
           // Only patients who have a valid booking
-          const eligiblePatients = list.filter(
-            (p) => p.activeBooking?.id
-          );
+          // حجوزات اليوم فقط (بتوقيت القاهرة)، مرتبة بالوقت
+          const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Africa/Cairo' });
+          const eligiblePatients = list
+            .flatMap((p) =>
+              (p.activeBookings?.length ? p.activeBookings : p.activeBooking ? [p.activeBooking] : []).map((b) => ({ ...p, activeBooking: b }))
+            )
+            .filter((p) => queueOnly || p.activeBooking.date === todayStr)
+            .sort((a, b) => String(a.activeBooking.date + (a.activeBooking.time || '')).localeCompare(String(b.activeBooking.date + (b.activeBooking.time || ''))));
 
           if (!eligiblePatients.length) {
             return (
               <div className="card state">
-                لا يوجد مرضى لديهم حجوزات صالحة لكتابة روشتة.
+                {queueOnly ? 'لا يوجد مريض في الكشف الآن. سيظهر هنا عندما يدخله موظف الاستقبال.' : 'لا توجد حجوزات لليوم لكتابة روشتة.'}
               </div>
             );
           }
@@ -194,10 +218,10 @@ export default function Exam() {
                 <label className="first">{t('patient')}</label>
 
                 <select
-                  value={selectedPatient.id}
+                  value={selectedPatient.activeBooking.id}
                   onChange={(e) => {
                     const patient = eligiblePatients.find(
-                      (p) => p.id === e.target.value
+                      (p) => p.activeBooking.id === e.target.value
                     );
 
                     if (!patient) return;
@@ -211,8 +235,8 @@ export default function Exam() {
                   }}
                 >
                   {eligiblePatients.map((x) => (
-                    <option key={x.id} value={x.id}>
-                      {L(x.name)}
+                    <option key={x.activeBooking.id} value={x.activeBooking.id}>
+                      {L(x.name)}{x.activeBooking.time ? ` — ${x.activeBooking.time}` : ''}
                     </option>
                   ))}
                 </select>
@@ -231,6 +255,18 @@ export default function Exam() {
                     </button>
                   ))}
                 </div>
+
+                <div className="inline">
+                  <div>
+                    <label>{t('rx_follow_days')}</label>
+                    <input type="number" min="1" max="365" dir="ltr" value={followDays} onChange={(e) => setFollowDays(e.target.value)} />
+                  </div>
+                  <div>
+                    <label>{t('rx_grace_days')}</label>
+                    <input type="number" min="0" max="60" dir="ltr" value={graceDays} onChange={(e) => setGraceDays(e.target.value)} placeholder={t('rx_optional')} />
+                  </div>
+                </div>
+                <p className="sub" style={{ margin: '4px 0 0', fontSize: 13 }}>{t('rx_follow_hint')}</p>
 
                 <label>{t('diagnosis')}</label>
 

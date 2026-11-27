@@ -339,7 +339,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  color: var(--primary, #2563eb);
+  color: var(--pr);
   font-size: 13px;
   margin-top: 5px;
 }
@@ -364,8 +364,8 @@
   width: min(650px, 100%);
   max-height: 90vh;
   overflow-y: auto;
-  background: var(--card, #fff);
-  color: var(--text, #1e293b);
+  background: var(--card);
+  color: var(--tx);
   border-radius: 18px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
 }
@@ -375,7 +375,7 @@
   justify-content: space-between;
   align-items: flex-start;
   padding: 22px;
-  border-bottom: 1px solid var(--border, #e5e7eb);
+  border-bottom: 1px solid var(--bd);
 }
 
 .rx-modal-title {
@@ -389,9 +389,10 @@
   font-size: 20px;
 }
 
+.rx-modal-header h2, .rx-detail-section h3 { color: var(--tx); }
 .rx-modal-header p {
   margin: 8px 0 0;
-  color: var(--muted, #64748b);
+  color: var(--mu);
   font-size: 13px;
 }
 
@@ -415,17 +416,19 @@
 }
 
 .rx-info-item {
+  background: var(--bg);
+  color: var(--tx);
   display: flex;
   flex-direction: column;
   gap: 7px;
   padding: 13px;
-  border: 1px solid var(--border, #e5e7eb);
+  border: 1px solid var(--bd);
   border-radius: 12px;
 }
 
 .rx-info-item span,
 .rx-medicine-content span {
-  color: var(--muted, #64748b);
+  color: var(--mu);
   font-size: 13px;
 }
 
@@ -448,7 +451,7 @@
   display: flex;
   gap: 12px;
   padding: 15px;
-  border: 1px solid var(--border, #e5e7eb);
+  border: 1px solid var(--bd);
   border-radius: 12px;
 }
 
@@ -459,11 +462,13 @@
   display: grid;
   place-items: center;
   border-radius: 9px;
-  background: rgba(37, 99, 235, 0.1);
-  color: var(--primary, #2563eb);
+  background: color-mix(in srgb, var(--pr) 15%, transparent);
+  color: var(--pr);
 }
 
 .rx-medicine-content {
+  color: var(--tx);
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -479,7 +484,7 @@
   display: flex;
   justify-content: flex-end;
   padding: 16px 22px;
-  border-top: 1px solid var(--border, #e5e7eb);
+  border-top: 1px solid var(--bd);
 }
 
 @media (max-width: 480px) {
@@ -491,3 +496,19 @@
     padding: 10px;
   }
 }
+
+/* مساعد فرز الأعراض */
+.app-root.patient-app .sev.emergency{color:var(--dg);font-weight:800}
+.app-root.patient-app .tri-emerg{display:flex;gap:12px;align-items:flex-start;margin-top:16px;padding:14px 16px;border-radius:14px;border:2px solid var(--dg);background:color-mix(in srgb,var(--dg) 10%,var(--card));color:var(--dg)}
+.app-root.patient-app .tri-emerg p{margin:4px 0 0;color:var(--tx)}
+.app-root.patient-app .tri-near{display:flex;gap:8px;align-items:center;font-size:14px;margin:0 0 12px}
+.app-root.patient-app .tri-near input{width:auto}
+.app-root.patient-app .tri-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.app-root.patient-app .tri-advice{margin-top:12px;padding-top:12px;border-top:1px solid var(--bd)}
+.app-root.patient-app .tri-advice p{margin:4px 0 0}
+.app-root.patient-app .tri-q{margin-bottom:14px}
+.app-root.patient-app .tri-q .chips{margin-top:8px}
+.app-root.patient-app .tri-spec{padding:12px 0;border-bottom:1px solid var(--bd)}
+.app-root.patient-app .tri-spec:last-child{border-bottom:0}
+.app-root.patient-app .tri-spec-h{display:flex;align-items:center;gap:8px}
+.app-root.patient-app .tri-none{margin-top:6px}

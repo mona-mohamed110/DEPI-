@@ -8,7 +8,7 @@ import { useI18n } from '../../context/I18nContext.jsx';
 import * as api from '../../api/doctor.js';
 
 export default function Patients() {
-  const { t, L, num, fmtDate } = useI18n();
+  const { t, L, num, fmtDate, fmtTime } = useI18n();
   const nav = useNavigate();
   const [q, setQ] = useState('');
 const state = useAsync(() => api.getPatients(), []);
@@ -30,7 +30,9 @@ const state = useAsync(() => api.getPatients(), []);
 
         <Async state={state}>
           {(all) => {
-            const list = all.filter((p) =>
+            // مرضى اليوم فقط (اللي ليهم حجز النهارده)
+            const todays = all.filter((p) => p.todayBooking);
+            const list = todays.filter((p) =>
               L(p.name)
                 .toLowerCase()
                 .includes(q.trim().toLowerCase())
@@ -38,19 +40,19 @@ const state = useAsync(() => api.getPatients(), []);
 
             return list.length === 0 ? (
               <div className="state">
-                {all.length ? (
+                {todays.length ? (
                   t('no_results')
                 ) : (
                   <>
-                    {t('no_patients')}
+                    {all.length ? t('no_patients_today') : t('no_patients')}
                     <br />
-                    <small>{t('no_patients_hint')}</small>
+                    <small>{all.length ? t('no_patients_today_hint') : t('no_patients_hint')}</small>
                   </>
                 )}
               </div>
             ) : (
               list.map((p) => {
-                const booking = p.activeBooking;
+                const booking = p.todayBooking;
 
                 const canExam =
                   booking &&
@@ -80,9 +82,7 @@ const state = useAsync(() => api.getPatients(), []);
                       </small>
                     </div>
 
-                    <span className="badge ok">
-                      {t('perm_until')} {fmtDate(p.until)}
-                    </span>
+                    {booking.time && <span className="badge">{fmtTime(booking.time)}</span>}
 
                     {booking && (
                       <span

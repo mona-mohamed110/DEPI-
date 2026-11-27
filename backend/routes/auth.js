@@ -1,5 +1,7 @@
 
+const { logAdmin } = require("../utils/adminLog");
 const express = require("express");
+const { SPECIALTIES } = require("../data/catalog");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
@@ -19,6 +21,26 @@ function publicUser(user) {
     phone: user.phone,
     status: user.status,
   };
+}
+
+const LOGIN_CODE_TTL = 10 * 60 * 1000;
+
+function hashCode(code) {
+  return crypto.createHash("sha256").update(String(code)).digest("hex");
+}
+
+function issueSession(user) {
+  const token = jwt.sign(
+    {
+      id: user._id,
+      role: user.role,
+      tokenVersion: user.tokenVersion || 0,
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
+
+  return { token: token, user: publicUser(user) };
 }
 
 function sendError(res, status, code) {
@@ -45,10 +67,24 @@ router.post("/register", uploadCertificate, async function (req, res) {
 
     const email = String(body.email).trim().toLowerCase();
 
+    const phoneClean = String(body.phone || "").replace(/[\s-]/g, "");
+    if (!/^\d{11}$/.test(phoneClean)) {
+      return sendError(res, 400, "invalid_phone");
+    }
+
     const oldUser = await User.findOne({ email });
 
     if (oldUser) {
       return sendError(res, 409, "email_exists");
+    }
+
+    if (role === "doctor") {
+      // تخصص من القائمة، أو نص يدوي (٢–٦٠ حرفاً) لمن تخصصه غير موجود
+      const sp = typeof body.extra === "string" ? body.extra.replace(/\s+/g, " ").trim() : "";
+      const listed = SPECIALTIES.some((x) => x.id === sp && x.id !== "sp_other");
+      const custom = sp.length >= 2 && sp.length <= 60 && !/^sp_/.test(sp) && /^[\p{L}\p{N} .,()\-/&+']+$/u.test(sp);
+      if (!listed && !custom) return sendError(res, 400, "invalid_data");
+      body.extra = sp;
     }
 
     const hashedPassword = await bcrypt.hash(body.password, 10);
@@ -69,6 +105,11 @@ router.post("/register", uploadCertificate, async function (req, res) {
       } catch (error) {
         profile = {};
       }
+    }
+
+    if (profile && typeof profile === "object") {
+      const o = Array.isArray(profile.chronicOther) ? profile.chronicOther : [];
+      profile.chronicOther = o.map((x) => String(x).trim().slice(0, 60)).filter(Boolean).slice(0, 10);
     }
 
     const certificate = req.file
@@ -97,10 +138,11 @@ router.post("/register", uploadCertificate, async function (req, res) {
       name,
       email,
       password: hashedPassword,
-      phone: body.phone || "",
+      phone: phoneClean,
       role,
       status,
       extra: body.extra || "",
+      specialty: role === "doctor" ? body.extra : undefined,
 
       license: body.license || "",
       licenseStatus: role !== "patient" ? "pend" : undefined,
@@ -152,22 +194,97 @@ if (!user || !user.password) {
       return sendError(res, 403, "pending_license");
     }
 
-const token = jwt.sign(
-  {
-    id: user._id,
-    role: user.role,
-    tokenVersion: user.tokenVersion || 0,
-  },
-  process.env.JWT_SECRET,
-  { expiresIn: "7d" }
-);
+    // التحقق بخطوتين: بعد نجاح كلمة المرور نرسل كوداً على الإيميل ولا نعطي توكن قبل إدخاله
+    if (user.twoFactor === true) {
+      const now = Date.now();
+      const sentAt = user.loginCodeExpires
+        ? new Date(user.loginCodeExpires).getTime() - LOGIN_CODE_TTL
+        : 0;
 
-    res.json({
-      token: token,
-      user: publicUser(user),
-    });
+      // لا نعيد إرسال كود جديد قبل مرور 30 ثانية (منع إغراق البريد)
+      if (!user.loginCode || now - sentAt > 30 * 1000) {
+        const code = String(Math.floor(100000 + Math.random() * 900000));
+
+        user.loginCode = hashCode(code);
+        user.loginCodeExpires = new Date(now + LOGIN_CODE_TTL);
+        user.loginAttempts = 0;
+        await user.save();
+
+        try {
+          await sendEmail(
+            user.email,
+            "Shefaa - رمز تسجيل الدخول",
+            "رمز تسجيل الدخول إلى حسابك في شفاء:\n\n" +
+              code +
+              "\n\nالرمز صالح لمدة ١٠ دقائق. إذا لم تحاول تسجيل الدخول فغيّر كلمة المرور."
+          );
+        } catch (mailError) {
+          if (
+            mailError.code === "EMAIL_NOT_CONFIGURED" &&
+            process.env.NODE_ENV !== "production"
+          ) {
+            console.warn("[DEV] كود تسجيل الدخول للبريد " + user.email + " هو: " + code);
+          } else {
+            console.error("Login code email error:", mailError.message || mailError);
+            return sendError(res, 500, "server_error");
+          }
+        }
+      }
+
+      return res.json({ twoFactor: true, email: user.email });
+    }
+
+    if (user.role === "admin") await logAdmin(req, "login", "", "", user);
+    res.json(issueSession(user));
   } catch (error) {
     console.error("Login error:", error);
+    sendError(res, 500, "server_error");
+  }
+});
+
+// Verify the login code (two-step verification)
+router.post("/login-verify", async function (req, res) {
+  try {
+    const email = String(req.body.email || "").trim().toLowerCase();
+    const code = String(req.body.code || "").trim();
+
+    const user = await User.findOne({ email: email });
+
+    if (
+      !user ||
+      !user.loginCode ||
+      !user.loginCodeExpires ||
+      user.loginCodeExpires < new Date() ||
+      (user.loginAttempts || 0) >= 5
+    ) {
+      return sendError(res, 400, "invalid_code");
+    }
+
+    // 5 محاولات فقط لكل كود
+    if (user.loginCode !== hashCode(code)) {
+      user.loginAttempts = (user.loginAttempts || 0) + 1;
+      await user.save();
+      return sendError(res, 400, "invalid_code");
+    }
+
+    if (user.status === "disabled") {
+      return sendError(res, 403, "account_disabled");
+    }
+
+    if (user.status === "pending") {
+      return sendError(res, 403, "pending_license");
+    }
+
+    // الكود يُستخدم مرة واحدة
+    user.loginCode = "";
+    user.loginCodeExpires = undefined;
+    user.loginAttempts = 0;
+    await user.save();
+
+    if (user.role === "admin") await logAdmin(req, "login", "", "", user);
+    res.json(issueSession(user));
+  } catch (error) {
+    console.error("Login verify error:", error);
     sendError(res, 500, "server_error");
   }
 });
@@ -194,21 +311,37 @@ router.post("/forgot-password", async function (req, res) {
 
     user.resetCode = code;
     user.resetToken = "";
+    user.resetAttempts = 0;
     user.resetExpires = new Date(Date.now() + 10 * 60 * 1000);
 
     await user.save();
 
-    await sendEmail(
-      email,
-      "Shifa - Password reset code",
-      "Your verification code is: " +
-        code +
-        "\nThis code is valid for 10 minutes."
-    );
+    try {
+      await sendEmail(
+        email,
+        "Shefaa - استعادة كلمة المرور",
+        "رمز استعادة كلمة المرور في شفاء:\n\n" +
+          code +
+          "\n\nالرمز صالح لمدة ١٠ دقائق. إذا لم تطلب ذلك فتجاهل هذه الرسالة."
+      );
+    } catch (mailError) {
+      // أثناء التطوير فقط (بدون إعداد البريد): نطبع الكود في نافذة الباك إند حتى يمكن اختبار الخطوات
+      if (
+        mailError.code === "EMAIL_NOT_CONFIGURED" &&
+        process.env.NODE_ENV !== "production"
+      ) {
+        console.warn(
+          "[DEV] البريد غير مضبوط. كود التحقق للبريد " + email + " هو: " + code
+        );
+        return res.json({ ok: true });
+      }
+
+      throw mailError;
+    }
 
     res.json({ ok: true });
   } catch (error) {
-    console.error("Forgot password error:", error);
+    console.error("Forgot password error:", error.message || error);
     sendError(res, 500, "server_error");
   }
 });
@@ -224,10 +357,17 @@ router.post("/verify-code", async function (req, res) {
     if (
       !user ||
       !user.resetCode ||
-      user.resetCode !== code ||
       !user.resetExpires ||
-      user.resetExpires < new Date()
+      user.resetExpires < new Date() ||
+      (user.resetAttempts || 0) >= 5
     ) {
+      return sendError(res, 400, "invalid_code");
+    }
+
+    // 5 محاولات فقط لكل كود (حماية من تخمين الكود)
+    if (user.resetCode !== code) {
+      user.resetAttempts = (user.resetAttempts || 0) + 1;
+      await user.save();
       return sendError(res, 400, "invalid_code");
     }
 
@@ -268,7 +408,10 @@ router.post("/reset-password", async function (req, res) {
     user.password = await bcrypt.hash(password, 10);
     user.resetToken = "";
     user.resetCode = "";
+    user.resetAttempts = 0;
     user.resetExpires = undefined;
+    // تسجيل الخروج من كل الأجهزة بعد استعادة كلمة المرور
+    user.tokenVersion = (user.tokenVersion || 0) + 1;
 
     await user.save();
 

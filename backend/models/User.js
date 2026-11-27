@@ -34,6 +34,15 @@ const userSchema = new mongoose.Schema(
     lastActiveAt: { type: Date, default: null },
     tokenVersion: { type: Number, default: 0 },
 
+    // صورة البروفايل (JPEG مصغّرة كـ data URL) — لا تُحمّل مع الاستعلامات العادية
+    avatar: { type: String, default: "", select: false },
+    avatarAt: { type: Date, default: null },
+
+    // مستخدمو لوحة التحكم الفرعيون (يضيفهم الأدمن الرئيسي)
+    subAdmin: { type: Boolean, default: false },
+    adminPerms: { type: [String], default: [] },
+    createdByAdmin: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+
     extra: { type: String, default: "" },
 
     // بيانات الطبيب المهنية
@@ -61,6 +70,7 @@ const userSchema = new mongoose.Schema(
     resetCode: { type: String, default: "" },
     resetToken: { type: String, default: "" },
     resetExpires: { type: Date },
+    resetAttempts: { type: Number, default: 0 },
 
     profile: {
       birthDate: String,
@@ -68,17 +78,55 @@ const userSchema = new mongoose.Schema(
       height: Number,
       weight: Number,
       chronicIds: [String],
+      chronicOther: [String],
     },
 
-    notifEmail: { type: Boolean, default: true },
-    notifAppt: { type: Boolean, default: true },
-    notifMeds: { type: Boolean, default: true },
-    notifAccess: { type: Boolean, default: true },
-    notifNew: { type: Boolean, default: true },
+    // موقع العيادة/المعمل على الخريطة
+    location: {
+      lat: { type: Number, min: -90, max: 90 },
+      lng: { type: Number, min: -180, max: 180 },
+    },
+
+    // مواعيد عمل الطبيب (7 أيام، الأحد = 0)
+    schedule: {
+      type: [{ _id: false, on: Boolean, from: String, to: String }],
+      default: undefined,
+    },
+
+    // بيانات المعمل
+    labProfile: {
+      phone: { type: String, default: "" },
+      hours: {
+        type: [{ _id: false, on: Boolean, from: String, to: String }],
+        default: undefined,
+      },
+      tests: {
+        type: [{ _id: false, name: String, on: Boolean }],
+        default: undefined,
+      },
+    },
+
+    // التحقق بخطوتين (كود على الإيميل عند كل تسجيل دخول): غير مفعّل افتراضياً، والمستخدم يفعّله من إعداداته إن أراد
     twoFactor: { type: Boolean, default: false },
+    loginCode: { type: String, default: "" },
+    loginCodeExpires: { type: Date },
+    loginAttempts: { type: Number, default: 0 },
+
+    // عدد الأيام بعد آخر روشتة التي تُعتبر فيها الزيارة "إعادة كشف" (للطبيب)
+    followUpDays: { type: Number, default: 14, min: 1, max: 365 },
 
     // بيانات موظف الاستقبال
     doctorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    // مريض أضافه موظف الاستقبال (بدون حساب دخول) يتبع هذا الطبيب
+    // الطبيب: يعرض فقط المريض اللي موظف الاستقبال أدخله الكشف (اختياري، الافتراضي مغلق)
+    queueOnly: { type: Boolean, default: false },
+
+    createdByDoctor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null,
@@ -91,6 +139,10 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+userSchema.index({ role: 1, status: 1 });
+userSchema.index({ doctorId: 1 });
+userSchema.index({ phone: 1 });
 
 // الإيميل فريد للحسابات التي لديها إيميل فقط
 userSchema.index(
