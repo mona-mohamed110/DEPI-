@@ -210,6 +210,7 @@
 .app-root.reception-app .day.on{background:var(--pr);border-color:var(--pr);color:var(--pr-ink)}
 .app-root.reception-app .day.on small{color:inherit;opacity:.85}
 .app-root.reception-app .slots{display:flex;gap:8px;flex-wrap:wrap}
+.app-root.reception-app .slot:disabled{opacity:.4;cursor:not-allowed;text-decoration:line-through}
 .app-root.reception-app .slot{padding:8px 16px;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font:inherit;cursor:pointer}
 .app-root.reception-app .slot:hover{border-color:var(--pr)}
 .app-root.reception-app .slot.on{background:var(--pr);border-color:var(--pr);color:var(--pr-ink)}

@@ -1,5 +1,5 @@
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../components/Icon.jsx';
 import { Async } from '../../components/ui/States.jsx';
@@ -60,7 +60,7 @@ function Today({ list, selectedDate, onDateChange }) {
             display: 'flex',
             alignItems: 'center',
             gap: 8,
-            border: '1px solid var(--border, #ddd)',
+            border: '1px solid var(--bd)',
             borderRadius: 8,
             padding: '7px 10px',
             cursor: 'pointer',
@@ -162,6 +162,15 @@ export default function Dashboard() {
     [selectedDate]
   );
 
+  // لما الخيار مفعّل، القائمة بتتحدّث لوحدها كل ٢٠ ثانية عشان تظهر حركة الاستقبال
+  const queueOnly = !!state.data?.queueOnly;
+  useEffect(() => {
+    if (!queueOnly) return undefined;
+    const h = setInterval(() => state.reload && state.reload(), 20000);
+    return () => clearInterval(h);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queueOnly, selectedDate]);
+
   return (
     <section>
       <h1>{t('greeting', { name: L(user.name) })}</h1>
@@ -170,6 +179,12 @@ export default function Dashboard() {
       <Async state={state}>
         {(d) => (
           <>
+            {d.queueOnly && (
+              <div className="note" style={{ marginBottom: 12 }}>
+                <Icon name="info" size={18} />
+                <span>{t('dash_queue_note')}</span>
+              </div>
+            )}
             <div className="grid g3">
               {[
                 ['stat_today', d.stats.today, 'calendar', ''],

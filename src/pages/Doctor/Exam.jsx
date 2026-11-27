@@ -10,13 +10,22 @@ import ConfirmForm from '../../components/ui/ConfirmForm.jsx';
 import { TEST_CATALOG, VISIT_TYPES } from '../../config/catalog.js';
 import DrugPicker from './DrugPicker.jsx';
 import * as api from '../../api/doctor.js';
+import * as shared from '../../api/shared.js';
 
 export default function Exam() {
-  const { t, L, lang } = useI18n();
+  const { t, L, lang, fmtDate } = useI18n();
   const { act, toast } = useToast();
   const [params, setParams] = useSearchParams();
 
-  const pts = useAsync(() => api.getPatients(), []);
+  const pts = useAsync(() => api.getPatients(true), []);
+  const me = useAsync(() => shared.getMe(), []);
+  const queueOnly = !!me.data?.queueOnly;
+  // لما الخيار مفعّل: القائمة بتتحدّث لوحدها عشان تظهر حركة الاستقبال
+  useEffect(() => {
+    if (!queueOnly) return undefined;
+    const h = setInterval(() => pts.reload && pts.reload(), 20000);
+    return () => clearInterval(h);
+  }, [queueOnly]); // eslint-disable-line react-hooks/exhaustive-deps
   const tests = useAsync(() => api.getTests(), []);
   const prof = useAsync(() => api.getProfessional(), []);
   const [followDays, setFollowDays] = useState('');
@@ -166,14 +175,19 @@ export default function Exam() {
       <Async state={pts}>
         {(list) => {
           // Only patients who have a valid booking
-          const eligiblePatients = list.filter(
-            (p) => p.activeBooking?.id
-          );
+          // حجوزات اليوم فقط (بتوقيت القاهرة)، مرتبة بالوقت
+          const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Africa/Cairo' });
+          const eligiblePatients = list
+            .flatMap((p) =>
+              (p.activeBookings?.length ? p.activeBookings : p.activeBooking ? [p.activeBooking] : []).map((b) => ({ ...p, activeBooking: b }))
+            )
+            .filter((p) => queueOnly || p.activeBooking.date === todayStr)
+            .sort((a, b) => String(a.activeBooking.date + (a.activeBooking.time || '')).localeCompare(String(b.activeBooking.date + (b.activeBooking.time || ''))));
 
           if (!eligiblePatients.length) {
             return (
               <div className="card state">
-                لا يوجد مرضى لديهم حجوزات صالحة لكتابة روشتة.
+                {queueOnly ? 'لا يوجد مريض في الكشف الآن. سيظهر هنا عندما يدخله موظف الاستقبال.' : 'لا توجد حجوزات لليوم لكتابة روشتة.'}
               </div>
             );
           }
@@ -204,10 +218,10 @@ export default function Exam() {
                 <label className="first">{t('patient')}</label>
 
                 <select
-                  value={selectedPatient.id}
+                  value={selectedPatient.activeBooking.id}
                   onChange={(e) => {
                     const patient = eligiblePatients.find(
-                      (p) => p.id === e.target.value
+                      (p) => p.activeBooking.id === e.target.value
                     );
 
                     if (!patient) return;
@@ -221,8 +235,8 @@ export default function Exam() {
                   }}
                 >
                   {eligiblePatients.map((x) => (
-                    <option key={x.id} value={x.id}>
-                      {L(x.name)}
+                    <option key={x.activeBooking.id} value={x.activeBooking.id}>
+                      {L(x.name)}{x.activeBooking.time ? ` — ${x.activeBooking.time}` : ''}
                     </option>
                   ))}
                 </select>

@@ -5,9 +5,11 @@ import { isEmail } from '../../api/security.js';
 import { sendContact } from '../../api/public.js';
 
 // نموذج التواصل: الرسالة بتتبعت لإيميل الإدارة عن طريق الـ API (POST /public/contact)
+const toEn = (s) => String(s || '').replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[\s-]/g, '');
+
 export default function ContactModal({ isOpen, onClose }) {
   const { t } = useI18n();
-  const [f, setF] = useState({ name: '', email: '', subject: '', message: '' });
+  const [f, setF] = useState({ name: '', email: '', phone: '', kind: 'message', subject: '', message: '' });
   const [state, setState] = useState('idle'); // idle | sending | sent | error
 
   useEffect(() => {
@@ -21,9 +23,9 @@ export default function ContactModal({ isOpen, onClose }) {
   const set = (k) => (e) => setF((x) => ({ ...x, [k]: e.target.value }));
   const submit = async (e) => {
     e.preventDefault();
-    if (f.name.trim().length < 2 || !isEmail(f.email) || f.message.trim().length < 5) return setState('error');
+    if (f.name.trim().length < 2 || !isEmail(f.email) || !/^\d{11}$/.test(toEn(f.phone)) || f.message.trim().length < 5) return setState('error');
     setState('sending');
-    try { await sendContact({ ...f, message: `${f.subject}\n${f.message}`.trim() }); setState('sent'); setF({ name: '', email: '', subject: '', message: '' }); }
+    try { await sendContact({ ...f, phone: toEn(f.phone), message: f.message.trim() }); setState('sent'); setF({ name: '', email: '', phone: '', kind: 'message', subject: '', message: '' }); }
     catch { setState('error'); }
   };
 
@@ -37,6 +39,14 @@ export default function ContactModal({ isOpen, onClose }) {
           <div className="cm-grid">
             <div><label htmlFor="cm-name">{t('cm_name')}</label><input id="cm-name" value={f.name} maxLength={80} onChange={set('name')} autoComplete="name" /></div>
             <div><label htmlFor="cm-email">{t('cm_email')}</label><input id="cm-email" type="email" dir="ltr" value={f.email} onChange={set('email')} autoComplete="email" /></div>
+            <div className="full"><label htmlFor="cm-phone">{t('cm_phone')}</label><input id="cm-phone" type="tel" inputMode="numeric" dir="ltr" maxLength={11} value={f.phone} onChange={(e) => setF((x) => ({ ...x, phone: String(e.target.value).replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/\D/g, '').slice(0, 11) }))} autoComplete="tel" placeholder="01XXXXXXXXX" /></div>
+            <div className="full"><label htmlFor="cm-kind">{t('cm_kind')}</label>
+              <select id="cm-kind" value={f.kind} onChange={set('kind')}>
+                <option value="message">{t('cm_k_message')}</option>
+                <option value="complaint">{t('cm_k_complaint')}</option>
+                <option value="suggestion">{t('cm_k_suggestion')}</option>
+              </select>
+            </div>
             <div className="full"><label htmlFor="cm-subject">{t('cm_subject')}</label><input id="cm-subject" value={f.subject} maxLength={120} onChange={set('subject')} /></div>
             <div className="full"><label htmlFor="cm-message">{t('cm_msg')}</label><textarea id="cm-message" rows={4} maxLength={2000} placeholder={t('cm_ph')} value={f.message} onChange={set('message')} /></div>
           </div>

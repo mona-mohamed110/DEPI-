@@ -34,6 +34,15 @@ const userSchema = new mongoose.Schema(
     lastActiveAt: { type: Date, default: null },
     tokenVersion: { type: Number, default: 0 },
 
+    // صورة البروفايل (JPEG مصغّرة كـ data URL) — لا تُحمّل مع الاستعلامات العادية
+    avatar: { type: String, default: "", select: false },
+    avatarAt: { type: Date, default: null },
+
+    // مستخدمو لوحة التحكم الفرعيون (يضيفهم الأدمن الرئيسي)
+    subAdmin: { type: Boolean, default: false },
+    adminPerms: { type: [String], default: [] },
+    createdByAdmin: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+
     extra: { type: String, default: "" },
 
     // بيانات الطبيب المهنية
@@ -69,6 +78,7 @@ const userSchema = new mongoose.Schema(
       height: Number,
       weight: Number,
       chronicIds: [String],
+      chronicOther: [String],
     },
 
     // موقع العيادة/المعمل على الخريطة
@@ -96,11 +106,6 @@ const userSchema = new mongoose.Schema(
       },
     },
 
-    notifEmail: { type: Boolean, default: true },
-    notifAppt: { type: Boolean, default: true },
-    notifMeds: { type: Boolean, default: true },
-    notifAccess: { type: Boolean, default: true },
-    notifNew: { type: Boolean, default: true },
     // التحقق بخطوتين (كود على الإيميل عند كل تسجيل دخول): غير مفعّل افتراضياً، والمستخدم يفعّله من إعداداته إن أراد
     twoFactor: { type: Boolean, default: false },
     loginCode: { type: String, default: "" },
@@ -118,6 +123,9 @@ const userSchema = new mongoose.Schema(
     },
 
     // مريض أضافه موظف الاستقبال (بدون حساب دخول) يتبع هذا الطبيب
+    // الطبيب: يعرض فقط المريض اللي موظف الاستقبال أدخله الكشف (اختياري، الافتراضي مغلق)
+    queueOnly: { type: Boolean, default: false },
+
     createdByDoctor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

@@ -207,7 +207,7 @@ export default function Monitoring() {
                 </span>
 
                 {refreshError && (
-                  <span style={{ color: 'var(--danger, #dc2626)' }}>
+                  <span style={{ color: 'var(--dg)' }}>
                     Update failed
                   </span>
                 )}

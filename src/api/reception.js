@@ -3,7 +3,7 @@ import { api } from './http.js';
 
 export const getRequests = () => api.get('/reception/requests');
 export const acceptRequest = (id) => api.post(`/reception/requests/${id}/accept`);
-export const rejectRequest = (id) => api.post(`/reception/requests/${id}/reject`);
+export const rejectRequest = (id, reason) => api.post(`/reception/requests/${id}/reject`, { reason: reason || '' });
 export const getQueue = () => api.get('/reception/queue');
 export const setQueueStatus = (id, status) => api.patch(`/reception/queue/${id}`, { status });
 export const getPatients = () => api.get('/reception/patients');

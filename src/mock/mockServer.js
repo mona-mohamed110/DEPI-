@@ -11,6 +11,7 @@ import './routes/doctor.js';
 import './routes/lab.js';
 import './routes/reception.js';
 import './routes/admin.js';
+import './routes/support.js';
 import { ApiError } from '../api/http.js';
 import { cleanDeep } from '../api/security.js';
 

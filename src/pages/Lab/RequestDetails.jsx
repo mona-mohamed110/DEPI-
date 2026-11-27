@@ -1,14 +1,18 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useLab } from "./LabContext.jsx";
 import Icon from "../../components/Icon.jsx";
+import DayPicker from "./DayPicker.jsx";
 
 const STATUS = { new: { k: "stNew", c: "wn" }, progress: { k: "stProg", c: "" }, done: { k: "stDone", c: "ok" } };
 
 export default function RequestDetails() {
   const { id } = useParams();
   const nav = useNavigate();
-  const { t, L, lang, testName, requests, startRequest, fmtDateTime, loading } = useLab();
-  const q = requests.find((r) => String(r.id) === id) || (!id ? requests[0] : null);
+  const { t, L, lang, testName, requests, startRequest, fmtDateTime, loading, day, setDay, requestDays, inDay } = useLab();
+  const dayList = requests.filter(inDay);
+  const q = requests.find((r) => String(r.id) === id) || (!id ? dayList[0] : null);
+  // الطلبات في اليوم المحدد (+ الطلب المفتوح حالياً لو من يوم آخر)
+  const options = q && !dayList.some((r) => r.id === q.id) ? [q, ...dayList] : dayList;
   const st = q && STATUS[q.status];
 
   return (
@@ -16,9 +20,10 @@ export default function RequestDetails() {
       <h1>{t("detTitle")}</h1>
       <p className="sub">{t("detSub")}</p>
       <div className="card" style={{ marginBottom: 16 }}>
+        <div className="filters"><DayPicker value={day} dates={requestDays} onChange={setDay} /></div>
         <select value={q?.id ?? ""} onChange={(e) => nav(`/lab/details/${e.target.value}`)} aria-label={t("pickRequest")}>
-          {!q && <option value="">{loading ? t("loading") : t("noRequests")}</option>}
-          {requests.map((r) => <option key={r.id} value={r.id}>#{r.id} · {r.name} · {testName(r.test)}</option>)}
+          {!q && <option value="">{loading ? t("loading") : t(day ? "noRequestsDay" : "noRequests")}</option>}
+          {options.map((r) => <option key={r.id} value={r.id}>#{r.id} · {r.name} · {testName(r.test)}</option>)}
         </select>
       </div>
 

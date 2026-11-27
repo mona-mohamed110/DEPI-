@@ -49,6 +49,12 @@
 .home-app .nav-links a { display: block; padding: 8px 14px; border-radius: 10px; color: var(--tx); font-weight: 500; }
 .home-app .nav-links a:hover { background: var(--pr2); color: var(--pr); }
 .home-app .nav-actions { display: flex; gap: 10px; }
+/* القائمة في منتصف الصفحة على الشاشات العريضة */
+@media (min-width: 1100px) {
+  .home-app .nav-links { position: absolute; inset-inline-start: 50%; top: 50%; transform: translate(-50%, -50%); white-space: nowrap; }
+  .home-app[dir="rtl"] .nav-links { transform: translate(50%, -50%); }
+  .home-app .nav-content { justify-content: flex-end; }
+}
 .home-app .nav-tools { display: flex; align-items: center; gap: 8px; }
 .home-app .menu-toggle { display: none; border: 1px solid var(--bd); background: var(--card); color: var(--tx); border-radius: 10px; width: 40px; height: 40px; cursor: pointer; place-items: center; }
 .home-app .prefs { position: relative; }
@@ -192,3 +198,19 @@
   .home-app .cm-grid { grid-template-columns: 1fr; }
   .home-app .map-view { height: 420px; }
 }
+
+/* ---------- آراء المستخدمين ---------- */
+.home-app .tm-head { text-align: center; margin-bottom: 34px; }
+.home-app .tm-kicker { margin: 0; font-size: clamp(24px, 3.4vw, 34px); font-weight: 700; color: var(--pr); }
+.home-app .tm-big { margin: 4px 0 12px; font-size: clamp(26px, 4vw, 40px); font-weight: 700; color: var(--tx); }
+.home-app .tm-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+.home-app .tm-card { margin: 0; display: flex; align-items: center; gap: 16px; background: var(--card); border: 1px solid var(--bd); border-radius: 18px; padding: 18px 20px; }
+.home-app .tm-av { flex: none; width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; font-size: 28px; font-weight: 700; color: var(--pr); background: var(--pr2); }
+.home-app .tm-body { flex: 1; min-width: 0; }
+.home-app .tm-card blockquote { margin: 0 0 6px; color: var(--mu); line-height: 1.8; overflow-wrap: anywhere; }
+.home-app .tm-card figcaption { font-weight: 700; color: var(--tx); }
+.home-app .tm-card figcaption small { font-weight: 400; color: var(--mu); }
+.home-app .tm-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 18px; text-align: center; margin: 56px 0; }
+.home-app .tm-stats b { display: block; font-size: clamp(30px, 4.5vw, 46px); font-weight: 800; color: var(--pr); line-height: 1.2; }
+.home-app .tm-stats span { color: var(--pr); opacity: .85; }
+@media (max-width: 760px) { .home-app .tm-grid { grid-template-columns: 1fr; } }

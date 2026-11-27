@@ -1,4 +1,5 @@
 
+const { logAdmin } = require("../utils/adminLog");
 const express = require("express");
 const { SPECIALTIES } = require("../data/catalog");
 const bcrypt = require("bcrypt");
@@ -66,14 +67,24 @@ router.post("/register", uploadCertificate, async function (req, res) {
 
     const email = String(body.email).trim().toLowerCase();
 
+    const phoneClean = String(body.phone || "").replace(/[\s-]/g, "");
+    if (!/^\d{11}$/.test(phoneClean)) {
+      return sendError(res, 400, "invalid_phone");
+    }
+
     const oldUser = await User.findOne({ email });
 
     if (oldUser) {
       return sendError(res, 409, "email_exists");
     }
 
-    if (role === "doctor" && !SPECIALTIES.some((x) => x.id === body.extra)) {
-      return sendError(res, 400, "invalid_data");
+    if (role === "doctor") {
+      // تخصص من القائمة، أو نص يدوي (٢–٦٠ حرفاً) لمن تخصصه غير موجود
+      const sp = typeof body.extra === "string" ? body.extra.replace(/\s+/g, " ").trim() : "";
+      const listed = SPECIALTIES.some((x) => x.id === sp && x.id !== "sp_other");
+      const custom = sp.length >= 2 && sp.length <= 60 && !/^sp_/.test(sp) && /^[\p{L}\p{N} .,()\-/&+']+$/u.test(sp);
+      if (!listed && !custom) return sendError(res, 400, "invalid_data");
+      body.extra = sp;
     }
 
     const hashedPassword = await bcrypt.hash(body.password, 10);
@@ -94,6 +105,11 @@ router.post("/register", uploadCertificate, async function (req, res) {
       } catch (error) {
         profile = {};
       }
+    }
+
+    if (profile && typeof profile === "object") {
+      const o = Array.isArray(profile.chronicOther) ? profile.chronicOther : [];
+      profile.chronicOther = o.map((x) => String(x).trim().slice(0, 60)).filter(Boolean).slice(0, 10);
     }
 
     const certificate = req.file
@@ -122,7 +138,7 @@ router.post("/register", uploadCertificate, async function (req, res) {
       name,
       email,
       password: hashedPassword,
-      phone: body.phone || "",
+      phone: phoneClean,
       role,
       status,
       extra: body.extra || "",
@@ -197,10 +213,10 @@ if (!user || !user.password) {
         try {
           await sendEmail(
             user.email,
-            "Shifa - Login verification code",
-            "Your login verification code is: " +
+            "Shefaa - رمز تسجيل الدخول",
+            "رمز تسجيل الدخول إلى حسابك في شفاء:\n\n" +
               code +
-              "\nThis code is valid for 10 minutes. If you did not try to log in, change your password."
+              "\n\nالرمز صالح لمدة ١٠ دقائق. إذا لم تحاول تسجيل الدخول فغيّر كلمة المرور."
           );
         } catch (mailError) {
           if (
@@ -218,6 +234,7 @@ if (!user || !user.password) {
       return res.json({ twoFactor: true, email: user.email });
     }
 
+    if (user.role === "admin") await logAdmin(req, "login", "", "", user);
     res.json(issueSession(user));
   } catch (error) {
     console.error("Login error:", error);
@@ -264,6 +281,7 @@ router.post("/login-verify", async function (req, res) {
     user.loginAttempts = 0;
     await user.save();
 
+    if (user.role === "admin") await logAdmin(req, "login", "", "", user);
     res.json(issueSession(user));
   } catch (error) {
     console.error("Login verify error:", error);
@@ -301,10 +319,10 @@ router.post("/forgot-password", async function (req, res) {
     try {
       await sendEmail(
         email,
-        "Shifa - Password reset code",
-        "Your verification code is: " +
+        "Shefaa - استعادة كلمة المرور",
+        "رمز استعادة كلمة المرور في شفاء:\n\n" +
           code +
-          "\nThis code is valid for 10 minutes."
+          "\n\nالرمز صالح لمدة ١٠ دقائق. إذا لم تطلب ذلك فتجاهل هذه الرسالة."
       );
     } catch (mailError) {
       // أثناء التطوير فقط (بدون إعداد البريد): نطبع الكود في نافذة الباك إند حتى يمكن اختبار الخطوات

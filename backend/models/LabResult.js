@@ -24,6 +24,8 @@ const labResultSchema = new mongoose.Schema(
       default: null,
     },
     title: { type: String, default: "" },
+    // نتيجة أضافها الطبيب يدويًا لمريض بدون حساب (يقدر يعدلها ويحذفها)
+    byDoctor: { type: Boolean, default: false },
     kind: { type: String, enum: ["lab", "xray", "ecg", "other"], default: "lab" },
     status: {
       type: String,

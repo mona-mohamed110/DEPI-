@@ -5,6 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const Prescription = require("../models/Prescription");
 const AccessGrant = require("../models/AccessGrant");
+const { withinHours } = require("../utils/schedule");
 const AccessRequest = require("../models/AccessRequest");
 const Booking = require("../models/Booking");
 const User = require("../models/User");
@@ -36,8 +37,29 @@ function bookingRow(booking) {
     status: booking.status,
     test: booking.test || "",
     queue: booking.queue,
+    rejectReason: booking.rejectReason || "",
+    rejectNew: booking.status === "rejected" && booking.rejectSeen === false,
   };
 }
+
+// تنبيهات رفض الحجز التي لم يطّلع عليها المريض
+router.get("/rejections/count", async (req, res) => {
+  try {
+    const count = await Booking.countDocuments({ patientId: req.user._id, status: "rejected", rejectSeen: false });
+    res.json({ count });
+  } catch (error) {
+    res.status(500).json({ code: "server_error" });
+  }
+});
+
+router.post("/rejections/seen", async (req, res) => {
+  try {
+    await Booking.updateMany({ patientId: req.user._id, status: "rejected", rejectSeen: false }, { $set: { rejectSeen: true } });
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ code: "server_error" });
+  }
+});
 
 // عرض حجوزات المريض
 router.get("/appointments", async (req, res) => {
@@ -52,6 +74,20 @@ router.get("/appointments", async (req, res) => {
   } catch (error) {
     console.error("Get patient appointments error:", error);
     return res.status(500).json({ code: "server_error" });
+  }
+});
+
+// المواعيد المحجوزة فعلاً عند طبيب/معمل في يوم معيّن (لإخفائها من قائمة الأوقات)
+router.get("/booked-slots", async (req, res) => {
+  try {
+    const { providerId, date } = req.query;
+    if (!mongoose.Types.ObjectId.isValid(providerId) || !/^\d{4}-\d{2}-\d{2}$/.test(String(date || ""))) {
+      return res.status(400).json({ code: "invalid_data" });
+    }
+    const list = await Booking.find({ providerId, date: String(date), status: { $in: ["pending", "confirmed"] } }).select("time");
+    res.json({ times: list.map((b) => b.time) });
+  } catch (error) {
+    res.status(500).json({ code: "server_error" });
   }
 });
 
@@ -82,6 +118,10 @@ router.post("/appointments", async (req, res) => {
     }
 
     const kind = provider.role;
+
+    if (!withinHours(provider, String(date), String(time))) {
+      return res.status(400).json({ code: "outside_hours" });
+    }
 
     const existingBooking = await Booking.findOne({
       providerId,
@@ -196,6 +236,11 @@ router.patch("/appointments/:id", async (req, res) => {
 
     if (!booking) {
       return res.status(404).json({ code: "not_found" });
+    }
+
+    const provider = await User.findById(booking.providerId).select("role schedule labProfile");
+    if (provider && !withinHours(provider, String(date), String(time))) {
+      return res.status(400).json({ code: "outside_hours" });
     }
 
     const conflict = await Booking.findOne({
@@ -454,7 +499,13 @@ router.get("/medical-file", async (req, res) => {
         weight: profile.weight || "",
       },
 
-      chronic: profile.chronicIds || [],
+      chronic: [
+        ...(profile.chronicIds || [])
+          .map((id) => CHRONIC.find((c) => c.id === id))
+          .filter(Boolean)
+          .map((c) => ({ ar: c.ar, en: c.en })),
+        ...cleanOther(profile.chronicOther).map((x) => ({ ar: x, en: x })),
+      ],
 
       history: (record?.history || []).map((item) => ({
         id: item._id.toString(),
@@ -967,20 +1018,31 @@ function ageFromBirth(birth) {
   return a >= 0 ? a : null;
 }
 
+
+function cleanOther(v) {
+  const arr = Array.isArray(v) ? v : String(v || "").split(/[,،;\n]/);
+  return arr.map((x) => String(x).trim().slice(0, 60)).filter(Boolean).slice(0, 10);
+}
+
 function patientProfileView(user) {
   const p = user.profile || {};
   const ids = (p.chronicIds || []).filter((id) => CHRONIC.some((c) => c.id === id));
+  const other = cleanOther(p.chronicOther);
   return {
     birthDate: p.birthDate || "",
     blood: p.blood || "",
     height: p.height || 0,
     weight: p.weight || 0,
     age: ageFromBirth(p.birthDate),
-    chronic: ids.map((id) => {
-      const c = CHRONIC.find((x) => x.id === id);
-      return { ar: c.ar, en: c.en };
-    }),
+    chronic: [
+      ...ids.map((id) => {
+        const c = CHRONIC.find((x) => x.id === id);
+        return { ar: c.ar, en: c.en };
+      }),
+      ...other.map((x) => ({ ar: x, en: x })),
+    ],
     chronicIds: ids,
+    chronicOther: other,
   };
 }
 
@@ -1010,6 +1072,9 @@ router.put("/profile", async (req, res) => {
     if (b.blood !== undefined) set["profile.blood"] = String(b.blood).slice(0, 4);
     if (b.height !== undefined) set["profile.height"] = Number(b.height) || 0;
     if (b.weight !== undefined) set["profile.weight"] = Number(b.weight) || 0;
+    if (b.chronicOther !== undefined) {
+      set["profile.chronicOther"] = cleanOther(b.chronicOther);
+    }
     if (Array.isArray(b.chronicIds)) {
       set["profile.chronicIds"] = b.chronicIds
         .map(String)
@@ -1070,7 +1135,8 @@ router.post("/triage", async (req, res) => {
     }
     const chronic = (Array.isArray(profile.chronicIds) ? profile.chronicIds : [])
       .map((id) => (CHRONIC.find((c) => c.id === id) || {}).en)
-      .filter(Boolean);
+      .filter(Boolean)
+      .concat(cleanOther(profile.chronicOther));
 
     const result = await runTriage(text, { age, chronic });
 

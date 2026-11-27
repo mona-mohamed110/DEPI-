@@ -11,9 +11,11 @@ const accessLogSchema = new mongoose.Schema(
       enum: [
         "viewed_file",
         "added_prescription",
+        "updated_prescription",
         "uploaded_result",
         "granted_access",
         "revoked_access",
+        "updated_profile",
       ],
       required: true,
     },

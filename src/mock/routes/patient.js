@@ -1,5 +1,5 @@
 import { r, fail } from '../router.js';
-import { save, uid, ageFrom, chronicFromIds, chronicToIds, patientOf, place, hasStaff, todayKey, grantDoctor } from '../helpers.js';
+import { save, uid, ageFrom, otherFrom, chronicOtherOf, chronicFromIds, chronicToIds, patientOf, place, hasStaff, todayKey, grantDoctor } from '../helpers.js';
 import { clean } from '../../api/security.js';
 
 const P = ({ db, user }) => patientOf(db, user.id);
@@ -30,16 +30,16 @@ r.get('/patient/dashboard', (ctx) => {
   };
 });
 
-r.get('/patient/profile', (ctx) => ({ ...infoView(P(ctx)), chronic: P(ctx).chronic, chronicIds: chronicToIds(P(ctx).chronic) }));
+r.get('/patient/profile', (ctx) => ({ ...infoView(P(ctx)), chronic: P(ctx).chronic, chronicIds: chronicToIds(P(ctx).chronic), chronicOther: chronicOtherOf(P(ctx).chronic) }));
 r.put('/patient/profile', (ctx) => {
   const b = ctx.body, p = P(ctx);
   if (b.birthDate !== undefined) { if (!validBirth(b.birthDate)) fail(400, 'invalid_data'); p.info.birthDate = b.birthDate; }
   if (b.blood !== undefined) p.info.blood = String(b.blood).slice(0, 4);
   if (b.height !== undefined) p.info.height = Number(b.height) || 0;
   if (b.weight !== undefined) p.info.weight = Number(b.weight) || 0;
-  if (Array.isArray(b.chronicIds)) p.chronic = chronicFromIds(b.chronicIds);
+  if (Array.isArray(b.chronicIds) || b.chronicOther !== undefined) p.chronic = [...chronicFromIds(Array.isArray(b.chronicIds) ? b.chronicIds : chronicToIds(p.chronic)), ...otherFrom(b.chronicOther !== undefined ? b.chronicOther : chronicOtherOf(p.chronic))];
   save();
-  return { ...infoView(p), chronic: p.chronic, chronicIds: chronicToIds(p.chronic) };
+  return { ...infoView(p), chronic: p.chronic, chronicIds: chronicToIds(p.chronic), chronicOther: chronicOtherOf(p.chronic) };
 });
 
 r.get('/patient/medical-file', (ctx) => { const p = P(ctx); return { info: infoView(p), chronic: p.chronic, history: [...p.history].sort((a, b) => String(b.date).localeCompare(String(a.date))), reports: [...p.reports].sort(byDate('date')) }; });

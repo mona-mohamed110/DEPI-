@@ -19,9 +19,9 @@ const myPatients = ({ db, user }) => db.users.filter((u) => u.role === 'patient'
 
 r.get('/doctor/dashboard', (ctx) => {
   const today = todayKey();
-  const list = ctx.db.bookings.filter((b) => b.kind === 'doctor' && b.providerId === ctx.user.id && ['confirmed', 'done'].includes(b.status) && b.date === today)
+  const list = ctx.db.bookings.filter((b) => b.kind === 'doctor' && b.providerId === ctx.user.id && ['confirmed', 'done'].includes(b.status) && b.date === today && (!ctx.user.queueOnly || (b.queue === 'in-exam' && b.status !== 'done')))
     .sort((a, b) => a.time.localeCompare(b.time)).map((b) => ({ id: b.id, name: b.patientName, time: b.time, status: toStatus(b.queue) }));
-  return { stats: { today: list.length, waiting: list.filter((x) => x.status === 'wait').length, patients: myPatients(ctx).length }, appointments: list };
+  return { stats: { today: list.length, waiting: list.filter((x) => x.status === 'wait').length, patients: myPatients(ctx).length }, appointments: list, queueOnly: !!ctx.user.queueOnly };
 });
 r.get('/doctor/patients', (ctx) => myPatients(ctx));
 r.get('/doctor/patients/:id/file', (ctx) => {
@@ -103,7 +103,7 @@ r.post('/doctor/team', async (ctx) => {
   if (clean(name).length < 2 || !isEmail(email) || !isStrongPassword(password)) fail(400, 'invalid_data');
   if (ctx.db.users.some((u) => u.email.toLowerCase() === String(email).toLowerCase())) fail(409, 'email_exists');
   // الحساب بيتربط بالدكتور ده بس (doctorId) ويدخل كموظف استقبال لحجوزاته هو فقط
-  const user = { id: uid('u'), role: 'reception', name: clean(name, 80), email: String(email).toLowerCase(), phone: '', status: 'active', doctorId: ctx.user.id, passHash: await sha256(password), createdAt: new Date().toISOString(), notifEmail: true, notifAppt: true, notifMeds: true, notifAccess: true, notifNew: true, twoFactor: false };
+  const user = { id: uid('u'), role: 'reception', name: clean(name, 80), email: String(email).toLowerCase(), phone: '', status: 'active', doctorId: ctx.user.id, passHash: await sha256(password), createdAt: new Date().toISOString(), twoFactor: false };
   ctx.db.users.push(user);
   const m = { id: uid('t'), userId: user.id, name: user.name, email: user.email, perms: [true, true, true] };
   D(ctx).team.push(m); save();

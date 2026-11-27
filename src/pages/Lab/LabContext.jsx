@@ -12,6 +12,8 @@ export function LabProvider({ children }) {
   const { toast, act } = useToast();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  // اليوم المحدد في التقويم: مشترك بين لوحة المعمل وتفاصيل الطلب ورفع النتيجة والتقارير (الافتراضي اليوم، "" = كل الأيام)
+  const [day, setDay] = useState(() => api.dayKey(new Date().toISOString()));
 
   // أسماء الفحوصات بتتخزن بالعربي في الداتا، وهنا بتتعرض بلغة الواجهة
   const testName = useCallback((name) => (lang === 'ar' ? name : TEST_CATALOG.find((x) => x.ar === name)?.en || name), [lang]);
@@ -33,7 +35,10 @@ export function LabProvider({ children }) {
     total: requests.length,
   }), [requests]);
 
-  const value = { requests, counts, loading, testName, addRequest, startRequest, uploadResult, refresh };
+  const requestDays = useMemo(() => [...new Set(requests.map((r) => api.dayKey(r.createdAt)))], [requests]);
+  const inDay = useCallback((r) => !day || api.dayKey(r.createdAt) === day, [day]);
+
+  const value = { requests, day, setDay, requestDays, inDay, counts, loading, testName, addRequest, startRequest, uploadResult, refresh };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

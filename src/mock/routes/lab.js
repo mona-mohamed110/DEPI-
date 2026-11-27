@@ -34,7 +34,7 @@ r.patch('/lab/requests/:id/start', (ctx) => {
 r.post('/lab/requests/:id/result', (ctx) => {
   const q = LB(ctx).requests.find((x) => String(x.id) === ctx.params.id); if (!q) fail(404, 'not_found');
   const files = ctx.body.files || []; if (!files.length) fail(400, 'invalid_data');
-  Object.assign(q, { status: 'done', files: files.map((f) => f.name), notes: clean(ctx.body.notes, 1000), uploadedAt: new Date().toISOString() });
+  Object.assign(q, { status: 'done', files: files.map((f) => f.name), fileData: files.map((f) => f.dataUrl || ''), resultStatus: ['normal', 'low', 'high', 'followup'].includes(ctx.body.status) ? ctx.body.status : 'normal', notes: clean(ctx.body.notes, 1000), uploadedAt: new Date().toISOString() });
   const pu = ctx.db.users.find((u) => u.id === q.patientId) || ctx.db.users.find((u) => u.role === 'patient' && u.phone && u.phone === q.phone);
   if (pu) {
     const rec = patientOf(ctx.db, pu.id);

@@ -4,6 +4,7 @@ import HeroSection from '../../components/home/HeroSection.jsx';
 import ServicesSection from '../../components/home/ServicesSection.jsx';
 import AboutSection from '../../components/home/AboutSection.jsx';
 import HowItWorks from '../../components/home/HowItWorks.jsx';
+import Testimonials from '../../components/home/Testimonials.jsx';
 import HelpDesk from '../../components/home/HelpDesk.jsx';
 import Footer from '../../components/home/Footer.jsx';
 
@@ -11,7 +12,7 @@ export default function Home() {
   return (
     <HomeShell>
       <Navbar />
-      <main><HeroSection /><ServicesSection /><AboutSection /><HowItWorks /><HelpDesk /></main>
+      <main><HeroSection /><ServicesSection /><AboutSection /><HowItWorks /><Testimonials /><HelpDesk /></main>
       <Footer />
     </HomeShell>
   );

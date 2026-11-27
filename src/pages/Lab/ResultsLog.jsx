@@ -1,87 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import DayPicker from "./DayPicker.jsx";
 import { useLab } from "./LabContext.jsx";
 import * as api from "../../api/lab.js";
-const { fileType } = api;
+const { fileType, openResultFile } = api;
 import Icon from "../../components/Icon.jsx";
-
-const key = (y, m, d) => `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-
-/* ---------- منتقي التاريخ (تقويم) ---------- */
-function DatePicker({ value, dates, onChange }) {
-  const { t, lang, fmtDay } = useLab();
-  const locale = lang === "ar" ? "ar-EG" : "en-US";
-  const weekStart = lang === "ar" ? 6 : 0; // السبت في العربي، الأحد في الإنجليزي
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-  const base = value || dates[0];
-  const init = base ? new Date(`${base}T00:00:00`) : new Date();
-  const [view, setView] = useState({ y: init.getFullYear(), m: init.getMonth() });
-
-  useEffect(() => {
-    const off = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("mousedown", off);
-    return () => document.removeEventListener("mousedown", off);
-  }, []);
-
-  const cells = useMemo(() => {
-    const first = new Date(view.y, view.m, 1);
-    const offset = (first.getDay() - weekStart + 7) % 7;
-    return Array.from({ length: 42 }, (_, i) => {
-      const d = new Date(view.y, view.m, 1 - offset + i);
-      return { k: key(d.getFullYear(), d.getMonth(), d.getDate()), n: d.getDate(), out: d.getMonth() !== view.m };
-    });
-  }, [view, weekStart]);
-
-  const weekdays = Array.from({ length: 7 }, (_, i) =>
-    new Date(2026, 0, 4 + ((weekStart + i) % 7)).toLocaleDateString(locale, { weekday: "narrow" }));
-  const title = new Date(view.y, view.m, 1).toLocaleDateString(locale, { month: "long", year: "numeric" });
-  const move = (n) => setView((v) => { const d = new Date(v.y, v.m + n, 1); return { y: d.getFullYear(), m: d.getMonth() }; });
-  const pick = (k) => { onChange(k === value ? "" : k); setOpen(false); };
-
-  return (
-    <div className="dp" ref={ref}>
-      <button type="button" className="dp-btn" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
-        <Icon name="calendar" size={18} />
-        <span>{value ? fmtDay(value) : t("allDays")}</span>
-        {value && <span className="x" role="button" aria-label="clear" onClick={(e) => { e.stopPropagation(); onChange(""); }}><Icon name="x" size={16} /></span>}
-      </button>
-
-      {open && (
-        <div className="cal">
-          <div className="cal-top">
-            <span>{value ? fmtDay(value) : new Date().toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" })}</span>
-            {value && <button type="button" onClick={() => pick(value)}>{t("allDays")}</button>}
-          </div>
-          <div className="cal-nav">
-            <b>{title}</b>
-            <div>
-              <button type="button" onClick={() => move(-1)} aria-label="prev"><Icon name="chevU" size={18} /></button>
-              <button type="button" onClick={() => move(1)} aria-label="next"><Icon name="chevD" size={18} /></button>
-            </div>
-          </div>
-          <div className="cal-grid">
-            {weekdays.map((w, i) => <div key={i} className="cal-wd">{w}</div>)}
-            {cells.map((c) => {
-              const has = dates.includes(c.k);
-              return (
-                <button type="button" key={c.k} disabled={!has} onClick={() => pick(c.k)}
-                  className={`cal-d ${c.out ? "out" : ""} ${has ? "has" : ""} ${value === c.k ? "sel" : ""}`}>
-                  {c.n.toLocaleString(locale)}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 /* ---------- الصفحة ---------- */
 export default function ResultsLog() {
-  const { t, testName, requests, fmtDateTime, toast } = useLab();
+  const { t, testName, requests, fmtDateTime, toast, day, setDay } = useLab();
+  const open = (q, i) => openResultFile(q, i).catch(() => toast(t("error")));
   const [name, setName] = useState("");
-  const [day, setDay] = useState("");
   const [dates, setDates] = useState([]);
   const [rows, setRows] = useState([]);
 
@@ -108,20 +36,27 @@ export default function ResultsLog() {
             <Icon name="search" size={18} />
             <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("searchPh")} />
           </div>
-          <DatePicker value={day} dates={dates} onChange={setDay} />
+          <DayPicker value={day} dates={dates} onChange={setDay} />
         </div>
         <div className="scroll">
           <table>
             <thead><tr>
-              <th>{t("orderNo")}</th><th>{t("patient")}</th><th>{t("exam")}</th><th>{t("filesCol")}</th><th>{t("uploadDate")}</th><th>{t("statusCol")}</th>
+              <th>{t("orderNo")}</th><th>{t("patient")}</th><th>{t("exam")}</th><th>{t("resultCol")}</th><th>{t("filesCol")}</th><th>{t("uploadDate")}</th>
             </tr></thead>
             <tbody>
               {rows.length === 0 ? <tr><td colSpan={6} className="sub">{t("noResults")}</td></tr> : rows.map((q) => (
                 <tr key={q.id}>
                   <td>#{q.id}</td><td><b>{q.name}</b></td><td>{testName(q.test)}</td>
-                  <td>{(q.files || []).map((f) => <span key={f} className="badge" style={{ margin: "0 2px" }}>{fileType(f)}</span>)}</td>
+                  <td>
+                    <span className={`badge ${!q.resultStatus || q.resultStatus === "normal" ? "ok" : q.resultStatus === "high" ? "dg" : "wn"}`}>{t(`rs_${q.resultStatus || "normal"}`)}</span>
+                    <div className="sub" style={{ margin: "6px 0 0", maxWidth: 260, whiteSpace: "pre-wrap" }}>{q.notes || t("noNotes")}</div>
+                  </td>
+                  <td>{(q.files || []).map((f, i) => (
+                    <button type="button" key={i} className="btn s o" style={{ margin: "2px" }} title={f} onClick={() => open(q, i)}>
+                      <Icon name="file" size={14} />{fileType(f)} {i + 1}
+                    </button>
+                  ))}</td>
                   <td>{fmtDateTime(q.uploadedAt)}</td>
-                  <td><span className="badge ok"><Icon name="check" size={14} />{t("linked")}</span></td>
                 </tr>
               ))}
             </tbody>

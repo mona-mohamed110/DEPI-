@@ -6,6 +6,18 @@ const base = {
     adm_name: "مدير النظام",
     adm_nav_mon: "أداء النظام والتقارير",
     adm_nav_lic: "التحقق من التراخيص",
+    adm_nav_msg: "الرسائل والشكاوى",
+    adm_msg_title: "الرسائل والشكاوى والاقتراحات",
+    adm_msg_sub: "رسائل الزوار والمستخدمين، ويمكنك الرد على كل مرسل",
+    adm_msg_all: "الكل", adm_msg_new: "جديدة", adm_msg_replied: "تم الرد", adm_msg_closed: "مغلقة",
+    adm_msg_kind_all: "كل الأنواع", adm_msg_role_all: "كل المرسلين",
+    adm_msg_r_visitor: "زائر", adm_msg_r_patient: "مريض", adm_msg_r_doctor: "طبيب", adm_msg_r_lab: "معمل", adm_msg_r_reception: "استقبال", adm_msg_r_admin: "إدارة",
+    adm_msg_registered: "مستخدم مسجل", adm_msg_guest: "زائر بدون حساب",
+    adm_msg_from: "المرسل", adm_msg_email: "البريد الإلكتروني", adm_msg_phone: "الهاتف",
+    adm_msg_empty: "لا توجد رسائل", adm_msg_pick: "اختر رسالة من القائمة لعرضها والرد عليها",
+    adm_msg_reply_ph: "اكتب ردك…", adm_msg_reply_btn: "إرسال الرد", adm_toast_replied: "تم إرسال الرد", adm_msg_admin: "الإدارة", adm_msg_emailed: "أُرسل على البريد",
+    adm_msg_note_user: "سيظهر الرد في صفحة التواصل عند المستخدم.", adm_msg_note_guest: "المرسل زائر بدون حساب، فسيصله الرد على بريده الإلكتروني.",
+    adm_msg_close: "إغلاق المحادثة", adm_msg_reopen: "إعادة فتح", adm_msg_delete: "حذف", adm_msg_delete_confirm: "تأكيد الحذف",
     adm_nav_acc: "إدارة الحسابات",
     adm_cancel: "إلغاء",
     adm_none: "مفيش نتائج",
@@ -117,6 +129,18 @@ const base = {
     adm_name: "System Admin",
     adm_nav_mon: "System Performance & Reports",
     adm_nav_lic: "License Verification",
+    adm_nav_msg: "Messages & complaints",
+    adm_msg_title: "Messages, complaints & suggestions",
+    adm_msg_sub: "Messages from visitors and users. You can reply to every sender",
+    adm_msg_all: "All", adm_msg_new: "New", adm_msg_replied: "Replied", adm_msg_closed: "Closed",
+    adm_msg_kind_all: "All types", adm_msg_role_all: "All senders",
+    adm_msg_r_visitor: "Visitor", adm_msg_r_patient: "Patient", adm_msg_r_doctor: "Doctor", adm_msg_r_lab: "Lab", adm_msg_r_reception: "Reception", adm_msg_r_admin: "Admin",
+    adm_msg_registered: "Registered user", adm_msg_guest: "Visitor without account",
+    adm_msg_from: "Sender", adm_msg_email: "Email", adm_msg_phone: "Phone",
+    adm_msg_empty: "No messages", adm_msg_pick: "Pick a message from the list to read and reply",
+    adm_msg_reply_ph: "Write your reply…", adm_msg_reply_btn: "Send reply", adm_toast_replied: "Reply sent", adm_msg_admin: "Admin", adm_msg_emailed: "Emailed",
+    adm_msg_note_user: "The reply will appear on the user's contact page.", adm_msg_note_guest: "The sender is a visitor without an account, so the reply will be emailed.",
+    adm_msg_close: "Close conversation", adm_msg_reopen: "Reopen", adm_msg_delete: "Delete", adm_msg_delete_confirm: "Confirm delete",
     adm_nav_acc: "Account Management",
     adm_cancel: "Cancel",
     adm_none: "No results",
@@ -227,4 +251,5 @@ const base = {
 };
 
 import { extra } from './admin.extra.js';
-export const adminDict = merge(common, base, extra);
+import { team } from './admin.team.js';
+export const adminDict = merge(common, base, extra, team);

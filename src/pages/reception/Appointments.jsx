@@ -6,9 +6,10 @@ import { useToast } from '../../components/ui/Toast.jsx';
 import { useI18n } from '../../context/I18nContext.jsx';
 import { isEgPhone } from '../../api/security.js';
 import ConfirmForm from '../../components/ui/ConfirmForm.jsx';
+import { slotsForDate } from '../../utils/schedule.js';
+import WorkCalendar from '../../components/ui/WorkCalendar.jsx';
 import * as api from '../../api/reception.js';
 
-const TIMES = ['09:00', '09:30', '10:00', '11:00', '12:00', '16:00', '17:00'];
 const normDigits = (s) => String(s).replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
 
 export default function Appointments() {
@@ -41,21 +42,11 @@ export default function Appointments() {
     return () => { live = false; };
   }, [patientId, day]);
 
-  const days = useMemo(() => Array.from({ length: 5 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() + i);
-
-    return {
-      id: i === 0 ? 'today' : d.getFullYear() + '-' +
-        String(d.getMonth() + 1).padStart(2, '0') + '-' +
-        String(d.getDate()).padStart(2, '0'),
-      label: i === 0
-        ? t('today')
-        : i === 1
-          ? t('tomorrow')
-          : d.toLocaleDateString(locale, { weekday: 'long' }),
-    };
-  }), [locale, t]);
+  // ساعات عمل الطبيب (من إعداداته): تحدد الأيام والمواعيد المتاحة
+  const provider = (doctors.data || []).find((x) => x.id === providerId);
+  const sch = provider?.schedule;
+  const times = day ? slotsForDate(sch, day) : [];
+  useEffect(() => { if (time && !times.includes(time)) setTime(''); }, [day, providerId, sch]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const askAdd = (e) => {
     e.preventDefault();
@@ -63,7 +54,7 @@ export default function Appointments() {
     const er = {};
 
     if (name.trim().length < 3) er.name = t('err_name');
-    if (!isEgPhone(normDigits(phone))) er.phone = t('err_phone');
+    if (!/^01[0125]\d{8}$/.test(normDigits(phone))) er.phone = t('err_phone');
 
     setErr(er);
 
@@ -150,7 +141,8 @@ export default function Appointments() {
             dir="ltr"
             inputMode="tel"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            maxLength={11}
+            onChange={(e) => setPhone(normDigits(e.target.value).replace(/\D/g, '').slice(0, 11))}
             placeholder="01xxxxxxxxx"
           />
           {err.phone && <div className="err">{err.phone}</div>}
@@ -219,22 +211,11 @@ export default function Appointments() {
           </Async>
 
           <label>{t('day')}</label>
-          <div className="days">
-            {days.map((d) => (
-              <button
-                type="button"
-                key={d.id}
-                className={`slot ${day === d.id ? 'on' : ''}`}
-                onClick={() => setDay(d.id)}
-              >
-                {d.label}
-              </button>
-            ))}
-          </div>
+          <WorkCalendar value={day} onChange={(d) => { setDay(d); setTime(''); }} schedule={sch} />
 
           <label>{t('time')}</label>
           <div className="slots">
-            {TIMES.map((x) => (
+            {!day ? <span className="sub" style={{ margin: 0 }}>{t('pick_day_first')}</span> : times.length === 0 ? <span className="sub" style={{ margin: 0 }}>{t('no_hours_day')}</span> : times.map((x) => (
               <button
                 type="button"
                 key={x}

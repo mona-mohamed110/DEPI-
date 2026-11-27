@@ -15,7 +15,7 @@ const DoctorTest = require("../models/DoctorTest");
 const { logAccess } = require("../utils/accessLog");
 const { specialtyView, CHRONIC } = require("../data/catalog");
 const { requireAuth, requireRole } = require("../middleware/auth");
-const { uploadCertificate } = require("../middleware/upload");
+const { uploadCertificate, uploadMultiple } = require("../middleware/upload");
 
 const router = express.Router();
 
@@ -123,8 +123,11 @@ router.get("/dashboard", async (req, res) => {
       return item.date;
     };
 
+    // خيار الطبيب: عرض اليوم الحالي للي عليه الدور فقط (موظف الاستقبال أدخله الكشف ولسه مخلصش)
+    const queueOnly = !!req.user.queueOnly;
     const appointments = allBookings
       .filter((item) => getDisplayDate(item) === selectedDate)
+      .filter((item) => !(queueOnly && selectedDate === today) || (item.queue === "in-exam" && item.status !== "done"))
       .sort((a, b) => {
         const timeA =
           a.status === "done" && a.examinedAt
@@ -175,6 +178,7 @@ router.get("/dashboard", async (req, res) => {
       },
 
       selectedDate,
+      queueOnly,
       calendarDates,
 
       appointments: appointments.map((item) => ({
@@ -256,13 +260,37 @@ router.get("/patients", async (req, res) => {
       status: { $in: ["pending", "confirmed"] },
     })
       .sort({ date: -1, time: -1, createdAt: -1 })
-      .select("_id patientId date time status")
+      .select("_id patientId date time status queue")
       .lean();
 
+    // حجز اليوم لكل مريض (بتوقيت القاهرة) — لقائمة «مرضاي»
+    const todayStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    const todayBookings = await Booking.find({
+      providerId: doctorId,
+      kind: "doctor",
+      patientId: { $in: patientIds },
+      date: todayStr,
+      status: { $nin: ["cancelled", "rejected"] },
+    })
+      .sort({ time: 1 })
+      .select("_id patientId date time status queue")
+      .lean();
+    const todayMap = new Map();
+    for (const b of todayBookings) {
+      const pid = b.patientId.toString();
+      if (!todayMap.has(pid)) todayMap.set(pid, b);
+    }
+
+    // خيار الطبيب (صفحة الكشف فقط): يظهر المريض اللي موظف الاستقبال أدخله الكشف ولسه مخلصش
+    const examQueueOnly = req.query.forExam === "1" && !!req.user.queueOnly;
     const activeBookingMap = new Map();
+    const activeListMap = new Map();
 
     for (const booking of activeBookings) {
+      if (examQueueOnly && booking.queue !== "in-exam") continue;
       const patientId = booking.patientId.toString();
+      if (!activeListMap.has(patientId)) activeListMap.set(patientId, []);
+      activeListMap.get(patientId).push(booking);
 
       if (!activeBookingMap.has(patientId)) {
         activeBookingMap.set(patientId, booking);
@@ -298,6 +326,21 @@ router.get("/patients", async (req, res) => {
               time: lastBooking.time,
             }
           : null,
+
+        todayBooking: todayMap.get(patient._id.toString())
+          ? {
+              id: todayMap.get(patient._id.toString())._id.toString(),
+              status: todayMap.get(patient._id.toString()).status,
+              date: todayMap.get(patient._id.toString()).date,
+              time: todayMap.get(patient._id.toString()).time,
+            }
+          : null,
+
+        // كل الحجوزات المفتوحة للمريض في أي يوم (الأقرب أولًا)
+        activeBookings: (activeListMap.get(patient._id.toString()) || [])
+          .slice()
+          .sort((a, b) => String(a.date + (a.time || "")).localeCompare(String(b.date + (b.time || ""))))
+          .map((b) => ({ id: b._id.toString(), status: b.status, date: b.date, time: b.time })),
 
         activeBooking: activeBooking
           ? {
@@ -431,6 +474,321 @@ router.delete("/tests/:name", async (req, res) => {
 // Patient medical file
 // ===============================
 
+function cleanOther(v) {
+  const arr = Array.isArray(v) ? v : String(v || "").split(/[,،;\n]/);
+  return arr.map((x) => String(x).trim().slice(0, 60)).filter(Boolean).slice(0, 10);
+}
+
+// المريض اللي أضافه موظف الاستقبال بدون حساب دخول: الطبيب صاحب العيادة فقط هو اللي يكمّل بياناته
+function isManagedPatient(patient, doctorId) {
+  return !!patient &&
+    !patient.password &&
+    patient.createdByDoctor &&
+    String(patient.createdByDoctor) === String(doctorId);
+}
+
+// تعديل البيانات الصحية لمريض بدون حساب (أضافه موظف الاستقبال)
+router.put("/patients/:id/profile", async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(404).json({ code: "not_found" });
+    }
+
+    const grant = await getActiveGrant(id, req.user._id);
+    const patient = await User.findOne({ _id: id, role: "patient" }).select("password createdByDoctor");
+
+    if (!patient) return res.status(404).json({ code: "not_found" });
+    if (!grant || !isManagedPatient(patient, req.user._id)) {
+      return res.status(403).json({ code: "access_denied" });
+    }
+
+    const b = req.body || {};
+    const set = {};
+
+    if (b.birthDate !== undefined && b.birthDate !== "") {
+      const ok = /^\d{4}-\d{2}-\d{2}$/.test(String(b.birthDate));
+      const dt = new Date(b.birthDate);
+      if (!ok || Number.isNaN(dt.getTime()) || dt >= new Date() || dt.getFullYear() <= 1900) {
+        return res.status(400).json({ code: "invalid_data" });
+      }
+      set["profile.birthDate"] = b.birthDate;
+    }
+    if (b.blood !== undefined) set["profile.blood"] = String(b.blood).slice(0, 4);
+    if (b.height !== undefined) set["profile.height"] = Math.max(0, Math.min(300, Number(b.height) || 0));
+    if (b.weight !== undefined) set["profile.weight"] = Math.max(0, Math.min(500, Number(b.weight) || 0));
+    if (Array.isArray(b.chronicIds)) {
+      set["profile.chronicIds"] = b.chronicIds.map(String).filter((cid) => CHRONIC.some((c) => c.id === cid));
+    }
+    if (b.chronicOther !== undefined) set["profile.chronicOther"] = cleanOther(b.chronicOther);
+
+    if (Object.keys(set).length) await User.updateOne({ _id: id }, { $set: set });
+    logAccess(id, req.user, "updated_profile");
+
+    return res.json({ ok: true });
+  } catch (error) {
+    console.error("Doctor update patient profile error:", error);
+    return res.status(500).json({ code: "server_error" });
+  }
+});
+
+// ---- تعديل الملف الطبي لمريض بدون حساب (أضافه موظف الاستقبال) ----
+async function managedPatientOr403(req, res) {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    res.status(404).json({ code: "not_found" });
+    return null;
+  }
+  const grant = await getActiveGrant(id, req.user._id);
+  const patient = await User.findOne({ _id: id, role: "patient" }).select("password createdByDoctor");
+  if (!patient) {
+    res.status(404).json({ code: "not_found" });
+    return null;
+  }
+  if (!grant || !isManagedPatient(patient, req.user._id)) {
+    res.status(403).json({ code: "access_denied" });
+    return null;
+  }
+  return patient;
+}
+
+const UPLOADS_DIR = path.resolve(__dirname, "../uploads");
+function removeUpload(rel) {
+  try {
+    const p = path.resolve(__dirname, "..", rel || "");
+    if (rel && p.startsWith(UPLOADS_DIR + path.sep)) fs.unlink(p, () => {});
+  } catch (e) { /* ignore */ }
+}
+
+function historyBody(b) {
+  const condition = String(b.condition || "").trim();
+  const date = String(b.date || "").trim();
+  const notes = String(b.notes || "").trim();
+  if (!condition || condition.length > 200 || notes.length > 1000 || date.length > 20) return null;
+  return { condition, date, notes };
+}
+
+router.post("/patients/:id/history", async (req, res) => {
+  try {
+    if (!(await managedPatientOr403(req, res))) return;
+    const h = historyBody(req.body || {});
+    if (!h) return res.status(400).json({ code: "invalid_data" });
+    await MedicalRecord.findOneAndUpdate(
+      { patientId: req.params.id },
+      { $push: { history: h } },
+      { upsert: true, setDefaultsOnInsert: true }
+    );
+    logAccess(req.params.id, req.user, "updated_profile");
+    return res.status(201).json({ ok: true });
+  } catch (error) {
+    console.error("Doctor add history error:", error);
+    return res.status(500).json({ code: "server_error" });
+  }
+});
+
+router.put("/patients/:id/history/:hid", async (req, res) => {
+  try {
+    if (!(await managedPatientOr403(req, res))) return;
+    const h = historyBody(req.body || {});
+    if (!h || !mongoose.Types.ObjectId.isValid(req.params.hid)) return res.status(400).json({ code: "invalid_data" });
+    const record = await MedicalRecord.findOne({ patientId: req.params.id });
+    const item = record && record.history.id(req.params.hid);
+    if (!item) return res.status(404).json({ code: "not_found" });
+    Object.assign(item, h);
+    await record.save();
+    logAccess(req.params.id, req.user, "updated_profile");
+    return res.json({ ok: true });
+  } catch (error) {
+    console.error("Doctor update history error:", error);
+    return res.status(500).json({ code: "server_error" });
+  }
+});
+
+router.delete("/patients/:id/history/:hid", async (req, res) => {
+  try {
+    if (!(await managedPatientOr403(req, res))) return;
+    if (!mongoose.Types.ObjectId.isValid(req.params.hid)) return res.status(404).json({ code: "not_found" });
+    const record = await MedicalRecord.findOne({ patientId: req.params.id });
+    const item = record && record.history.id(req.params.hid);
+    if (!item) return res.status(404).json({ code: "not_found" });
+    item.deleteOne();
+    await record.save();
+    logAccess(req.params.id, req.user, "updated_profile");
+    return res.json({ ok: true });
+  } catch (error) {
+    console.error("Doctor delete history error:", error);
+    return res.status(500).json({ code: "server_error" });
+  }
+});
+
+router.post("/patients/:id/reports", async (req, res, next) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ code: "not_found" });
+  // نتأكد من الصلاحية قبل رفع أي ملف
+  if (!(await managedPatientOr403(req, res))) return;
+  next();
+}, uploadMultiple, async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) return res.status(400).json({ code: "invalid_data" });
+    const reports = req.files.map((file) => ({
+      name: file.originalname,
+      fileName: file.filename,
+      filePath: `uploads/${file.filename}`,
+      fileType: file.mimetype,
+      size: file.size,
+      uploadedAt: new Date(),
+    }));
+    await MedicalRecord.findOneAndUpdate(
+      { patientId: req.params.id },
+      { $push: { reports: { $each: reports } } },
+      { upsert: true, setDefaultsOnInsert: true }
+    );
+    logAccess(req.params.id, req.user, "updated_profile");
+    return res.status(201).json({ ok: true });
+  } catch (error) {
+    console.error("Doctor upload report error:", error);
+    return res.status(500).json({ code: "server_error" });
+  }
+});
+
+router.delete("/patients/:id/reports/:rid", async (req, res) => {
+  try {
+    if (!(await managedPatientOr403(req, res))) return;
+    if (!mongoose.Types.ObjectId.isValid(req.params.rid)) return res.status(404).json({ code: "not_found" });
+    const record = await MedicalRecord.findOne({ patientId: req.params.id });
+    const report = record && record.reports.id(req.params.rid);
+    if (!report) return res.status(404).json({ code: "not_found" });
+    removeUpload(report.filePath);
+    report.deleteOne();
+    await record.save();
+    logAccess(req.params.id, req.user, "updated_profile");
+    return res.json({ ok: true });
+  } catch (error) {
+    console.error("Doctor delete report error:", error);
+    return res.status(500).json({ code: "server_error" });
+  }
+});
+
+const RESULT_KINDS = ["lab", "xray", "ecg", "other"];
+const RESULT_STATUS = ["normal", "low", "high", "followup"];
+
+router.post("/patients/:id/results", async (req, res, next) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ code: "not_found" });
+  if (!(await managedPatientOr403(req, res))) return;
+  next();
+}, uploadMultiple, async (req, res) => {
+  try {
+    const title = String(req.body.title || "").trim().slice(0, 120);
+    if (!title || !req.files || req.files.length === 0) {
+      (req.files || []).forEach((f) => removeUpload(`uploads/${f.filename}`));
+      return res.status(400).json({ code: "invalid_data" });
+    }
+    const kind = RESULT_KINDS.includes(req.body.kind) ? req.body.kind : "lab";
+    const status = RESULT_STATUS.includes(req.body.status) ? req.body.status : "normal";
+    await LabResult.insertMany(req.files.map((file) => ({
+      patientId: req.params.id,
+      labId: req.user._id,
+      byDoctor: true,
+      title,
+      kind,
+      status,
+      fileName: file.originalname,
+      filePath: `uploads/${file.filename}`,
+      fileType: file.mimetype,
+    })));
+    logAccess(req.params.id, req.user, "updated_profile");
+    return res.status(201).json({ ok: true });
+  } catch (error) {
+    console.error("Doctor add result error:", error);
+    return res.status(500).json({ code: "server_error" });
+  }
+});
+
+router.put("/patients/:id/results/:rid", async (req, res) => {
+  try {
+    if (!(await managedPatientOr403(req, res))) return;
+    if (!mongoose.Types.ObjectId.isValid(req.params.rid)) return res.status(404).json({ code: "not_found" });
+    const result = await LabResult.findOne({ _id: req.params.rid, patientId: req.params.id, byDoctor: true });
+    if (!result) return res.status(404).json({ code: "not_found" });
+    const title = String(req.body.title || "").trim().slice(0, 120);
+    if (!title) return res.status(400).json({ code: "invalid_data" });
+    result.title = title;
+    if (RESULT_KINDS.includes(req.body.kind)) result.kind = req.body.kind;
+    if (RESULT_STATUS.includes(req.body.status)) result.status = req.body.status;
+    await result.save();
+    logAccess(req.params.id, req.user, "updated_profile");
+    return res.json({ ok: true });
+  } catch (error) {
+    console.error("Doctor update result error:", error);
+    return res.status(500).json({ code: "server_error" });
+  }
+});
+
+router.delete("/patients/:id/results/:rid", async (req, res) => {
+  try {
+    if (!(await managedPatientOr403(req, res))) return;
+    if (!mongoose.Types.ObjectId.isValid(req.params.rid)) return res.status(404).json({ code: "not_found" });
+    const result = await LabResult.findOneAndDelete({ _id: req.params.rid, patientId: req.params.id, byDoctor: true });
+    if (!result) return res.status(404).json({ code: "not_found" });
+    removeUpload(result.filePath);
+    logAccess(req.params.id, req.user, "updated_profile");
+    return res.json({ ok: true });
+  } catch (error) {
+    console.error("Doctor delete result error:", error);
+    return res.status(500).json({ code: "server_error" });
+  }
+});
+
+// تعديل آخر روشتة كتبها الطبيب للمريض (أي مريض له عليه إذن)
+router.put("/patients/:id/prescriptions/:rid", async (req, res) => {
+  try {
+    const { id, rid } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id) || !mongoose.Types.ObjectId.isValid(rid)) {
+      return res.status(404).json({ code: "not_found" });
+    }
+    const grant = await getActiveGrant(id, req.user._id);
+    if (!grant) return res.status(403).json({ code: "access_denied" });
+
+    // لازم تكون آخر روشتة كتبها هذا الطبيب لهذا المريض
+    const latest = await Prescription.findOne({ patientId: id, doctorId: req.user._id }).sort({ date: -1 });
+    if (!latest || String(latest._id) !== String(rid)) {
+      return res.status(403).json({ code: "not_latest_rx" });
+    }
+
+    const b = req.body || {};
+    const items = (Array.isArray(b.items) ? b.items : []).map((m) => ({
+      name: String((m && m.name) || "").trim().slice(0, 120),
+      dose: String((m && m.dose) || "").trim().slice(0, 120),
+      duration: String((m && m.duration) || "").trim().slice(0, 120),
+    }));
+    if (items.length === 0 || items.length > 30 || items.some((m) => !m.name || !m.dose || !m.duration)) {
+      return res.status(400).json({ code: "invalid_data" });
+    }
+
+    const tests = (Array.isArray(b.tests) ? b.tests : []).slice(0, 40).map((x) => {
+      const name = String(typeof x === "string" ? x : (x && x.name) || "").trim().slice(0, 120);
+      return name ? { name, kind: x && x.kind === "xray" ? "xray" : "lab" } : null;
+    }).filter(Boolean);
+
+    const num = (v, min, max, dflt) => {
+      const n = Math.round(Number(v));
+      return Number.isFinite(n) && n >= min && n <= max ? n : dflt;
+    };
+
+    latest.diagnosis = String(b.diagnosis || "").trim().slice(0, 500);
+    latest.items = items;
+    latest.tests = tests;
+    latest.followUpDays = num(b.followUpDays, 1, 365, null);
+    latest.graceDays = num(b.graceDays, 1, 60, 0);
+    await latest.save();
+
+    logAccess(id, req.user, "updated_prescription", latest._id);
+    return res.json({ ok: true });
+  } catch (error) {
+    console.error("Doctor update prescription error:", error);
+    return res.status(500).json({ code: "server_error" });
+  }
+});
+
 router.get("/patients/:id/file", async (req, res) => {
   try {
     const { id } = req.params;
@@ -452,7 +810,7 @@ router.get("/patients/:id/file", async (req, res) => {
         User.findOne({
           _id: id,
           role: "patient",
-        }).select("name phone profile"),
+        }).select("name phone profile password createdByDoctor"),
 
         MedicalRecord.findOne({ patientId: id }).lean(),
 
@@ -478,6 +836,10 @@ router.get("/patients/:id/file", async (req, res) => {
     return res.json({
       id: patient._id.toString(),
       name: patient.name || "",
+      editable: isManagedPatient(patient, req.user._id),
+      canEditData: isManagedPatient(patient, req.user._id),
+      chronicIds: (Array.isArray(profile.chronicIds) ? profile.chronicIds : []).filter((cid) => CHRONIC.some((c) => c.id === cid)),
+      chronicOther: cleanOther(profile.chronicOther),
 
       info: {
         birthDate: profile.birthDate || "",
@@ -491,7 +853,8 @@ router.get("/patients/:id/file", async (req, res) => {
       chronic: (Array.isArray(profile.chronicIds) ? profile.chronicIds : [])
         .map((cid) => CHRONIC.find((c) => c.id === cid))
         .filter(Boolean)
-        .map((c) => ({ ar: c.ar, en: c.en })),
+        .map((c) => ({ ar: c.ar, en: c.en }))
+        .concat((Array.isArray(profile.chronicOther) ? profile.chronicOther : []).map((x) => ({ ar: x, en: x }))),
 
       history: (record?.history || []).map((item) => ({
         id: item._id?.toString() || "",
@@ -500,7 +863,7 @@ router.get("/patients/:id/file", async (req, res) => {
         notes: item.notes || "",
       })),
 
-      prescriptions: prescriptions.map((rx) => ({
+      prescriptions: prescriptions.map((rx, i) => ({
         id: rx._id.toString(),
         doctor: rx.doctorId?.name || "",
         specialty: specialtyView(rx.doctorId?.specialty || rx.doctorId?.extra),
@@ -508,6 +871,11 @@ router.get("/patients/:id/file", async (req, res) => {
         date: rx.date,
         diagnosis: rx.diagnosis || "",
         items: rx.items || [],
+        tests: (rx.tests || []).map((x) => ({ name: x.name, kind: x.kind })),
+        followUpDays: rx.followUpDays || null,
+        graceDays: rx.graceDays || 0,
+        // آخر روشتة كتبها هذا الطبيب للمريض: يقدر يعدّلها
+        editable: i === 0,
         current: rx.current,
       })),
 
@@ -515,7 +883,8 @@ router.get("/patients/:id/file", async (req, res) => {
         id: result._id.toString(),
         kind: result.kind || "lab",
         title: result.title || result.fileName || "نتيجة تحليل",
-        source: "معمل",
+        source: result.byDoctor ? "الطبيب" : "معمل",
+        byDoctor: !!result.byDoctor,
         date: result.uploadedAt || result.createdAt,
         status: result.status || "normal",
         // ملف النتيجة الذي رفعه المعمل (يُفتح بعد التحقق من صلاحية الطبيب)
@@ -1195,7 +1564,8 @@ function cleanDays(days) {
   return out;
 }
 
-const DEFAULT_SCHEDULE = Array.from({ length: 7 }, (_, i) => ({ on: i < 5, from: "10:00", to: "17:00" }));
+// الترتيب من السبت (٠) إلى الجمعة (٦): الافتراضي الأحد–الخميس
+const DEFAULT_SCHEDULE = Array.from({ length: 7 }, (_, i) => ({ on: i >= 1 && i <= 5, from: "10:00", to: "17:00" }));
 
 // مواعيد عمل الطبيب
 router.get("/schedule", async (req, res) => {

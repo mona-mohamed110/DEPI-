@@ -20,7 +20,7 @@ function HealthCard() {
     e.preventDefault();
     if (!f.birthDate || new Date(f.birthDate) >= new Date()) return setErr(t('err_invalid_data'));
     setErr('');
-    const r = await act(() => api.updateProfile({ birthDate: f.birthDate, blood: f.blood, height: f.height, weight: f.weight, chronicIds: f.chronicIds }), 'saved');
+    const r = await act(() => api.updateProfile({ birthDate: f.birthDate, blood: f.blood, height: f.height, weight: f.weight, chronicIds: f.chronicIds, chronicOther: f.chronicOther }), 'saved');
     if (r) { state.setData(r); setF(null); }
   };
 
@@ -40,6 +40,8 @@ function HealthCard() {
               </div>
               <label>{t('pf_chronic')}</label>
               <div className="chips">{CHRONIC.map((c) => <button type="button" key={c.id} className={`chip ${f.chronicIds.includes(c.id) ? 'on' : ''}`} aria-pressed={f.chronicIds.includes(c.id)} onClick={() => toggle(c.id)}>{lang === 'ar' ? c.ar : c.en}</button>)}</div>
+              <label>{t('rg_chronic_other')}</label>
+              <input value={f.chronicOther || ''} maxLength={300} onChange={(e) => setF({ ...f, chronicOther: e.target.value })} placeholder={t('rg_chronic_other_ph')} />
               {err && <div className="err">{err}</div>}
               <div className="btn-row"><button className="btn" type="submit">{t('save')}</button><button type="button" className="btn o" onClick={() => setF(null)}>{t('cancel')}</button></div>
             </form>
@@ -51,7 +53,7 @@ function HealthCard() {
               <div className="row"><span className="m">{t('height_weight')}</span><b>{d.height ? `${num(d.height)} ${t('cm')} / ${num(d.weight)} ${t('kg')}` : '—'}</b></div>
               <div className="row" style={{ alignItems: 'flex-start' }}><span className="m">{t('pf_chronic')}</span>
                 <div className="chips">{d.chronic.length ? d.chronic.map((c, i) => <span key={i} className="badge">{L(c)}</span>) : <b>{t('d_none')}</b>}</div></div>
-              <div className="btn-row"><button type="button" className="btn" onClick={() => setF({ birthDate: d.birthDate || '', blood: d.blood || '', height: d.height ?? '', weight: d.weight ?? '', chronicIds: d.chronicIds || [] })}>{t('edit')}</button></div>
+              <div className="btn-row"><button type="button" className="btn" onClick={() => setF({ birthDate: d.birthDate || '', blood: d.blood || '', height: d.height ?? '', weight: d.weight ?? '', chronicIds: d.chronicIds || [], chronicOther: (d.chronicOther || []).join('، ') })}>{t('edit')}</button></div>
             </>
           )}
         </>

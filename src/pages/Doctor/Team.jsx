@@ -59,7 +59,6 @@ export default function Team() {
               {s.perms.map((v, j) => (
                 <div className="row" key={j} style={{ padding: '6px 0' }}><span className="m">{t(`p${j}`)}</span><Switch on={v} onChange={(val) => setPerm(s, j, val)} label={t(`p${j}`)} /></div>
               ))}
-              <div className="row" style={{ padding: '6px 0', border: 0 }}><span className="m">{t('p_locked')}</span><Switch on={false} disabled /></div>
             </div>
           ))}</Async>
         </div>

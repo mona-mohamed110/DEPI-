@@ -31,7 +31,8 @@ const base = {
     s_booked: "محجوز",
     no_results: "لا توجد نتائج",
     patients_title: "قائمة مرضاي",
-    patients_sub: "المرضى الذين منحوك إذن الوصول فقط",
+    patients_sub: "مرضى اليوم الذين لديهم حجز عندك",
+    no_patients_today: "لا يوجد مرضى لديهم حجز اليوم", no_patients_today_hint: "ستظهر هنا حجوزات اليوم فقط. باقي مرضاك في صفحة ملف المريض.",
     search_patient: "ابحث باسم المريض...",
     perm_until: "إذن حتى",
     btn_file: "الملف",
@@ -128,8 +129,6 @@ const base = {
     role: "الدور",
     role_v: "طبيب",
     account_sub: "الحساب والأمان والإشعارات",
-    n_appts: "تذكير بالمواعيد",
-    n_access: "ردود طلبات الوصول للملف",
   },
   en: {
     nav_dash: "Dashboard",
@@ -158,7 +157,8 @@ const base = {
     s_booked: "Booked",
     no_results: "No results",
     patients_title: "My patients",
-    patients_sub: "Only patients who granted you access",
+    patients_sub: "Today's patients who have a booking with you",
+    no_patients_today: "No patients booked for today", no_patients_today_hint: "Only today's bookings show here. Your other patients are in the patient file page.",
     search_patient: "Search by patient name...",
     perm_until: "Access until",
     btn_file: "File",
@@ -256,8 +256,6 @@ const base = {
     role: "Role",
     role_v: "Doctor",
     account_sub: "Account, security and notifications",
-    n_appts: "Appointment reminders",
-    n_access: "Access request replies",
   },
 };
 

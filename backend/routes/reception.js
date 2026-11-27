@@ -7,7 +7,9 @@ const { specialtyView } = require("../data/catalog");
 const Booking = require("../models/Booking");
 const Prescription = require("../models/Prescription");
 const AccessGrant = require("../models/AccessGrant");
+const { getSchedule, withinHours } = require("../utils/schedule");
 const { requireAuth, requireRole } = require("../middleware/auth");
+const sendEmail = require("../utils/sendEmail");
 
 const router = express.Router();
 
@@ -167,6 +169,7 @@ function queueRow(booking) {
     id: String(booking._id),
     name: booking.patientId?.name || "",
     doctor: booking.providerId?.name || "",
+    date: booking.date,
     time: booking.time,
     status: booking.status === "done"
       ? "ended"
@@ -196,7 +199,7 @@ router.get("/doctors", async function (req, res) {
       role: "doctor",
       status: "active",
     })
-      .select("name specialty extra")
+      .select("name specialty extra schedule role")
       .sort({ name: 1 });
 
     res.json(
@@ -204,6 +207,7 @@ router.get("/doctors", async function (req, res) {
         id: String(doctor._id),
         name: doctor.name,
         specialty: specialtyView(doctor.specialty || doctor.extra),
+        schedule: getSchedule(doctor),
       }))
     );
   } catch (error) {
@@ -237,8 +241,10 @@ router.post("/patients", async function (req, res) {
   try {
     const name = String(req.body.name || "").trim();
     const phone = normalizeEgyptPhone(req.body.phone);
+    const rawPhone = String(req.body.phone || "").replace(/[\s-]/g, "");
 
-    if (name.length < 3 || name.length > 80 || !isValidEgyptPhone(phone)) {
+    // رقم الموبايل ١١ رقمًا بالضبط
+    if (name.length < 3 || name.length > 80 || !/^\d{11}$/.test(rawPhone) || !isValidEgyptPhone(phone)) {
       return res.status(400).json({ code: "invalid_data" });
     }
 
@@ -362,12 +368,38 @@ router.post("/requests/:id/reject", async function (req, res) {
         kind: "doctor",
         providerId: req.doctorId,
       },
-      { $set: { status: "rejected" } },
+      {
+        $set: {
+          status: "rejected",
+          rejectReason: String((req.body && req.body.reason) || "").replace(/\s+/g, " ").trim().slice(0, 200),
+          rejectedAt: new Date(),
+          rejectSeen: false,
+        },
+      },
       { new: true }
     );
 
     if (!booking) {
       return res.status(404).json({ code: "not_found" });
+    }
+
+    // إبلاغ المريض بالبريد (لا يوقف الرفض عند الفشل)
+    try {
+      const [patient, doctor] = await Promise.all([
+        User.findById(booking.patientId).select("email name"),
+        User.findById(booking.providerId).select("name"),
+      ]);
+      if (patient && patient.email) {
+        const text =
+          "مرحباً " + patient.name + "،\n\n" +
+          "نأسف، لم يتم قبول طلب حجزك عند " + (doctor ? doctor.name : "الطبيب") +
+          " بتاريخ " + booking.date + " الساعة " + booking.time + "." +
+          (booking.rejectReason ? "\nالسبب: " + booking.rejectReason : "") +
+          "\n\nيمكنك حجز موعد آخر من حسابك على المنصة.";
+        await sendEmail(patient.email, "Shefaa - تم رفض طلب الحجز", text);
+      }
+    } catch (mailError) {
+      console.error("Reject notify email error:", mailError.message || mailError);
     }
 
     res.json({ ok: true, id: String(booking._id) });
@@ -513,6 +545,10 @@ router.post("/appointments", async function (req, res) {
 
     if (!doctor) {
       return res.status(404).json({ code: "doctor_not_found" });
+    }
+
+    if (!withinHours(doctor, date, time)) {
+      return res.status(400).json({ code: "outside_hours" });
     }
 
     const conflict = await Booking.findOne({

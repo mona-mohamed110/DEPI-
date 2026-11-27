@@ -53,6 +53,12 @@ export const triage = (text, near) =>
 export const getAppointments = () =>
   api.get('/patient/appointments');
 
+export const getRejectionCount = () => api.get('/patient/rejections/count');
+export const markRejectionsSeen = () => api.post('/patient/rejections/seen');
+
+export const getBookedSlots = (providerId, date) =>
+  api.get('/patient/booked-slots', { providerId, date });
+
 export const bookAppointment = (d) =>
   api.post('/patient/appointments', d);
 

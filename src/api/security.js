@@ -12,7 +12,7 @@ export const isStrongPassword = (v) => typeof v === 'string' && v.length >= 8 &&
 export const clean = (s, max = 500) =>
   String(s ?? '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').replace(/[<>]/g, '').trim().slice(0, max);
 
-const SKIP = /pass|token|dataUrl/i; // الحقول دي مبتتعدلش
+const SKIP = /pass|token|dataUrl|avatar/i; // الحقول دي مبتتعدلش
 export function cleanDeep(v, depth = 0) {
   if (depth > 6) return v;
   if (typeof v === 'string') return clean(v, 5000);

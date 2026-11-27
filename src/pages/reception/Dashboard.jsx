@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import ConfirmForm from '../../components/ui/ConfirmForm.jsx';
 import Icon from '../../components/Icon.jsx';
 import { Async } from '../../components/ui/States.jsx';
 import { useAsync } from '../../components/ui/hooks.js';
@@ -17,6 +18,7 @@ export default function Dashboard() {
   const reqs = useAsync(() => api.getRequests(), []);
   const { refresh } = useReception();
   const [f, setF] = useState('all');
+  const [rej, setRej] = useState(null); // { id, reason } — رفض طلب مع سبب اختياري
   const [q, setQ] = useState('');
 
   const change = async (id, status) => {
@@ -24,9 +26,10 @@ export default function Dashboard() {
     if (r) state.setData((l) => l.map((x) => (x.id === r.id ? r : x)));
   };
   // قبول/رفض طلب حجز جاي من مريض (القبول بيضيفه للطابور وعند الدكتور)
-  const decide = async (id, ok) => {
-    const r = await act(() => (ok ? api.acceptRequest(id) : api.rejectRequest(id)), ok ? 'rq_accepted' : 'rq_rejected');
+  const decide = async (id, ok, reason) => {
+    const r = await act(() => (ok ? api.acceptRequest(id) : api.rejectRequest(id, reason)), ok ? 'rq_accepted' : 'rq_rejected');
     if (!r) return;
+    setRej(null);
     reqs.setData((l) => l.filter((x) => x.id !== id));
     refresh();
     if (ok) state.reload();
@@ -43,14 +46,21 @@ export default function Dashboard() {
           <h2>{t('rq_title')} ({num(rq.length)})</h2>
           <p className="sub" style={{ margin: '0 0 8px' }}>{t('rq_sub')}</p>
           {rq.map((x) => (
-            <div className="queue-row" key={x.id}>
+            <div key={x.id}>
+            <div className="queue-row">
               <div className="av">{L(x.name).charAt(0)}</div>
               <div className="m"><b>{L(x.name)}</b><small>{t('rq_for')}: {fmtDay(x.date)} · {fmtTime(x.time)}</small></div>
               {x.visitType && <span className={`vt-badge ${x.visitType}`}>{t(`visit_${x.visitType}`)}</span>}
               <div className="act-group">
                 <button type="button" className="btn s" onClick={() => decide(x.id, true)}><Icon name="check" size={15} />{t('rq_accept')}</button>
-                <button type="button" className="btn s o dg" onClick={() => decide(x.id, false)}><Icon name="x" size={15} />{t('rq_reject')}</button>
+                <button type="button" className="btn s o dg" onClick={() => setRej({ id: x.id, reason: '' })}><Icon name="x" size={15} />{t('rq_reject')}</button>
               </div>
+            </div>
+            {rej?.id === x.id && (
+              <ConfirmForm message={t('rq_reject_ask')} confirmLabel={t('rq_reject')} onConfirm={() => decide(x.id, false, rej.reason)} onCancel={() => setRej(null)}>
+                <input value={rej.reason} maxLength={200} onChange={(e) => setRej({ ...rej, reason: e.target.value })} placeholder={t('rq_reject_reason')} aria-label={t('rq_reject_reason')} style={{ flex: 1, minWidth: 180 }} />
+              </ConfirmForm>
+            )}
             </div>
           ))}
         </div>
@@ -70,7 +80,7 @@ export default function Dashboard() {
                 <div className="av">{L(i.name).charAt(0)}</div>
                 <div className="m"><b>{L(i.name)}</b><small>{L(i.doctor)}</small></div>
                 {i.visitType && <span className={`vt-badge ${i.visitType}`}>{t(`visit_${i.visitType}`)}</span>}
-                <span className="time-tag">{fmtTime(i.time)}</span>
+                <span className="time-tag">{i.date ? `${fmtDay(i.date)} · ` : ''}{fmtTime(i.time)}</span>
                 <span className={`st ${i.status}`}>{t(`st_${i.status}`)}</span>
                 <div className="act-group">
                   {ACTIONS.map(([s, k]) => <button type="button" key={s} className={`btn s ${i.status === s ? '' : 'o'}`} onClick={() => change(i.id, s)}>{t(k)}</button>)}

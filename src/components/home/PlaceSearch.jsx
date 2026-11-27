@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Icon from '../Icon.jsx';
 import { useI18n } from '../../context/I18nContext.jsx';
 import { searchPlaces } from '../../api/public.js';
+import { API_URL } from '../../config/env.js';
 import LeafletMap, { hasPos, distanceKm } from '../ui/LeafletMap.jsx';
 
 // بحث الأطباء والمعامل (قائمة + خريطة) — بيتستخدم في الصفحة العامة وجوه صفحة حجز المريض
@@ -53,10 +54,10 @@ export default function PlaceSearch({ onPick, note, title = true }) {
         <div className="sr-list">
           {loading ? <div className="state">{t('loading')}</div> : shown.length === 0 ? <div className="state">{t('sr_none')}</div> : shown.map((p) => (
             <article key={p.id} className={`sr-card ${selected?.id === p.id ? 'on' : ''}`} onClick={() => setSelected(p)}>
-              <div className="sr-ic"><Icon name={p.type === 'lab' ? 'flask' : 'stethoscope'} size={22} /></div>
+              <div className="sr-ic">{p.avatarV ? <img src={`${API_URL}/public/avatar/${p.id}?v=${p.avatarV}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }} loading="lazy" /> : <Icon name={p.type === 'lab' ? 'flask' : 'stethoscope'} size={22} />}</div>
               <div className="sr-info"><b>{L(p.name)}</b><span>{L(p.specialty)}</span><small><Icon name="mapPin" size={13} /> {L(p.address)} · {L(p.city)}{near && me && hasPos(p) && <> · <span className="sr-dist">{num(Math.round(distanceKm(me, p) * 10) / 10)} {t('km')}</span></>}</small>
                 {hasPos(p) && <a className="sr-dir" href={`https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>{t('directions')}</a>}</div>
-              <div className="sr-side"><span className="rate"><Icon name="star" size={14} />{num(p.rating)}</span>
+              <div className="sr-side"><span className="rate"><Icon name="star" size={14} />{p.rating ? num(p.rating) : '—'}{p.ratingCount ? <small> ({num(p.ratingCount)})</small> : null}</span>
                 <button type="button" className="btn s" onClick={(e) => { e.stopPropagation(); onPick(p); }}>{t('sr_book')}</button></div>
             </article>
           ))}

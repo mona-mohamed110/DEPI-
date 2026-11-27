@@ -2,9 +2,11 @@ const AccessLog = require("../models/AccessLog");
 
 const ACTION_LABELS = {
   viewed_file: { ar: "اطلع على الملف الطبي", en: "Viewed the medical file" },
+  updated_prescription: { ar: "عدّل آخر روشتة", en: "Edited the latest prescription" },
   added_prescription: { ar: "أضاف روشتة جديدة", en: "Added a new prescription" },
   uploaded_result: { ar: "رفع نتيجة تحليل", en: "Uploaded a lab result" },
   granted_access: { ar: "مُنح إذن الاطلاع", en: "Was granted access" },
+  updated_profile: { ar: "عدّل البيانات الصحية", en: "Updated health data" },
   revoked_access: { ar: "أُلغي إذن الاطلاع", en: "Access was revoked" },
 };
 

@@ -22,7 +22,7 @@ const ago = (h) => iso(now - h * H);
 const dayKey = (offsetDays) => { const d = new Date(now + offsetDays * D); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 const ar = (a, e) => ({ ar: a, en: e });
 
-const notif = { notifEmail: true, notifAppt: true, notifMeds: true, notifAccess: true, notifNew: true, twoFactor: true };
+const notif = { twoFactor: true };
 
 export function buildSeed() {
   const users = [

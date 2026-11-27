@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import ScrollToHash from './components/home/ScrollToHash.jsx';
 import RequireRole from './components/shell/RequireRole.jsx';
 import { AccountPage, ProfilePage } from './components/shell/AccountPages.jsx';
+import SupportPage from './components/shell/SupportPage.jsx';
 
 import Home from './pages/home/Home.jsx';
 import LearnMore from './pages/home/LearnMore.jsx';
@@ -47,6 +48,13 @@ import AdminLayout from './pages/Admin/AdminLayout.jsx';
 import Monitoring from './pages/Admin/Monitoring.jsx';
 import Licenses from './pages/Admin/Licenses.jsx';
 import Accounts from './pages/Admin/Accounts.jsx';
+import Messages from './pages/Admin/Messages.jsx';
+import AdminIndex from './pages/Admin/AdminIndex.jsx';
+import AdminUsers from './pages/Admin/AdminUsers.jsx';
+import ActivityLog from './pages/Admin/ActivityLog.jsx';
+import EmailDesign from './pages/Admin/EmailDesign.jsx';
+import AdminReviews from './pages/Admin/Reviews.jsx';
+import FeedbackPage from './components/shell/FeedbackPage.jsx';
 
 const Root = () => (<><ScrollToHash /><Outlet /></>);
 const guard = (role, el) => <RequireRole role={role}>{el}</RequireRole>;
@@ -74,7 +82,9 @@ export const router = createBrowserRouter([
           { path: 'appointments', element: <PtAppointments /> },
           { path: 'permissions', element: <Permissions /> },
           { path: 'profile', element: <PtProfile /> },
-          { path: 'account', element: <AccountPage notifs={['notifEmail', 'notifAppt', 'notifMeds', 'notifAccess']} /> },
+          { path: 'feedback', element: <FeedbackPage /> },
+          { path: 'support', element: <SupportPage /> },
+          { path: 'account', element: <AccountPage /> },
         ],
       },
       {
@@ -88,7 +98,9 @@ export const router = createBrowserRouter([
           { path: 'team', element: <Team /> },
           { path: 'professional', element: <Professional /> },
           { path: 'profile', element: <ProfilePage /> },
-          { path: 'account', element: <AccountPage notifs={['notifEmail', 'notifAppt', 'notifAccess']} /> },
+          { path: 'feedback', element: <FeedbackPage /> },
+          { path: 'support', element: <SupportPage /> },
+          { path: 'account', element: <AccountPage /> },
         ],
       },
       {
@@ -103,7 +115,9 @@ export const router = createBrowserRouter([
           { path: 'results', element: <ResultsLog /> },
           { path: 'settings/profile', element: <LabProfile /> },
           { path: 'settings/personal', element: <ProfilePage /> },
-          { path: 'settings/account', element: <AccountPage notifs={['notifEmail', 'notifNew']} /> },
+          { path: 'settings/support', element: <SupportPage /> },
+          { path: 'settings/feedback', element: <FeedbackPage /> },
+          { path: 'settings/account', element: <AccountPage /> },
         ],
       },
       {
@@ -113,17 +127,22 @@ export const router = createBrowserRouter([
           { path: 'appointments', element: <RcAppointments /> },
           { path: 'patients', element: <RcPatients /> },
           { path: 'profile', element: <ProfilePage /> },
-          { path: 'account', element: <AccountPage notifs={['notifEmail', 'notifAppt']} /> },
+          { path: 'account', element: <AccountPage /> },
         ],
       },
       {
         path: '/admin', element: guard('admin', <AdminLayout />),
         children: [
-          { index: true, element: <Monitoring /> },
+          { index: true, element: <AdminIndex /> },
+          { path: 'users', element: <AdminUsers /> },
+          { path: 'activity', element: <ActivityLog /> },
+          { path: 'email-design', element: <EmailDesign /> },
           { path: 'licenses', element: <Licenses /> },
           { path: 'accounts', element: <Accounts /> },
+          { path: 'messages', element: <Messages /> },
+          { path: 'reviews', element: <AdminReviews /> },
           { path: 'profile', element: <ProfilePage /> },
-          { path: 'account', element: <AccountPage notifs={['notifEmail']} /> },
+          { path: 'account', element: <AccountPage /> },
         ],
       },
       { path: '*', element: <Navigate to="/" replace /> },

@@ -1,5 +1,7 @@
 
 const express = require("express");
+const path = require("path");
+const fs = require("fs");
 const mongoose = require("mongoose");
 
 const LabRequest = require("../models/LabRequest");
@@ -31,6 +33,7 @@ function requestRow(item) {
     doctor: item.doctor,
     status: item.status,
     files: item.files || [],
+    resultStatus: item.resultStatus || "normal",
     notes: item.notes || "",
     createdAt: item.createdAt,
     uploadedAt: item.uploadedAt,
@@ -193,6 +196,8 @@ router.post(
 
       request.status = "done";
       request.files = req.files.map((file) => file.originalname);
+      request.filePaths = req.files.map((file) => `uploads/${file.filename}`);
+      request.resultStatus = resultDocuments[0].status;
       request.notes = String(req.body.notes || "").trim();
       request.uploadedAt = uploadedAt;
 
@@ -246,6 +251,38 @@ router.get("/results", async (req, res) => {
     return res.json(results.map(requestRow));
   } catch (error) {
     console.error("Get lab results error:", error);
+    return res.status(500).json({ code: "server_error" });
+  }
+});
+
+// فتح ملف نتيجة مرفوع (للمعمل صاحب الطلب فقط)
+router.get("/requests/:id/files/:index", async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).json({ code: "not_found" });
+    }
+    const request = await LabRequest.findOne({ _id: req.params.id, labId: req.user._id });
+    const i = Number(req.params.index);
+    if (!request || !Number.isInteger(i) || i < 0) {
+      return res.status(404).json({ code: "not_found" });
+    }
+
+    let rel = (request.filePaths || [])[i];
+    if (!rel) {
+      // طلبات قديمة: نجيب المسار من سجل نتيجة المريض
+      const docs = await LabResult.find({ requestId: request._id }).sort({ createdAt: 1 });
+      rel = docs[i] && docs[i].filePath;
+    }
+    if (!rel) return res.status(404).json({ code: "file_not_found" });
+
+    const root = path.resolve(__dirname, "..", "uploads");
+    const filePath = path.resolve(__dirname, "..", rel);
+    if (!filePath.startsWith(root + path.sep) || !fs.existsSync(filePath)) {
+      return res.status(404).json({ code: "file_not_found" });
+    }
+    return res.sendFile(filePath);
+  } catch (error) {
+    console.error("Open lab file error:", error);
     return res.status(500).json({ code: "server_error" });
   }
 });

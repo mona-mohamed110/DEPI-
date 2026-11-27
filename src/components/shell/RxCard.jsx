@@ -2,9 +2,10 @@
 import { useState } from 'react';
 import Icon from '../Icon.jsx';
 import { useI18n } from '../../context/I18nContext.jsx';
+import '../../styles/rx.css';
 
 export default function RxCard({ rx, children }) {
-  const { t, L, fmtDate } = useI18n();
+  const { t, L, fmtDate, num } = useI18n();
   const [open, setOpen] = useState(false);
 
   const tests = rx.tests || [];
@@ -13,43 +14,37 @@ export default function RxCard({ rx, children }) {
 
   return (
     <>
-      <article className="rx-card">
-        <header className="rx-head">
-          <div className="res-icon">
-            <Icon name="pill" size={22} />
+      <article className="rxc">
+        <div className="rxc-top">
+          <span className="rxc-ic"><Icon name="pill" size={22} /></span>
+          <div className="rxc-main">
+            <b>{L(rx.doctor)} — {t(`visit_${rx.visit}`)}</b>
+            <small>{L(rx.specialty)} · {fmtDate(rx.date)}</small>
           </div>
+        </div>
 
-          <button
-            type="button"
-            className="rx-open-btn"
-            onClick={() => setOpen(true)}
-          >
-            <div className="m">
-              <b>
-                {L(rx.doctor)} — {t(`visit_${rx.visit}`)}
-              </b>
+        {rx.diagnosis && <p className="rxc-dx"><span>{t('rx_diagnosis')}:</span> {L(rx.diagnosis)}</p>}
 
-              <small>
-                {L(rx.specialty)} · {fmtDate(rx.date)}
-              </small>
+        <div className="rxc-sum">
+          <span><Icon name="pill" size={14} /> {num((rx.items || []).length)} {t('rxc_meds')}</span>
+          <span><Icon name="flask" size={14} /> {num(labTests.length)} {t('rxc_labs')}</span>
+          <span><Icon name="scan" size={14} /> {num(xrayTests.length)} {t('rxc_xrays')}</span>
+        </div>
 
-              {rx.diagnosis && (
-                <small>
-                  {t('rx_diagnosis')}: {L(rx.diagnosis)}
-                </small>
-              )}
-
-              <span className="rx-details-hint">
-                عرض تفاصيل الروشتة
-                <Icon name="chevron-left" size={15} />
+        {tests.length > 0 && (
+          <div className="rxc-chips">
+            {tests.map((test, i) => (
+              <span key={i} className={`rxc-chip ${test.kind === 'xray' ? 'x' : ''}`}>
+                <Icon name={test.kind === 'xray' ? 'scan' : 'flask'} size={13} /> {L(test.name)}
               </span>
-            </div>
-          </button>
-
-          <div className="rx-actions">
-            {children}
+            ))}
           </div>
-        </header>
+        )}
+
+        <div className="rxc-foot">
+          <button type="button" className="btn s" onClick={() => setOpen(true)}><Icon name="eye" size={15} /> {t('rxc_details')}</button>
+          {children}
+        </div>
       </article>
 
       {open && (
@@ -153,7 +148,7 @@ export default function RxCard({ rx, children }) {
               {/* التحاليل */}
               <section className="rx-detail-section">
                 <h3>
-                  <Icon name="flask-conical" size={18} />
+                  <Icon name="flask" size={18} />
                   التحاليل المطلوبة
                 </h3>
 
@@ -162,7 +157,7 @@ export default function RxCard({ rx, children }) {
                     {labTests.map((test, index) => (
                       <div className="rx-medicine" key={index}>
                         <div className="rx-medicine-number">
-                          <Icon name="flask-conical" size={17} />
+                          <Icon name="flask" size={17} />
                         </div>
 
                         <div className="rx-medicine-content">
