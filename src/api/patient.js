@@ -56,6 +56,10 @@ export const getAppointments = () =>
 export const getRejectionCount = () => api.get('/patient/rejections/count');
 export const markRejectionsSeen = () => api.post('/patient/rejections/seen');
 
+export const getMyProviders = () => api.get('/patient/my-providers');
+
+export const getActiveBooking = (providerId) => api.get('/patient/active-booking', { providerId });
+
 export const getBookedSlots = (providerId, date) =>
   api.get('/patient/booked-slots', { providerId, date });
 
@@ -64,6 +68,12 @@ export const bookAppointment = (d) =>
 
 export const updateAppointment = (id, d) =>
   api.patch(`/patient/appointments/${id}`, d);
+
+export const requestEditAppointment = (id, d) =>
+  api.post(`/patient/appointments/${id}/edit-request`, d);
+
+export const withdrawEditRequest = (id) =>
+  api.del(`/patient/appointments/${id}/edit-request`);
 
 export const cancelAppointment = (id) =>
   api.del(`/patient/appointments/${id}`);

@@ -284,6 +284,7 @@ router.get("/requests", async function (req, res) {
       status: "pending",
       kind: "doctor",
       providerId: req.doctorId,
+      cancelRequested: { $ne: true },
     })
       .populate("patientId", "name phone")
       .populate("providerId", "name")
@@ -311,6 +312,7 @@ router.post("/requests/:id/accept", async function (req, res) {
       status: "pending",
       kind: "doctor",
       providerId: req.doctorId,
+      cancelRequested: { $ne: true },
     });
 
     if (!booking) {
@@ -405,6 +407,166 @@ router.post("/requests/:id/reject", async function (req, res) {
     res.json({ ok: true, id: String(booking._id) });
   } catch (error) {
     console.error("Reception reject request error:", error);
+    res.status(500).json({ code: "server_error" });
+  }
+});
+
+// ========================================
+// طلبات إلغاء الحجز من المرضى
+// ========================================
+router.get("/cancel-requests", async function (req, res) {
+  try {
+    const list = await Booking.find({
+      kind: "doctor",
+      providerId: req.doctorId,
+      status: { $in: ["pending", "confirmed"] },
+      cancelRequested: true,
+    })
+      .populate("patientId", "name phone")
+      .populate("providerId", "name")
+      .sort({ cancelRequestedAt: 1 });
+    res.json(list.map((b) => ({ ...requestRow(b), status: b.status })));
+  } catch (error) {
+    console.error("Reception cancel requests error:", error);
+    res.status(500).json({ code: "server_error" });
+  }
+});
+
+router.post("/cancel-requests/:id/:decision", async function (req, res) {
+  try {
+    const { id, decision } = req.params;
+    if (!mongoose.isValidObjectId(id) || !["approve", "decline"].includes(decision)) {
+      return res.status(400).json({ code: "invalid_data" });
+    }
+    const booking = await Booking.findOne({
+      _id: id,
+      kind: "doctor",
+      providerId: req.doctorId,
+      status: { $in: ["pending", "confirmed"] },
+      cancelRequested: true,
+    });
+    if (!booking) return res.status(404).json({ code: "not_found" });
+
+    if (decision === "approve") {
+      booking.status = "cancelled";
+      booking.cancelRequested = false;
+    } else {
+      booking.cancelRequested = false;
+      booking.cancelDeclined = true;
+    }
+    await booking.save();
+
+    // إبلاغ المريض بالبريد (لا يوقف القرار عند الفشل)
+    try {
+      const [patient, doctor] = await Promise.all([
+        User.findById(booking.patientId).select("email name"),
+        User.findById(booking.providerId).select("name"),
+      ]);
+      if (patient && patient.email) {
+        const where = (doctor ? doctor.name : "الطبيب") + " بتاريخ " + booking.date + " الساعة " + booking.time;
+        const text = decision === "approve"
+          ? "مرحباً " + patient.name + "،\n\nتمت الموافقة على إلغاء حجزك عند " + where + ".\n\nيمكنك حجز موعد جديد من حسابك على المنصة."
+          : "مرحباً " + patient.name + "،\n\nلم تتم الموافقة على إلغاء حجزك عند " + where + ". الحجز ما زال قائماً.";
+        await sendEmail(patient.email, decision === "approve" ? "Shefaa - تم إلغاء الحجز" : "Shefaa - لم يتم إلغاء الحجز", text);
+      }
+    } catch (mailError) {
+      console.error("Cancel decision email error:", mailError.message || mailError);
+    }
+
+    res.json({ ok: true, id: String(booking._id) });
+  } catch (error) {
+    console.error("Reception cancel decision error:", error);
+    res.status(500).json({ code: "server_error" });
+  }
+});
+
+// ========================================
+// طلبات تعديل موعد من المرضى (بعد قبول الحجز)
+// ========================================
+router.get("/edit-requests", async function (req, res) {
+  try {
+    const list = await Booking.find({
+      kind: "doctor",
+      providerId: req.doctorId,
+      status: "confirmed",
+      cancelRequested: { $ne: true },
+      editReqDate: { $ne: "" },
+    })
+      .populate("patientId", "name phone")
+      .populate("providerId", "name")
+      .sort({ editReqAt: 1 });
+    res.json(list.map((b) => ({ ...requestRow(b), newDate: b.editReqDate, newTime: b.editReqTime })));
+  } catch (error) {
+    console.error("Reception edit requests error:", error);
+    res.status(500).json({ code: "server_error" });
+  }
+});
+
+router.post("/edit-requests/:id/:decision", async function (req, res) {
+  try {
+    const { id, decision } = req.params;
+    if (!mongoose.isValidObjectId(id) || !["approve", "decline"].includes(decision)) {
+      return res.status(400).json({ code: "invalid_data" });
+    }
+    const booking = await Booking.findOne({
+      _id: id,
+      kind: "doctor",
+      providerId: req.doctorId,
+      status: "confirmed",
+      editReqDate: { $ne: "" },
+    });
+    if (!booking) return res.status(404).json({ code: "not_found" });
+
+    const oldDate = booking.date;
+    const oldTime = booking.time;
+
+    if (decision === "approve") {
+      const provider = await User.findById(booking.providerId).select("role schedule labProfile");
+      if (provider && !withinHours(provider, booking.editReqDate, booking.editReqTime)) {
+        return res.status(400).json({ code: "outside_hours" });
+      }
+      const conflict = await Booking.findOne({
+        _id: { $ne: booking._id },
+        providerId: booking.providerId,
+        date: booking.editReqDate,
+        time: booking.editReqTime,
+        status: { $in: ["pending", "confirmed"] },
+      });
+      if (conflict) return res.status(409).json({ code: "slot_unavailable" });
+      booking.date = booking.editReqDate;
+      booking.time = booking.editReqTime;
+      booking.queue = "not-arrived";
+      booking.visitType = null;
+    } else {
+      booking.editDeclined = true;
+    }
+    const newDate = booking.editReqDate;
+    const newTime = booking.editReqTime;
+    booking.editReqDate = "";
+    booking.editReqTime = "";
+    booking.editReqAt = null;
+    await booking.save();
+
+    // إبلاغ المريض بالبريد (لا يوقف القرار عند الفشل)
+    try {
+      const [patient, doctor] = await Promise.all([
+        User.findById(booking.patientId).select("email name"),
+        User.findById(booking.providerId).select("name"),
+      ]);
+      if (patient && patient.email) {
+        const who = doctor ? doctor.name : "الطبيب";
+        const text = decision === "approve"
+          ? "مرحباً " + patient.name + "،\n\nتمت الموافقة على تعديل موعدك عند " + who + ". الموعد الجديد: " + newDate + " الساعة " + newTime + "."
+          : "مرحباً " + patient.name + "،\n\nلم تتم الموافقة على تعديل موعدك عند " + who + ". موعدك الحالي ما زال: " + oldDate + " الساعة " + oldTime + ".";
+        await sendEmail(patient.email, decision === "approve" ? "Shefaa - تم تعديل الموعد" : "Shefaa - لم يتم تعديل الموعد", text);
+      }
+    } catch (mailError) {
+      console.error("Edit decision email error:", mailError.message || mailError);
+    }
+
+    res.json({ ok: true, id: String(booking._id) });
+  } catch (error) {
+    console.error("Reception edit decision error:", error);
     res.status(500).json({ code: "server_error" });
   }
 });

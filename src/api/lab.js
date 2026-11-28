@@ -11,6 +11,8 @@ export const getRequests = (status) => api.get('/lab/requests', { status });
 export const createRequest = (d) => api.post('/lab/requests', d);
 export const startRequest = (id) => api.patch(`/lab/requests/${id}/start`);
 export const uploadResult = (id, { files, notes, status }) => upload(`/lab/requests/${id}/result`, files, { notes, status });
+export const editResult = (id, { files, notes, status, remove }) => upload(`/lab/requests/${id}/result/edit`, files, { notes, status, remove });
+export const deleteResult = (id) => api.del(`/lab/requests/${id}/result`);
 // فتح ملف نتيجة (في وضع التجربة بنفتح الملف المحفوظ محليًا)
 export const openResultFile = (q, i) => {
   const d = q.fileData && q.fileData[i];

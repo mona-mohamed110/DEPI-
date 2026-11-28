@@ -18,10 +18,29 @@ const { CHRONIC, specialtyView } = require("../data/catalog");
 const AccessLog = require("../models/AccessLog");
 const { logAccess, ACTION_LABELS } = require("../utils/accessLog");
 const { requireAuth, requireRole } = require("../middleware/auth");
+const { placeView } = require("../utils/placeView");
+const { claimOrphans } = require("../utils/labLink");
+const { ratingsFor } = require("../utils/ratings");
 
 const router = express.Router();
 
 router.use(requireAuth, requireRole("patient"));
+
+// تاريخ اليوم بتوقيت القاهرة (YYYY-MM-DD)
+function cairoToday() {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+}
+
+// حجز مفتوح للمريض عند طبيب (لم يُرفض ولم يُلغَ ولم ينتهِ ولم يفت يومه)
+function openDoctorBooking(patientId, providerId) {
+  return Booking.findOne({
+    patientId,
+    providerId,
+    kind: "doctor",
+    status: { $in: ["pending", "confirmed"] },
+    date: { $gte: cairoToday() },
+  });
+}
 
 function bookingRow(booking) {
   return {
@@ -38,6 +57,18 @@ function bookingRow(booking) {
     test: booking.test || "",
     queue: booking.queue,
     rejectReason: booking.rejectReason || "",
+    // التعديل متاح للمريض قبل موافقة موظف الاستقبال فقط
+    editable: booking.kind === "doctor" && booking.status === "pending" && !booking.cancelRequested,
+    editRequest: booking.editReqDate ? { date: booking.editReqDate, time: booking.editReqTime } : null,
+    editDeclined: !!booking.editDeclined,
+    canRequestEdit:
+      booking.kind === "doctor" &&
+      booking.status === "confirmed" &&
+      !booking.cancelRequested &&
+      !booking.editReqDate &&
+      booking.date >= cairoToday(),
+    cancelRequested: !!booking.cancelRequested,
+    cancelDeclined: !!booking.cancelDeclined,
     rejectNew: booking.status === "rejected" && booking.rejectSeen === false,
   };
 }
@@ -74,6 +105,43 @@ router.get("/appointments", async (req, res) => {
   } catch (error) {
     console.error("Get patient appointments error:", error);
     return res.status(500).json({ code: "server_error" });
+  }
+});
+
+// الأطباء والمعامل التي تعامل معها المريض (حجز مؤكد أو مكتمل)، الأحدث تعاملاً أولاً
+router.get("/my-providers", async (req, res) => {
+  try {
+    const rows = await Booking.find({ patientId: req.user._id, status: { $in: ["confirmed", "done"] } })
+      .sort({ date: -1, time: -1 })
+      .select("providerId");
+    const ids = [];
+    for (const b of rows) {
+      const id = String(b.providerId);
+      if (!ids.includes(id)) ids.push(id);
+    }
+    if (!ids.length) return res.json([]);
+    const users = await User.find({ _id: { $in: ids }, role: { $in: ["doctor", "lab"] }, status: "active" })
+      .select("name role extra specialty address location labProfile schedule avatarAt");
+    const rated = await ratingsFor(users.map((u) => u._id));
+    const byId = new Map(users.map((u) => [String(u._id), u]));
+    res.json(ids.filter((id) => byId.has(id)).map((id) => placeView(byId.get(id), rated)));
+  } catch (error) {
+    console.error("my-providers error:", error);
+    res.status(500).json({ code: "server_error" });
+  }
+});
+
+// هل للمريض حجز مفتوح عند هذا الطبيب؟ (لمنع الحجز المتكرر)
+router.get("/active-booking", async (req, res) => {
+  try {
+    const { providerId } = req.query;
+    if (!mongoose.Types.ObjectId.isValid(providerId)) return res.status(400).json({ code: "invalid_data" });
+    const b = await openDoctorBooking(req.user._id, providerId);
+    if (!b) return res.json({ booking: null });
+    const full = await Booking.findById(b._id).populate("providerId", "name extra specialty");
+    res.json({ booking: bookingRow(full) });
+  } catch (error) {
+    res.status(500).json({ code: "server_error" });
   }
 });
 
@@ -121,6 +189,11 @@ router.post("/appointments", async (req, res) => {
 
     if (!withinHours(provider, String(date), String(time))) {
       return res.status(400).json({ code: "outside_hours" });
+    }
+
+    // حجز واحد مفتوح فقط لكل طبيب حتى ينتهي
+    if (kind === "doctor" && (await openDoctorBooking(req.user._id, providerId))) {
+      return res.status(409).json({ code: "active_booking_exists" });
     }
 
     const existingBooking = await Booking.findOne({
@@ -238,6 +311,15 @@ router.patch("/appointments/:id", async (req, res) => {
       return res.status(404).json({ code: "not_found" });
     }
 
+    if (booking.cancelRequested) {
+      return res.status(403).json({ code: "cancel_pending" });
+    }
+
+    // بعد موافقة موظف الاستقبال يُغلق التعديل على المريض
+    if (booking.status !== "pending") {
+      return res.status(403).json({ code: "edit_locked" });
+    }
+
     const provider = await User.findById(booking.providerId).select("role schedule labProfile");
     if (provider && !withinHours(provider, String(date), String(time))) {
       return res.status(400).json({ code: "outside_hours" });
@@ -273,6 +355,65 @@ router.patch("/appointments/:id", async (req, res) => {
   }
 });
 
+// طلب تعديل موعد حجز مقبول (يُرسل لموظف الاستقبال، ويبقى الموعد الحالي حتى موافقته)
+router.post("/appointments/:id/edit-request", async (req, res) => {
+  try {
+    const { date, time } = req.body;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date || "")) || !/^\d{1,2}:\d{2}$/.test(String(time || ""))) {
+      return res.status(400).json({ code: "invalid_data" });
+    }
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ code: "not_found" });
+
+    const booking = await Booking.findOne({ _id: req.params.id, patientId: req.user._id, kind: "doctor", status: "confirmed" });
+    if (!booking) return res.status(404).json({ code: "not_found" });
+    if (booking.cancelRequested) return res.status(403).json({ code: "cancel_pending" });
+    if (date < cairoToday()) return res.status(400).json({ code: "past_date" });
+    if (date === booking.date && time === booking.time) return res.status(400).json({ code: "invalid_data" });
+
+    const provider = await User.findById(booking.providerId).select("role schedule labProfile");
+    if (provider && !withinHours(provider, String(date), String(time))) {
+      return res.status(400).json({ code: "outside_hours" });
+    }
+    const conflict = await Booking.findOne({
+      _id: { $ne: booking._id },
+      providerId: booking.providerId,
+      date,
+      time,
+      status: { $in: ["pending", "confirmed"] },
+    });
+    if (conflict) return res.status(409).json({ code: "slot_unavailable" });
+
+    booking.editReqDate = String(date);
+    booking.editReqTime = String(time);
+    booking.editReqAt = new Date();
+    booking.editDeclined = false;
+    await booking.save();
+
+    const result = await Booking.findById(booking._id).populate("providerId", "name extra specialty");
+    return res.json(bookingRow(result));
+  } catch (error) {
+    console.error("Edit request error:", error);
+    return res.status(500).json({ code: "server_error" });
+  }
+});
+
+// سحب طلب التعديل
+router.delete("/appointments/:id/edit-request", async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ code: "not_found" });
+    const booking = await Booking.findOne({ _id: req.params.id, patientId: req.user._id, kind: "doctor", status: "confirmed" });
+    if (!booking) return res.status(404).json({ code: "not_found" });
+    booking.editReqDate = "";
+    booking.editReqTime = "";
+    booking.editReqAt = null;
+    await booking.save();
+    const result = await Booking.findById(booking._id).populate("providerId", "name extra specialty");
+    return res.json(bookingRow(result));
+  } catch (error) {
+    return res.status(500).json({ code: "server_error" });
+  }
+});
+
 // إلغاء الحجز
 router.delete("/appointments/:id", async (req, res) => {
   try {
@@ -280,21 +421,35 @@ router.delete("/appointments/:id", async (req, res) => {
       return res.status(404).json({ code: "not_found" });
     }
 
-    const booking = await Booking.findOneAndUpdate(
-      {
-        _id: req.params.id,
-        patientId: req.user._id,
-        status: { $in: ["pending", "confirmed"] },
-      },
-      { status: "cancelled" },
-      { new: true }
-    );
+    const booking = await Booking.findOne({
+      _id: req.params.id,
+      patientId: req.user._id,
+      status: { $in: ["pending", "confirmed"] },
+    });
 
     if (!booking) {
       return res.status(404).json({ code: "not_found" });
     }
 
-    return res.json({ success: true });
+    // المعمل: إلغاء مباشر
+    if (booking.kind !== "doctor") {
+      booking.status = "cancelled";
+      await booking.save();
+      return res.json({ success: true });
+    }
+
+    // الطبيب: طلب إلغاء ينتظر موافقة موظف الاستقبال (يبقى الحجز قائماً حتى ذلك الحين)
+    if (!booking.cancelRequested) {
+      booking.cancelRequested = true;
+      booking.editReqDate = "";
+      booking.editReqTime = "";
+      booking.editReqAt = null;
+      booking.cancelRequestedAt = new Date();
+      booking.cancelDeclined = false;
+      await booking.save();
+    }
+    const result = await Booking.findById(booking._id).populate("providerId", "name extra specialty");
+    return res.json({ success: true, requested: true, row: bookingRow(result) });
   } catch (error) {
     console.error("Cancel patient appointment error:", error);
     return res.status(500).json({ code: "server_error" });
@@ -396,6 +551,7 @@ router.get("/dashboard", async (req, res) => {
 // عرض نتائج التحاليل الخاصة بالمريض
 router.get("/results", async (req, res) => {
   try {
+    await claimOrphans(req.user).catch((e) => console.error("claimOrphans:", e));
     const results = await LabResult.find({
       patientId: req.user._id,
     })
@@ -984,7 +1140,7 @@ router.get("/permissions/log", async (req, res) => {
   try {
     const rows = await AccessLog.find({ patientId: req.user._id })
       .sort({ at: -1 })
-      .limit(100)
+      .limit(300)
       .lean();
 
     return res.json(

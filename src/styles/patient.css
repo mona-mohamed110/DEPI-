@@ -512,3 +512,42 @@
 .app-root.patient-app .tri-spec:last-child{border-bottom:0}
 .app-root.patient-app .tri-spec-h{display:flex;align-items:center;gap:8px}
 .app-root.patient-app .tri-none{margin-top:6px}
+
+/* مواعيدي: فلاتر + تقويم */
+.app-root.patient-app .apx{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+.app-root.patient-app .apx-side{order:2;position:sticky;top:12px}
+.app-root.patient-app .apx-main{order:1;min-width:0}
+.app-root.patient-app .apx-filters{display:grid;gap:12px;margin-bottom:14px}
+.app-root.patient-app .apx-search{display:flex;align-items:center;gap:8px;border:1px solid var(--bd);border-radius:10px;padding:0 12px;background:var(--bg,#fff)}
+.app-root.patient-app .apx-search input{border:0;outline:0;background:transparent;flex:1;padding:10px 0;font:inherit;color:var(--tx);min-width:0}
+.app-root.patient-app .apx-tabs,.app-root.patient-app .apx-kinds{display:flex;flex-wrap:wrap;gap:6px}
+.app-root.patient-app .apx-tabs button,.app-root.patient-app .apx-kinds button{font:inherit;font-size:14px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:20px;padding:6px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.app-root.patient-app .apx-tabs button em{font-style:normal;font-size:12px;background:var(--pr2);color:var(--pr);border-radius:10px;padding:0 7px;min-width:20px;text-align:center}
+.app-root.patient-app .apx-tabs button.on,.app-root.patient-app .apx-kinds button.on{background:var(--pr);border-color:var(--pr);color:var(--pr-ink,#fff)}
+.app-root.patient-app .apx-tabs button.on em{background:rgba(255,255,255,.25);color:inherit}
+.app-root.patient-app .apx-kinds button{border-radius:10px;padding:5px 12px;font-size:13px}
+.app-root.patient-app .apx-kinds .apx-reset{margin-inline-start:auto;border-style:dashed;color:var(--mu)}
+.app-root.patient-app .apx-count{color:var(--mu);font-size:13px;margin:0 2px 8px}
+.app-root.patient-app .apx-group{margin-bottom:14px}
+.app-root.patient-app .apx-group h3{font-size:14px;margin:0 2px 6px;color:var(--mu);font-weight:600}
+.app-root.patient-app .apx-group h3.today{color:var(--pr)}
+.app-root.patient-app .apx-item:last-child{border-bottom:0}
+.app-root.patient-app .apx-time{flex:0 0 auto;min-width:68px;font-weight:700;color:var(--pr);font-size:14px}
+.app-root.patient-app .apc{width:100%}
+.app-root.patient-app .apc .wc-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.app-root.patient-app .apc .wc-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;text-align:center}
+.app-root.patient-app .apc .wc-h{font-size:10.5px;padding:4px 0 6px;white-space:nowrap;overflow:hidden;text-overflow:clip}
+.app-root.patient-app .apc .wc-d{aspect-ratio:auto;height:38px;padding:0;display:flex;align-items:center;justify-content:center;font-size:14px;min-width:0}
+.app-root.patient-app .apc .wc-arrow{flex:0 0 32px}
+.app-root.patient-app .apc .wc-nav b{font-size:15px}
+.app-root.patient-app .apc-d{position:relative}
+.app-root.patient-app .apc-d.has{font-weight:700;background:var(--pr2)}
+.app-root.patient-app .apc-d.on{background:var(--pr)}
+.app-root.patient-app .apc-dot{position:absolute;bottom:4px;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--pr)}
+.app-root.patient-app .apc-d.on .apc-dot{background:var(--pr-ink,#fff)}
+.app-root.patient-app .apx-day{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--bd);font-size:13px}
+@media (max-width:900px){
+  .app-root.patient-app .apx{grid-template-columns:1fr}
+  .app-root.patient-app .apx-side{order:0;position:static}
+}
+.app-root.patient-app .apx-lock{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--mu)}

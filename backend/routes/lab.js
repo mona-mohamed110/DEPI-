@@ -11,6 +11,7 @@ const User = require("../models/User");
 const { TEST_CATALOG } = require("../data/catalog");
 
 const { logAccess } = require("../utils/accessLog");
+const { findPatientByPhone } = require("../utils/labLink");
 const { requireAuth, requireRole } = require("../middleware/auth");
 const { uploadMultiple } = require("../middleware/upload");
 
@@ -23,6 +24,7 @@ function requestRow(item) {
   return {
     id: item._id.toString(),
     patientId: item.patientId?.toString() || null,
+    linked: !!item.patientId,
     bookingId: item.bookingId?.toString() || null,
     name: item.name,
     sex: item.sex,
@@ -80,10 +82,7 @@ router.post("/requests", async (req, res) => {
       return res.status(400).json({ code: "invalid_data" });
     }
 
-    const patient = await User.findOne({
-      role: "patient",
-      phone: cleanPhone,
-    });
+    const patient = await findPatientByPhone(cleanPhone);
 
     const request = await LabRequest.create({
       labId: req.user._id,
@@ -174,6 +173,12 @@ router.post(
 
 
 
+      // لو الطلب غير مربوط بمريض نحاول الربط الآن برقم الهاتف
+      if (!request.patientId && request.phone) {
+        const found = await findPatientByPhone(request.phone);
+        if (found) request.patientId = found._id;
+      }
+
       const uploadedAt = new Date();
 
       const resultDocuments = req.files.map((file) => ({
@@ -221,6 +226,96 @@ router.post(
     }
   }
 );
+
+// ===== تعديل / حذف نتيجة مرفوعة =====
+const UPLOADS_ROOT = path.resolve(__dirname, "..", "uploads");
+const MIME = { ".pdf": "application/pdf", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".dcm": "application/dicom" };
+
+function removeUploaded(rel) {
+  try {
+    const full = path.resolve(__dirname, "..", rel);
+    if (full.startsWith(UPLOADS_ROOT + path.sep) && fs.existsSync(full)) fs.unlinkSync(full);
+  } catch (e) { /* ignore */ }
+}
+
+// ملفات النتيجة الحالية (الطلبات القديمة قد لا يكون لها filePaths فنجيبها من سجل نتيجة المريض)
+async function currentFiles(request) {
+  if (request.filePaths && request.filePaths.length) {
+    return request.filePaths.map((p, i) => ({ path: p, name: (request.files && request.files[i]) || path.basename(p) }));
+  }
+  const docs = await LabResult.find({ requestId: request._id }).sort({ createdAt: 1 });
+  return docs.map((d) => ({ path: d.filePath, name: d.fileName }));
+}
+
+router.post("/requests/:id/result/edit", uploadMultiple, async (req, res) => {
+  const newFiles = req.files || [];
+  const dropNew = () => newFiles.forEach((f) => removeUploaded(`uploads/${f.filename}`));
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) { dropNew(); return res.status(404).json({ code: "not_found" }); }
+    const request = await LabRequest.findOne({ _id: req.params.id, labId: req.user._id, status: "done" });
+    if (!request) { dropNew(); return res.status(404).json({ code: "not_found" }); }
+
+    let remove = [];
+    try { remove = JSON.parse(req.body.remove || "[]"); } catch { remove = []; }
+    remove = Array.isArray(remove) ? remove.map(Number).filter(Number.isInteger) : [];
+
+    const existing = await currentFiles(request);
+    const kept = existing.filter((_, i) => !remove.includes(i));
+    const removed = existing.filter((_, i) => remove.includes(i));
+    const added = newFiles.map((f) => ({ path: `uploads/${f.filename}`, name: f.originalname, mime: f.mimetype }));
+    const finalList = [...kept, ...added];
+    if (!finalList.length) { dropNew(); return res.status(400).json({ code: "invalid_data" }); }
+
+    const status = ["normal", "low", "high", "followup"].includes(req.body.status) ? req.body.status : request.resultStatus || "normal";
+    request.files = finalList.map((f) => f.name);
+    request.filePaths = finalList.map((f) => f.path);
+    request.resultStatus = status;
+    request.notes = String(req.body.notes || "").trim();
+    await request.save();
+
+    removed.forEach((f) => removeUploaded(f.path));
+
+    // نسخة المريض: نعيد بناءها من القائمة الجديدة
+    if (request.patientId) {
+      await LabResult.deleteMany({ requestId: request._id });
+      await LabResult.insertMany(finalList.map((f) => ({
+        patientId: request.patientId,
+        labId: req.user._id,
+        bookingId: request.bookingId,
+        requestId: request._id,
+        title: request.test,
+        kind: ["lab", "xray", "ecg", "other"].includes(request.kind) ? request.kind : "lab",
+        status,
+        fileName: f.name,
+        filePath: f.path,
+        fileType: f.mime || MIME[path.extname(f.path).toLowerCase()] || "application/octet-stream",
+      })));
+    }
+
+    return res.json(requestRow(request));
+  } catch (error) {
+    dropNew();
+    console.error("Edit lab result error:", error);
+    return res.status(500).json({ code: "server_error" });
+  }
+});
+
+router.delete("/requests/:id/result", async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ code: "not_found" });
+    const request = await LabRequest.findOne({ _id: req.params.id, labId: req.user._id, status: "done" });
+    if (!request) return res.status(404).json({ code: "not_found" });
+
+    const files = await currentFiles(request);
+    files.forEach((f) => removeUploaded(f.path));
+    await LabResult.deleteMany({ requestId: request._id });
+    await LabRequest.deleteOne({ _id: request._id });
+    return res.json({ ok: true });
+  } catch (error) {
+    console.error("Delete lab result error:", error);
+    return res.status(500).json({ code: "server_error" });
+  }
+});
 
 // عرض النتائج المرفوعة
 router.get("/results", async (req, res) => {

@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Icon from '../../components/Icon.jsx';
 import ConfirmForm from '../../components/ui/ConfirmForm.jsx';
 import { Async } from '../../components/ui/States.jsx';
 import { useAsync } from '../../components/ui/hooks.js';
 import { useToast } from '../../components/ui/Toast.jsx';
 import { useI18n } from '../../context/I18nContext.jsx';
+import DotCalendar, { ymd } from '../../components/ui/DotCalendar.jsx';
 import { usePatient } from './PatientContext.jsx';
 import * as api from '../../api/patient.js';
 
@@ -55,16 +56,59 @@ function Active() {
 }
 
 function Log() {
-  const { t, L, fmtDateTime } = useI18n();
+  const { t, L, num, locale, fmtDateTime } = useI18n();
   const state = useAsync(() => api.getAccessLog(), []);
+  const [day, setDay] = useState('');
+  const [q, setQ] = useState('');
+  const list = state.data || [];
+  const needle = q.trim().toLowerCase();
+  const match = (l) => !needle || `${L(l.who)} ${L(l.action)}`.toLowerCase().includes(needle);
+  const days = useMemo(() => {
+    const m = {};
+    list.filter(match).forEach((l) => { const k = ymd(new Date(l.at)); m[k] = (m[k] || 0) + 1; });
+    return m;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [list, needle]);
+  const shown = list.filter((l) => match(l) && (!day || ymd(new Date(l.at)) === day));
+  const dayLabel = day ? new Date(`${day}T00:00:00`).toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' }) : '';
   return (
-    <div className="card"><Async state={state}>{(list) => list.length === 0 ? <div className="state">{t('pm_log_empty')}</div> : list.map((l) => (
-      <div className="row" key={l.id}>
-        <div className="res-icon"><Icon name="eye" size={20} /></div>
-        <div className="m"><b>{L(l.who)}</b><small>{L(l.action)}</small></div>
-        <small>{fmtDateTime(l.at)}</small>
+    <Async state={state}>{() => (
+      <div className="apx">
+        <aside className="apx-side">
+          <div className="card">
+            <DotCalendar days={days} value={day} onChange={setDay} />
+            {day && (
+              <div className="apx-day">
+                <span>{dayLabel}</span>
+                <button type="button" className="link-btn" onClick={() => setDay('')}>{t('apf_clear_day')}</button>
+              </div>
+            )}
+          </div>
+        </aside>
+        <div className="apx-main">
+          <div className="card apx-filters">
+            <div className="apx-search">
+              <Icon name="search" size={17} />
+              <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('pm_log_search')} aria-label={t('pm_log_search')} />
+            </div>
+          </div>
+          {shown.length === 0 ? <div className="card"><div className="state">{list.length === 0 ? t('pm_log_empty') : t('pm_log_none')}</div></div> : (
+            <>
+              <p className="apx-count">{t('pm_log_count', { n: num(shown.length) })}</p>
+              <div className="card">
+                {shown.map((l) => (
+                  <div className="row" key={l.id}>
+                    <div className="res-icon"><Icon name="eye" size={20} /></div>
+                    <div className="m"><b>{L(l.who)}</b><small>{L(l.action)}</small></div>
+                    <small>{fmtDateTime(l.at)}</small>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       </div>
-    ))}</Async></div>
+    )}</Async>
   );
 }
 

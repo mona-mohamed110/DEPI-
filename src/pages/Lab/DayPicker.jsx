@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useLab } from "./LabContext.jsx";
 import { dayKey } from "../../api/lab.js";
 import Icon from "../../components/Icon.jsx";
@@ -16,6 +16,20 @@ export default function DayPicker({ value, dates, onChange }) {
   const base = value || dates[0];
   const init = base ? new Date(`${base}T00:00:00`) : new Date();
   const [view, setView] = useState({ y: init.getFullYear(), m: init.getMonth() });
+
+  // يفتح التقويم ناحية المساحة المتاحة حتى لا يخرج من الشاشة
+  const [pos, setPos] = useState({});
+  useLayoutEffect(() => {
+    if (!open || !ref.current) return;
+    const r = ref.current.getBoundingClientRect();
+    const w = Math.min(330, window.innerWidth * 0.92);
+    const fitsLeftEdge = r.left + w <= window.innerWidth - 8; // يمتد يميناً من حافة الزر اليسرى
+    const fitsRightEdge = r.right - w >= 8;                   // يمتد يساراً من حافة الزر اليمنى
+    const rtl = document.documentElement.dir === "rtl" || getComputedStyle(ref.current).direction === "rtl";
+    const preferLeft = rtl; // الافتراضي القديم: في العربي يمتد يميناً
+    const useLeft = preferLeft ? (fitsLeftEdge || !fitsRightEdge) : (!fitsRightEdge && fitsLeftEdge);
+    setPos(useLeft ? { left: 0, right: "auto", insetInlineEnd: "auto" } : { right: 0, left: "auto", insetInlineEnd: "auto" });
+  }, [open]);
 
   useEffect(() => {
     const off = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
@@ -47,7 +61,7 @@ export default function DayPicker({ value, dates, onChange }) {
       </button>
 
       {open && (
-        <div className="cal">
+        <div className="cal" style={pos}>
           <div className="cal-top">
             <span>{value ? fmtDay(value) : new Date().toLocaleDateString(locale, { weekday: "long", day: "numeric", month: "long" })}</span>
             <span>

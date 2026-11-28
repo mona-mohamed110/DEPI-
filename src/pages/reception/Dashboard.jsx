@@ -16,6 +16,8 @@ export default function Dashboard() {
   const { act } = useToast();
   const state = useAsync(() => api.getQueue(), []);
   const reqs = useAsync(() => api.getRequests(), []);
+  const cancels = useAsync(() => api.getCancelRequests(), []);
+  const edits = useAsync(() => api.getEditRequests(), []);
   const { refresh } = useReception();
   const [f, setF] = useState('all');
   const [rej, setRej] = useState(null); // { id, reason } — رفض طلب مع سبب اختياري
@@ -34,6 +36,23 @@ export default function Dashboard() {
     refresh();
     if (ok) state.reload();
   };
+  // موافقة/رفض طلب تعديل موعد من مريض
+  const decideEdit = async (id, ok) => {
+    const r = await act(() => api.decideEdit(id, ok), ok ? 'ex_approved' : 'ex_declined');
+    if (!r) return;
+    edits.setData((l) => l.filter((x) => x.id !== id));
+    refresh();
+    state.reload();
+  };
+  // موافقة/رفض طلب إلغاء من مريض
+  const decideCancel = async (id, ok) => {
+    const r = await act(() => api.decideCancel(id, ok), ok ? 'cx_approved' : 'cx_declined');
+    if (!r) return;
+    cancels.setData((l) => l.filter((x) => x.id !== id));
+    refresh();
+    state.reload();
+    reqs.reload();
+  };
   const list = useMemo(() => (state.data || []).filter((i) => (f === 'all' || i.status === f) && `${L(i.name)} ${L(i.doctor)}`.toLowerCase().includes(q.trim().toLowerCase())), [state.data, f, q, L]);
   const c = (s) => (state.data || []).filter((i) => i.status === s).length;
 
@@ -41,6 +60,38 @@ export default function Dashboard() {
     <section>
       <h1>{t('title')}</h1>
       <p className="sub">{t('subtitle')}</p>
+      <Async state={edits}>{(ex) => ex.length > 0 && (
+        <div className="card" style={{ marginBottom: 16 }}>
+          <h2>{t('ex_title')} ({num(ex.length)})</h2>
+          <p className="sub" style={{ margin: '0 0 8px' }}>{t('ex_sub')}</p>
+          {ex.map((x) => (
+            <div className="queue-row" key={x.id}>
+              <div className="av">{L(x.name).charAt(0)}</div>
+              <div className="m"><b>{L(x.name)}</b><small>{t('ex_from')}: {fmtDay(x.date)} · {fmtTime(x.time)}</small><small>{t('ex_to')}: <b>{fmtDay(x.newDate)} · {fmtTime(x.newTime)}</b></small></div>
+              <div className="act-group">
+                <button type="button" className="btn s" onClick={() => decideEdit(x.id, true)}><Icon name="check" size={15} />{t('ex_approve')}</button>
+                <button type="button" className="btn s o" onClick={() => decideEdit(x.id, false)}><Icon name="x" size={15} />{t('ex_decline')}</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}</Async>
+      <Async state={cancels}>{(cx) => cx.length > 0 && (
+        <div className="card" style={{ marginBottom: 16 }}>
+          <h2>{t('cx_title')} ({num(cx.length)})</h2>
+          <p className="sub" style={{ margin: '0 0 8px' }}>{t('cx_sub')}</p>
+          {cx.map((x) => (
+            <div className="queue-row" key={x.id}>
+              <div className="av">{L(x.name).charAt(0)}</div>
+              <div className="m"><b>{L(x.name)}</b><small>{t('rq_for')}: {fmtDay(x.date)} · {fmtTime(x.time)}</small></div>
+              <div className="act-group">
+                <button type="button" className="btn s" onClick={() => decideCancel(x.id, true)}><Icon name="check" size={15} />{t('cx_approve')}</button>
+                <button type="button" className="btn s o" onClick={() => decideCancel(x.id, false)}><Icon name="x" size={15} />{t('cx_decline')}</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}</Async>
       <Async state={reqs}>{(rq) => rq.length > 0 && (
         <div className="card" style={{ marginBottom: 16 }}>
           <h2>{t('rq_title')} ({num(rq.length)})</h2>
