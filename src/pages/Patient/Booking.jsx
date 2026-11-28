@@ -22,7 +22,7 @@ function pickDoctor(state) {
 }
 
 export default function Booking() {
-  const { t, L, lang, num, locale } = useI18n();
+  const { t, L, lang, num, locale, fmtDay } = useI18n();
   const { act, toast } = useToast();
   const loc = useLocation();
   const [doctor, setDoctor] = useState(() => pickDoctor(loc.state));
@@ -32,7 +32,17 @@ export default function Booking() {
   const [test, setTest] = useState(() => loc.state?.test || '');
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [mine, setMine] = useState(null);
+  const [active, setActive] = useState(null); // حجز مفتوح عند الطبيب المختار
+  useEffect(() => { api.getMyProviders().then((r) => setMine(Array.isArray(r) ? r : [])).catch(() => setMine([])); }, []);
   const isLab = doctor?.type === 'lab';
+  useEffect(() => {
+    setActive(null);
+    if (!doctor?.id || doctor.type === 'lab') return;
+    let off = false;
+    api.getActiveBooking(doctor.id).then((r) => { if (!off) setActive(r?.booking || null); }).catch(() => {});
+    return () => { off = true; };
+  }, [doctor?.id, doctor?.type]);
   // الفحوصات التي يوفرها هذا المعمل (إن لم يرسلها الخادم نعرض الكتالوج كله)
   const labTests = isLab && Array.isArray(doctor?.tests) ? TEST_CATALOG.filter((c) => doctor.tests.includes(c.ar)) : TEST_CATALOG;
   const customTests = isLab && Array.isArray(doctor?.tests) ? doctor.tests.filter((n) => !TEST_CATALOG.some((x) => x.ar === n)) : [];
@@ -82,11 +92,26 @@ export default function Booking() {
 
       {searching && <div className="search-wrap"><PlaceSearch title={false} onPick={choose} /></div>}
 
-      {!searching && !doctor && (
+      {!searching && !doctor && mine && mine.length === 0 && (
         <div className="card state">
           <Icon name="calendarPlus" size={40} />
           <h2 style={{ marginTop: 10 }}>{t('noDoctor')}</h2>
           <button type="button" className="btn" onClick={() => setSearching(true)}>{t('searchButton')}</button>
+        </div>
+      )}
+
+      {!searching && mine && mine.length > 0 && (
+        <div className="card" style={{ marginTop: 16 }}>
+          <h2>{t('bk_my_providers')}</h2>
+          <p className="hello-sub" style={{ marginTop: 4 }}>{t('bk_my_providers_hint')}</p>
+          {mine.map((p) => (
+            <div className="row" key={p.id}>
+              <div className="av" style={p.avatarV ? { padding: 0, overflow: 'hidden' } : undefined}>{p.avatarV ? <img src={`${API_URL}/public/avatar/${p.id}?v=${p.avatarV}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <Icon name={p.type === 'lab' ? 'flask' : 'stethoscope'} size={20} />}</div>
+              <div className="m"><b>{L(p.name)}</b><small>{L(p.specialty)}</small></div>
+              {p.rating > 0 && <span className="badge"><Icon name="star" size={13} />{num(p.rating)}</span>}
+              <button type="button" className={`btn s ${doctor?.id === p.id ? 'o' : ''}`} onClick={() => choose(p)}>{t('bk_book_again')}</button>
+            </div>
+          ))}
         </div>
       )}
 
@@ -102,6 +127,12 @@ export default function Booking() {
             <div className="note" style={{ marginTop: 12 }}><Icon name="info" size={18} /><span>{t(isLab ? 'bk_note_lab' : 'bk_note_doctor')}</span></div>
           </div>
 
+          {active ? (
+            <div className="card" style={{ marginTop: 16 }}>
+              <div className="note"><Icon name="alert" size={18} /><span>{t('bk_has_active', { date: fmtDay(active.date), time: fmt(active.time) })}</span></div>
+              <div className="btn-row"><Link className="btn" to="/patient/appointments">{t('nav_appts')}</Link></div>
+            </div>
+          ) : (
           <div className="card" style={{ marginTop: 16 }}>
             {isLab && (
               <>
@@ -135,6 +166,7 @@ export default function Booking() {
               </div>
             )}
           </div>
+          )}
         </>
       )}
     </section>

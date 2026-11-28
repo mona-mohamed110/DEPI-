@@ -165,8 +165,9 @@ router.get("/dashboard", async (req, res) => {
       }),
     ]);
 
+    // في الانتظار: وصل العيادة ولم يدخل الكشف بعد
     const waiting = todayAppointments.filter(
-      (item) => item.status === "pending"
+      (item) => item.status !== "done" && item.queue === "arrived"
     ).length;
 
     return res.json({
@@ -200,9 +201,11 @@ router.get("/dashboard", async (req, res) => {
         status:
           item.status === "done"
             ? "done"
-            : item.status === "pending"
-              ? "wait"
-              : "exam",
+            : item.queue === "in-exam"
+              ? "exam"
+              : item.queue === "arrived"
+                ? "wait"
+                : "absent",
       })),
     });
   } catch (error) {
@@ -276,9 +279,15 @@ router.get("/patients", async (req, res) => {
       .select("_id patientId date time status queue")
       .lean();
     const todayMap = new Map();
+    const todayListMap = new Map();
+    // نفس قاعدة لوحة التحكم: في وضع «الدور فقط» يظهر من في الكشف فقط
+    const queueOnlyOn = !!req.user.queueOnly;
     for (const b of todayBookings) {
+      if (queueOnlyOn && (b.queue !== "in-exam" || b.status === "done")) continue;
       const pid = b.patientId.toString();
       if (!todayMap.has(pid)) todayMap.set(pid, b);
+      if (!todayListMap.has(pid)) todayListMap.set(pid, []);
+      todayListMap.get(pid).push(b);
     }
 
     // خيار الطبيب (صفحة الكشف فقط): يظهر المريض اللي موظف الاستقبال أدخله الكشف ولسه مخلصش
@@ -287,7 +296,8 @@ router.get("/patients", async (req, res) => {
     const activeListMap = new Map();
 
     for (const booking of activeBookings) {
-      if (examQueueOnly && booking.queue !== "in-exam") continue;
+      // وضع «الدور فقط»: من أدخله الاستقبال الكشف اليوم فقط (حجز قديم عالق من يوم سابق لا يظهر)
+      if (examQueueOnly && (booking.queue !== "in-exam" || booking.date !== todayStr)) continue;
       const patientId = booking.patientId.toString();
       if (!activeListMap.has(patientId)) activeListMap.set(patientId, []);
       activeListMap.get(patientId).push(booking);
@@ -335,6 +345,15 @@ router.get("/patients", async (req, res) => {
               time: todayMap.get(patient._id.toString()).time,
             }
           : null,
+
+        // كل حجوزات اليوم للمريض (كل حجز بصف مستقل في «مرضاي» كما في لوحة التحكم وصفحة الكشف)
+        todayBookings: (todayListMap.get(patient._id.toString()) || []).map((b) => ({
+          id: b._id.toString(),
+          status: b.status,
+          queue: b.queue || "not-arrived",
+          date: b.date,
+          time: b.time,
+        })),
 
         // كل الحجوزات المفتوحة للمريض في أي يوم (الأقرب أولًا)
         activeBookings: (activeListMap.get(patient._id.toString()) || [])

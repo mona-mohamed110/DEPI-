@@ -31,7 +31,7 @@ const state = useAsync(() => api.getPatients(), []);
         <Async state={state}>
           {(all) => {
             // مرضى اليوم فقط (اللي ليهم حجز النهارده)
-            const todays = all.filter((p) => p.todayBooking);
+            const todays = all.filter((p) => p.todayBooking || p.todayBookings?.length);
             const list = todays.filter((p) =>
               L(p.name)
                 .toLowerCase()
@@ -51,80 +51,37 @@ const state = useAsync(() => api.getPatients(), []);
                 )}
               </div>
             ) : (
-              list.map((p) => {
-                const booking = p.todayBooking;
-
-                const canExam =
-                  booking &&
-                  ['pending', 'confirmed'].includes(
-                    booking.status
-                  );
-
-                const examDone = booking?.status === 'done';
+              list.flatMap((p) => (p.todayBookings?.length ? p.todayBookings : [p.todayBooking])
+                .map((b) => ({ p, b }))).sort((x, y) => String(x.b.time || '').localeCompare(String(y.b.time || ''))).map(({ p, b: booking }) => {
+                const canExam = ['pending', 'confirmed'].includes(booking.status);
+                const examDone = booking.status === 'done';
+                const st = examDone ? 'done' : booking.queue === 'in-exam' ? 'exam' : booking.queue === 'arrived' ? 'wait' : 'absent';
 
                 return (
-                  <div className="row" key={p.id}>
-                    <div className="av">
-                      {L(p.name).charAt(0)}
-                    </div>
+                  <div className="row" key={booking.id}>
+                    <div className="av">{L(p.name).charAt(0)}</div>
 
                     <div className="m">
                       <b>{L(p.name)}</b>
-
                       <small>
-                        {p.age != null
-                          ? `${num(p.age)} ${t('years')}`
-                          : '—'}
+                        {p.age != null ? `${num(p.age)} ${t('years')}` : '—'}
                         {' · '}
-                        {p.chronic.length
-                          ? p.chronic.map(L).join('، ')
-                          : t('fv_none')}
+                        {p.chronic.length ? p.chronic.map(L).join('، ') : t('fv_none')}
                       </small>
                     </div>
 
                     {booking.time && <span className="badge">{fmtTime(booking.time)}</span>}
+                    <span className={`badge ${st === 'done' ? 'ok' : st === 'wait' ? 'wn' : ''}`}>{t(`s_${st}`)}</span>
 
-                    {booking && (
-                      <span
-                        className={`badge ${
-                          examDone
-                            ? 'ok'
-                            : booking.status === 'pending'
-                              ? 'wn'
-                              : ''
-                        }`}
-                      >
-                        {examDone
-                          ? 'تم الكشف'
-                          : booking.status === 'pending'
-                            ? t('s_wait')
-                            : t('s_exam')}
-                      </span>
-                    )}
-
-                    <button
-                      type="button"
-                      className="btn o s"
-                      onClick={() =>
-                        nav(`/doctor/patient-file?p=${p.id}`)
-                      }
-                    >
-                      {t('btn_file')}
-                    </button>
+                    <button type="button" className="btn o s" onClick={() => nav(`/doctor/patient-file?p=${p.id}`)}>{t('btn_file')}</button>
 
                     <button
                       type="button"
                       className="btn s"
                       disabled={!canExam}
-                      onClick={() => {
-                        if (!canExam) return;
-
-                        nav(
-                          `/doctor/exam?p=${p.id}&booking=${booking.id}`
-                        );
-                      }}
+                      onClick={() => { if (canExam) nav(`/doctor/exam?p=${p.id}&booking=${booking.id}`); }}
                     >
-                      {examDone ? 'تم الكشف' : t('btn_exam')}
+                      {examDone ? t('s_done') : t('btn_exam')}
                     </button>
                   </div>
                 );

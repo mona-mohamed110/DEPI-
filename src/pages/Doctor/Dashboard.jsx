@@ -9,7 +9,7 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import * as api from '../../api/doctor.js';
 
 const FILTERS = ['all', 'done', 'exam', 'wait'];
-const TONE = { done: 'ok', exam: '', wait: 'wn' };
+const TONE = { done: 'ok', exam: '', wait: 'wn', absent: '' };
 
 function localDate() {
   const d = new Date();

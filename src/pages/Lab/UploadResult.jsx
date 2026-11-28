@@ -34,6 +34,7 @@ export default function UploadResult() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allPending, day, id]);
 
+  const cur = pending.find((x) => String(x.id) === String(sel));
   const submit = async () => {
     const q = pending.find((x) => String(x.id) === String(sel));
     if (!q) return toast(t("noPending"));
@@ -55,6 +56,8 @@ export default function UploadResult() {
           {pending.length === 0 && <option value="">{t(day ? "noPendingDay" : "noPending")}</option>}
           {pending.map((r) => <option key={r.id} value={r.id}>#{r.id} · {r.name} · {testName(r.test)}</option>)}
         </select>
+
+        {cur && !cur.linked && <div className="note" style={{ marginTop: 12 }}><Icon name="alert" size={18} /><span>{t("lab_unlinked")}</span></div>}
 
         <label>{t("files")}</label>
         <label className="drop">

@@ -1,6 +1,7 @@
 const express = require("express");
 const User = require("../models/User");
 const ContactMessage = require("../models/ContactMessage");
+const { placeView } = require("../utils/placeView");
 const { getSchedule } = require("../utils/schedule");
 const { ratingsFor } = require("../utils/ratings");
 const Review = require("../models/Review");
@@ -52,28 +53,7 @@ router.get("/places", async (req, res) => {
 
     const rated = await ratingsFor(providers.map((u) => u._id));
     const places = providers.map((user, index) => ({
-      id: user._id.toString(),
-      type: user.role,
-      name: {
-        ar: user.name,
-        en: user.name,
-      },
-      specialty: user.role === "lab"
-        ? { ar: "معمل تحاليل", en: "Medical Lab" }
-        : specialtyView(user.specialty || user.extra) || { ar: "طبيب", en: "Doctor" },
-      address: user.address
-        ? { ar: user.address, en: user.address }
-        : { ar: "غير محدد", en: "Not specified" },
-      city: { ar: "غير محدد", en: "Not specified" },
-      lat: user.location && Number.isFinite(user.location.lat) ? user.location.lat : null,
-      lng: user.location && Number.isFinite(user.location.lng) ? user.location.lng : null,
-      // الفحوصات التي يوفرها المعمل (لتصفية قائمة الحجز)
-      ...(user.role === "lab" ? { tests: labOfferedTests(user) } : {}),
-      // ساعات العمل الفعلية (٧ أيام، الأحد = 0) — تتحكم في الأيام والمواعيد المعروضة للحجز
-      schedule: getSchedule(user),
-      rating: (rated.get(String(user._id)) || {}).avg || 0,
-      ratingCount: (rated.get(String(user._id)) || {}).count || 0,
-      avatarV: user.avatarAt ? new Date(user.avatarAt).getTime() : 0,
+      ...placeView(user, rated),
       x: 15 + ((index * 23) % 75),
       y: 20 + ((index * 17) % 65),
     }));

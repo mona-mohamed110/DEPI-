@@ -30,6 +30,7 @@ export default function RequestDetails() {
       {q && (
         <>
           <div className="note"><Icon name="lock" size={18} /><span>{t("noteSecurity")}</span></div>
+          {!q.linked && <div className="note" style={{ marginTop: 10 }}><Icon name="alert" size={18} /><span>{t("lab_unlinked")}</span></div>}
           <div className="grid g2">
             <div className="card">
               <h2>{t("reqTest")}</h2>
@@ -38,7 +39,7 @@ export default function RequestDetails() {
                 <div className="m"><b>{testName(q.test)}</b><small>{t("reqNo", { id: q.id })}</small></div>
                 <span className={`badge ${st.c}`}>{t(st.k)}</span>
               </div>
-              <div className="row"><span className="m">{t("doctor")}</span><b>{L(q.doctor) || t("walkIn")}</b></div>
+              {L(q.doctor) && <div className="row"><span className="m">{t("doctor")}</span><b>{L(q.doctor)}</b></div>}
               <div className="row"><span className="m">{t("reqTime")}</span><b>{fmtDateTime(q.createdAt)}</b></div>
             </div>
             <div className="card">

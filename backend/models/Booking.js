@@ -31,6 +31,15 @@ const bookingSchema = new mongoose.Schema(
     rejectReason: { type: String, default: "", maxlength: 200 },
     rejectedAt: { type: Date, default: null },
     rejectSeen: { type: Boolean, default: true },
+    // طلب إلغاء من المريض: لا يُلغى الحجز إلا بموافقة الاستقبال
+    // طلب تعديل الموعد بعد القبول: الموعد الجديد المطلوب (يبقى الموعد الحالي حتى موافقة الاستقبال)
+    editReqDate: { type: String, default: "" },
+    editReqTime: { type: String, default: "" },
+    editReqAt: { type: Date, default: null },
+    editDeclined: { type: Boolean, default: false },
+    cancelRequested: { type: Boolean, default: false },
+    cancelRequestedAt: { type: Date, default: null },
+    cancelDeclined: { type: Boolean, default: false },
     source: { type: String, default: "app" },
     // نوع الزيارة: يُحسب من تاريخ آخر روشتة للمريض عند هذا الطبيب (null = يُحسب عند العرض)
     visitType: { type: String, enum: ["new", "followup", "consult", null], default: null },
